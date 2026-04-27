@@ -8,6 +8,25 @@ namespace RiderControl
 
     public sealed class LocaleEN : IDictionarySource
     {
+        public const string KeyStatusCitizensLine = "CimBeSmart.Status.CitizensLine";
+        public const string KeyStatusTouristsLine = "CimBeSmart.Status.TouristsLine";
+        public const string KeyStatusTotalsLine = "CimBeSmart.Status.TotalsLine";
+        public const string KeyStatusTaxiSupplyLine = "CimBeSmart.Status.TaxiSupplyLine";
+        public const string KeyStatusPassengersLine = "CimBeSmart.Status.PassengersLine";
+        public const string KeyStatusRequestsLine = "CimBeSmart.Status.RequestsLine";
+        public const string KeyStatusTaxiFleetLine = "CimBeSmart.Status.TaxiFleetLine";
+        public const string KeyStatusTaxiStandsLine = "CimBeSmart.Status.TaxiStandsLine";
+        public const string KeyStatusCoverageLine = "CimBeSmart.Status.CoverageLine";
+        public const string KeyStatusCoverageGroupsLine = "CimBeSmart.Status.CoverageGroupsLine";
+        public const string KeyStatusWorkDoneLine = "CimBeSmart.Status.WorkDoneLine";
+        public const string KeyStatusWorkDone2Line = "CimBeSmart.Status.WorkDone2Line";
+        public const string KeyStatusSnapshotLine = "CimBeSmart.Status.SnapshotLine";
+
+#if DEBUG
+        public const string KeyStatusMarkedDevLine = "CimBeSmart.Status.MarkedDevLine";
+        public const string KeyStatusTaxiFlagsDevLine = "CimBeSmart.Status.TaxiFlagsDevLine";
+#endif
+
         private readonly Setting m_Setting;
 
         public LocaleEN(Setting setting)
@@ -35,7 +54,7 @@ namespace RiderControl
                 { m_Setting.GetOptionTabLocaleID(Setting.AboutTab),   "About" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.BehaviorGroup), "Behavior" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.BehaviorGroup), "Taxi Choices" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.DebugGroup),    "Debug / Logging" },
 
                 { m_Setting.GetOptionGroupLocaleID(Setting.CityScanGroup), "CITY TRANSIT (per month)" },
@@ -50,31 +69,25 @@ namespace RiderControl
                 { m_Setting.GetOptionGroupLocaleID(Setting.AboutLinksGroup), "Support Links" },
 
                 // Behavior
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.BlockTaxiUsage)), "Residents: ignore taxis" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.BlockTaxiUsage)),
-                    "**Enabled [ ✓ ]** means **Residents** ignore taxis.\n" +
-                    "Also clears cims currently waiting for a taxi so they re-route to other methods.\n" +
-                    "Note: a very small number may still appear because some trip planners like Leisure System can randomly allow taxi routing.\n" +
-                    "Disabled = vanilla taxi use." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResidentsAllowedToUseTaxis)), "Residents allowed to use taxis" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResidentsAllowedToUseTaxis)),
+                    "Controls which residents are eligible for taxis.\n" +
+                    "0% = strongest taxi reduction.\n" +
+                    "25% = about 1 in 4 residents may use taxis.\n" +
+                    "50% = about half.\n" +
+                    "75% = about 3 in 4.\n" +
+                    "100% = vanilla-style taxi use; the mod removes its IgnoreTaxi marks.\n" +
+                    "Even at 0%, a few taxi trips may still happen because some vanilla trip systems (i.e. Leisure) can directly request taxi routes." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.BlockCommuters)), "Commuters: ignore taxis" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.BlockCommuters)), "Include commuters" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.BlockCommuters)),
-                    "**Enabled [ ✓ ]** means **Commuters** ignore taxis.\n" +
-                    "Hidden and <disabled> unless [Residents: ignore taxis] is Enabled [ ✓ ]\n" +
-                    "Even if you left Commuters checked, it will be OFF when Residents is OFF." },
+                    "When enabled, the taxi slider also applies to commuter households.\n" +
+                    "Hidden when Residents allowed to use taxis is 100%." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.BlockTourists)), "Tourists: ignore taxis" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.BlockTourists)), "Include tourists" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.BlockTourists)),
-                    "**Enabled [ ✓ ]** means **Tourists** ignore taxis.\n" +
-                    "Hidden and <disabled> unless [Residents: ignore taxis] is Enabled [ ✓ ]\n" +
-                    "Even if you left Tourists checked, it will be OFF when Residents toggle is OFF." },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.BlockTaxiStandDemand)), "Taxi stands: block demand (alpha)" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.BlockTaxiStandDemand)),
-                    "This toggle is new (Alpha):\n" +
-                    "Clears TaxiStand **Passengers waiting** so the stand stops requesting stand-by taxis.\n" +
-                    "Hidden and disabled unless [Residents: ignore taxis] is enabled [ ✓ ]\n" +
-                    "Even if you left taxi stands checked, it will be OFF when Residents is OFF." },
+                    "When enabled, the taxi slider also applies to tourist households.\n" +
+                    "Hidden when Residents allowed to use taxis is 100%." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.FixMovingAwayHighwayWalkers)), "Moving-away fix (highway walkers)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.FixMovingAwayHighwayWalkers)),
@@ -84,8 +97,9 @@ namespace RiderControl
                 // Debug
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableDebugLogging)), "Enable verbose taxi logging" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableDebugLogging)),
-                    "When enabled, logs a periodic TaxiSummary line to help debug remaining taxi activity.\n" +
-                    "Disable for normal gameplay (can hurt performance / spam logs)." },
+                    "When enabled, logs periodic TaxiSummary lines to help debug remaining taxi activity.\n" +
+                    "Disable for normal gameplay or it can hurt performance.\n" +
+                    "Do not enable this for normal gameplay." },
 
                 // ----- STATUS TAB -----
 
@@ -93,135 +107,123 @@ namespace RiderControl
                   "City scan not available yet." },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusNotReadyCityScan)),
                   "Open a city and let the simulation run a few minutes, then reopen Options → Status.\n" +
-                  "This row stays blank until stats are ready." },
+                  "The value will show '-' until stats are ready." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusNotReadyTaxiScan)),
                   "Taxi scan not available yet." },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusNotReadyTaxiScan)),
                   "Open a city and let the simulation run a few minutes.\n" +
-                  "This row stays blank until stats are ready." },
+                  "The value will show '-' until stats are ready." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusNotReadyLastUpdate)),
                   "No activity recorded yet." },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusNotReadyLastUpdate)),
                   "Once a scan completes, this section shows what changed in the last update.\n" +
-                  "This row stays blank until activity exists." },
+                  "The value will show '-' until activity exists." },
 
                 // CITY SCAN
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusMonthlyPassengers1)), "Citizens" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusMonthlyPassengers1)),
                     "InfoView passenger table (per month).\n" +
                     "Order: Taxi | Bus | Tram | Train | Subway | Air." },
-                { "CBS.Status.Value." + nameof(Setting.StatusMonthlyPassengers1),
-                    "Taxi {0:N0} | Bus {1:N0} | Tram {2:N0} |\n" +
-                    "Train {3:N0} | Subway {4:N0} | Air {5:N0}" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusMonthlyTourists)), "Tourists" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusMonthlyTourists)),
                     "InfoView passenger table (per month).\n" +
                     "Order: Taxi | Bus | Tram | Train | Subway | Air." },
-                { "CBS.Status.Value." + nameof(Setting.StatusMonthlyTourists),
-                    "Taxi {0:N0} | Bus {1:N0} | Tram {2:N0} |\n" +
-                    "Train {3:N0} | Subway {4:N0} | Air {5:N0}" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusMonthlyTotal)), "Totals" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusMonthlyTotal)),
-                    "Wait now = cims currently flagged as WaitingTransport (any transport type, not taxi-only).\n" +
-                    "Tourists/mo and Citizens/mo match the InfoView passenger summary totals." },
-                { "CBS.Status.Value." + nameof(Setting.StatusMonthlyTotal),
-                    "Wait now {0:N0} | Tourists/mo {1:N0} | Citizens/mo {2:N0}" },
+                    "AllWait = all cims currently waiting for public transport, not just taxi.\n" +
+                    "Tourists/mo and Citizens/mo come from the Transportation InfoView monthly totals." },
 
                 // TAXI SCAN
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusTaxiSupply)), "Taxi supply" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusTaxiSupply)),
-                    "Taxis = taxi vehicles.\n" +
-                    "Depots = taxi depots.\n" +
-                    "Dispatch centers = taxi depots with the Dispatch Center upgrade.\n" +
-                    "Stands = taxi stands." },
-                { "CBS.Status.Value." + nameof(Setting.StatusTaxiSupply),
-                    "Taxis {0:N0} | Depots {1:N0}\n" +
-                    "Dispatch centers {2:N0} | Stands {3:N0}" },
+                    "DispatchCtr = taxi depots with a dispatch center.\n" +
+                    "Order: Taxis | Depots | DispatchCtr | Stands." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusRequests)), "Taxi requests" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusRequests)),
                     "TaxiRequest counts by type.\n" +
-                    "Customer = normal cim taxi request.\n" +
+                    "Customer = normal city pickup request.\n" +
                     "Outside = outside-connection taxi request.\n" +
-                    "None = other/unknown taxi request type." },
-                { "CBS.Status.Value." + nameof(Setting.StatusRequests),
-                    "Customer {0:N0} | Outside {1:N0} | None {2:N0}" },
+                    "None = request with no normal taxi request type." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusPassengers)), "Passengers" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusPassengers)),
                     "Taxi passenger sanity check.\n" +
-                    "Resident = passengers that have a Resident component (cim passenger entities)." },
-                { "CBS.Status.Value." + nameof(Setting.StatusPassengers),
-                    "Total {0:N0} | IgnoreTaxi {1:N0} | Resident {2:N0}" },
+                    "Resident means the passenger has a Resident component, so IgnoreTaxi can be checked." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusTaxiFleet)), "Taxi states" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusTaxiFleet)),
                     "What taxis are doing now.\n" +
-                    "Transport | Boarding | Return | Dispatched | EnRoute | Parked" },
-                { "CBS.Status.Value." + nameof(Setting.StatusTaxiFleet),
-                    "Transport {0:N0} | Boarding {1:N0} | Return {2:N0}\n" +
-                    "Dispatched {3:N0} | EnRoute {4:N0} | Parked {5:N0}" },
+                    "Order: Ride | Board | Return | Dispatch | EnRoute | Parked." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusTaxiStands)), "Taxi stands" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusTaxiStands)),
-                    "Stand pressure.\n" +
-                    "Waiting = WaitingPassengers count.\n" +
-                    "StandReq = TaxiRequestType.Stand." },
-                { "CBS.Status.Value." + nameof(Setting.StatusTaxiStands),
-                    "Waiting {0:N0} | StandReq {1:N0}" },
+                    "Stand pressure only. The mod no longer directly changes TaxiStand state.\n" +
+                    "Order: StandWait | StandReq." },
 
                 // LAST UPDATE
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusCoverage1)), "IgnoreTaxi coverage" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusCoverage1)),
-                    "Residents with IgnoreTaxi / Total residents scanned." },
-                { "CBS.Status.Value." + nameof(Setting.StatusCoverage1),
-                    "IgnoreTaxi {0:N0}/{1:N0}" },
+                    "Residents with IgnoreTaxi now / total residents." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusCoverage2)), "IgnoreTaxi coverage" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusCoverage2)),
-                    "Commuters IgnoreTaxi / Total | Tourists IgnoreTaxi / Total." },
-                { "CBS.Status.Value." + nameof(Setting.StatusCoverage2),
-                    "Commuter {0:N0}/{1:N0} | Tourist {2:N0}/{3:N0}" },
+                    "Commuter and tourist IgnoreTaxi coverage.\n" +
+                    "Order: Commuter IgnoreTaxi/Total | Tourist IgnoreTaxi/Total." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusWorkDone1)), "Work done" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusWorkDone1)),
-                    "Last update counters.\n" +
-                    "Applied | RideNeeder cleared | Taxi-lane waiting cleared." },
-                { "CBS.Status.Value." + nameof(Setting.StatusWorkDone1),
-                    "Applied {0:N0} | RideClear {1:N0} | LaneClear {2:N0}" },
+                    "What changed in the last update.\n" +
+                    "Applied = residents newly marked IgnoreTaxi.\n" +
+                    "RideClear = taxi ride request links cleared.\n" +
+                    "LaneClear = taxi lane-waiting states cleared." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusWorkDone2)), "Work done (2)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusWorkDone2)),
-                    "More last update counters.\n" +
-                    "Taxi-stand waiting cleared | Commuters skipped | Tourists skipped." },
-                { "CBS.Status.Value." + nameof(Setting.StatusWorkDone2),
-                    "StandClear {0:N0} | SkipCommuter {1:N0} | SkipTourist {2:N0}" },
+                    "More counters from the last update.\n" +
+                    "QueueClear = blocked residents released from taxi queue entities.\n" +
+                    "SkipComm/SkipTour = commuters/tourists skipped because their include toggles are OFF." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusSnapshotMeta)), "Snapshot" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusSnapshotMeta)),
-                    "Updated time shows when this status snapshot was taken.\n" +
-                    "Status updates while Options UI is open (throttled)." },
-                { "CBS.Status.Value." + nameof(Setting.StatusSnapshotMeta),
-                    "Updated {0}" },
+                    "Updated time shows when this status snapshot was taken, usually after entering Options menu." },
 
 #if DEBUG
+                // Advanced Debug (DEV builds only)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusDebugMarkedCoverage)), "Marked (dev)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusDebugMarkedCoverage)),
                     "DEV sanity check.\n" +
-                    "Marked by this mod / Total residents | IgnoreTaxi now." },
-                { "CBS.Status.Value." + nameof(Setting.StatusDebugMarkedCoverage),
-                    "Marked {0:N0}/{1:N0} | IgnoreTaxi now {2:N0}" },
+                    "Marked = residents currently marked by this mod for IgnoreTaxi.\n" +
+                    "IgnoreTaxi now = residents with the actual vanilla IgnoreTaxi flag." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusDebugTaxiFlags)), "Taxi flags (dev)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusDebugTaxiFlags)),
                     "DEV sanity check.\n" +
-                    "With dispatch buffer | From outside | Disabled." },
-                { "CBS.Status.Value." + nameof(Setting.StatusDebugTaxiFlags),
-                    "DispatchBuf {0:N0} | Outside {1:N0} | Disabled {2:N0}" },
+                    "Order: With dispatch buffer | From outside | Disabled." },
+#endif
+
+                // Status row format strings
+                { KeyStatusCitizensLine, "Taxi {0} | Bus {1} | Tram {2}\nTrain {3} | Subway {4} | Air {5}" },
+                { KeyStatusTouristsLine, "Taxi {0} | Bus {1} | Tram {2}\nTrain {3} | Subway {4} | Air {5}" },
+                { KeyStatusTotalsLine, "AllWait {0} | Tourists/mo {1} | Citizens/mo {2}" },
+                { KeyStatusTaxiSupplyLine, "Taxis {0} | Depots {1} | DispatchCtr {2} | Stands {3}" },
+                { KeyStatusPassengersLine, "Total {0} | IgnoreTaxi {1} | Resident {2}" },
+                { KeyStatusRequestsLine, "Customer {0} | Outside {1} | None {2}" },
+                { KeyStatusTaxiFleetLine, "Ride {0} | Board {1} | Return {2}\nDispatch {3} | EnRoute {4} | Parked {5}" },
+                { KeyStatusTaxiStandsLine, "StandWait {0} | StandReq {1}" },
+                { KeyStatusCoverageLine, "IgnoreTaxi {0}/{1}" },
+                { KeyStatusCoverageGroupsLine, "Commuter {0}/{1} | Tourist {2}/{3}" },
+                { KeyStatusWorkDoneLine, "Applied {0} | RideClear {1} | LaneClear {2}" },
+                { KeyStatusWorkDone2Line, "QueueClear {0} | SkipComm {1} | SkipTour {2}" },
+                { KeyStatusSnapshotLine, "Updated {0}" },
+
+#if DEBUG
+                { KeyStatusMarkedDevLine, "Marked {0}/{1} | IgnoreTaxi now {2}" },
+                { KeyStatusTaxiFlagsDevLine, "DispatchBuf {0} | Outside {1} | Disabled {2}" },
 #endif
 
                 // About

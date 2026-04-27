@@ -22,8 +22,7 @@ namespace RiderControl
 
     public partial class RiderControlSystem
     {
-        private const double kAutoRefreshMinSeconds = 240.0;      // auto-refresh every 4 min (real time)
-        private const double kAgeShowSecondsMaxSeconds = 3600.0;  // legacy only; remove after Setting.cs stops calling GetStatusAgeText.
+        private const double kAutoRefreshMinSeconds = 240.0; // auto-refresh every 4 min (real time)
 
         private const string kNotReadyValue = "n/a";
 
@@ -38,6 +37,7 @@ namespace RiderControl
         internal static int s_StatusResidentsTotal;
         internal static int s_StatusResidentsIgnoreTaxi;
         internal static int s_StatusResidentsForcedMarker;
+        internal static int s_StatusResidentsAllowedMarker;
 
         internal static int s_StatusCommutersTotal;
         internal static int s_StatusCommutersIgnoreTaxi;
@@ -67,10 +67,10 @@ namespace RiderControl
         internal static int s_InfoSubwayTourist;
         internal static int s_InfoSubwayCitizen;
         internal static int s_InfoShipTourist;
-        internal static int s_InfoShipCitizen;
         internal static int s_InfoFerryTourist;
-        internal static int s_InfoFerryCitizen;
         internal static int s_InfoAirTourist;
+        internal static int s_InfoShipCitizen;
+        internal static int s_InfoFerryCitizen;
         internal static int s_InfoAirCitizen;
         internal static int s_InfoTotalTourist;
         internal static int s_InfoTotalCitizen;
@@ -224,6 +224,9 @@ namespace RiderControl
 
                 if (SystemAPI.HasComponent<IgnoreTaxiMark>(e))
                     s_StatusResidentsForcedMarker++;
+
+                if (SystemAPI.HasComponent<TaxiAllowedMark>(e))
+                    s_StatusResidentsAllowedMarker++;
 
                 Entity citizenEntity = residentRef.ValueRO.m_Citizen;
                 if (citizenEntity == Entity.Null || !SystemAPI.HasComponent<HouseholdMember>(citizenEntity))
@@ -485,6 +488,7 @@ namespace RiderControl
             s_StatusResidentsTotal = 0;
             s_StatusResidentsIgnoreTaxi = 0;
             s_StatusResidentsForcedMarker = 0;
+            s_StatusResidentsAllowedMarker = 0;
 
             s_StatusCommutersTotal = 0;
             s_StatusCommutersIgnoreTaxi = 0;
@@ -568,7 +572,6 @@ namespace RiderControl
             return age < 0.0 || age > maxAgeSeconds;
         }
 
-        // Compatibility only for old StatusSnapshotMeta code. New UI should show only GetStatusLastStampText().
         internal static double GetStatusAgeSeconds()
         {
             if (s_StatusLastSnapshotRealtime <= 0.0)
@@ -576,30 +579,6 @@ namespace RiderControl
 
             double now = UTime.realtimeSinceStartupAsDouble;
             return Math.Max(0.0, now - s_StatusLastSnapshotRealtime);
-        }
-
-        // Compatibility only for old StatusSnapshotMeta code. New UI should not display this.
-        internal static string GetStatusAgeText()
-        {
-            double age = GetStatusAgeSeconds();
-            if (age < 0.0)
-                return kNotReadyValue;
-
-            long sec = (long)Math.Round(age, MidpointRounding.AwayFromZero);
-
-            if (sec < 60)
-                return $"{sec}s";
-
-            if (sec < (long)kAgeShowSecondsMaxSeconds)
-            {
-                long m = sec / 60;
-                long s = sec % 60;
-                return $"{m}m {s}s";
-            }
-
-            long hr = sec / 3600;
-            long min = (sec % 3600) / 60;
-            return $"{hr}h {min}m";
         }
 
         internal static string GetCityScanNotReadyText() => kNotReadyValue;
