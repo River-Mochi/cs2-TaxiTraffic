@@ -15,7 +15,6 @@ namespace RiderControl
     using Game.Creatures;       // ResidentFlags, HumanCurrentLane, CreatureLaneFlags, RideNeeder
     using Game.Pathfind;        // PathOwner, PathFlags
     using Game.Routes;          // TaxiStand, BoardingVehicle
-   // using Game.Simulation;
     using Game.Tools;           // Temp
     using Game.Vehicles;        // Taxi
     using Unity.Collections;
@@ -26,6 +25,7 @@ namespace RiderControl
     internal struct IgnoreTaxiMark : IComponentData
     {
     }
+
     public partial class RiderControlSystem : GameSystemBase
     {
         // -----------------------
@@ -37,6 +37,10 @@ namespace RiderControl
 
         // Unstick taxi waiting states on an interval (not every frame).
         private const float kUnstickIntervalSeconds = 1.0f;
+
+        // Verbose TaxiSummary log interval.
+        // increase this if log is too noisy and to prevent huge log files. 
+        private const float kDebugSummaryIntervalSeconds = 120.0f;
 
         // -----------------------
         // Timers
@@ -75,7 +79,7 @@ namespace RiderControl
             Enabled = true;
 
 #if DEBUG
-            Mod.s_Log.Info($"{Mod.ModTag} RiderControlSystem enabled (city load complete).");
+            LogUtils.Info(Mod.s_Log, () => $"{Mod.ModTag} RiderControlSystem enabled (city load complete).");
 #endif
         }
 
@@ -111,7 +115,7 @@ namespace RiderControl
                 TickStatusSnapshot();
 
                 if (setting.EnableDebugLogging)
-                    TickDebugLogging(setting, 10f, 0);
+                    TickDebugLogging(setting, kDebugSummaryIntervalSeconds, 0);
 
                 return;
             }
@@ -146,7 +150,7 @@ namespace RiderControl
             TickStatusSnapshot();
 
             if (setting.EnableDebugLogging)
-                TickDebugLogging(setting, 10f, clearedTaxiStandWaitingPassengers);
+                TickDebugLogging(setting, kDebugSummaryIntervalSeconds, clearedTaxiStandWaitingPassengers);
         }
 
         // -----------------------
@@ -199,6 +203,9 @@ namespace RiderControl
                          .WithNone<IgnoreTaxiMark, Deleted, Temp>()
                          .WithEntityAccess())
             {
+                // Count every scanned resident, including skipped commuter/tourist residents.
+                processed++;
+
                 // Skip commuter/tourist households if those blocks are OFF.
                 Entity citizenEntity = resident.ValueRO.m_Citizen;
                 if (citizenEntity != Entity.Null && SystemAPI.HasComponent<HouseholdMember>(citizenEntity))
@@ -211,12 +218,18 @@ namespace RiderControl
                         if (!setting.BlockCommuters && SystemAPI.HasComponent<CommuterHousehold>(household))
                         {
                             skippedCommuters++;
+                            if (processed >= kMarkBatchPerUpdate)
+                                break;
+
                             continue;
                         }
 
                         if (!setting.BlockTourists && SystemAPI.HasComponent<TouristHousehold>(household))
                         {
                             skippedTourists++;
+                            if (processed >= kMarkBatchPerUpdate)
+                                break;
+
                             continue;
                         }
                     }
@@ -227,7 +240,6 @@ namespace RiderControl
                 toMark.Add(entity);
                 applied++;
 
-                processed++;
                 if (processed >= kMarkBatchPerUpdate)
                     break;
             }

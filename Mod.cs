@@ -10,7 +10,7 @@ namespace RiderControl
     using Game.Modding;
     using Game.SceneFlow;
     using Game.Simulation;
-    using System.IO;
+    using System;
     using System.Reflection;
 
     public sealed class Mod : IMod
@@ -38,41 +38,62 @@ namespace RiderControl
             if (!s_BannerLogged)
             {
                 s_BannerLogged = true;
-                s_Log.Info($"{ModId} {ModTag} v{ModVersion} OnLoad");
-            }
-
-            if (s_Log is UnityLogger unityLogger)   // Stabilize file logging: keep stream open (still Colossal.Logging, not UnityEngine.Debug).
-            {
-                unityLogger.keepStreamOpen = true;
-
-                try
-                {
-                    string? dir = Path.GetDirectoryName(unityLogger.logPath);
-                    if (!string.IsNullOrEmpty(dir))     // Ensure log directory exists 
-                        Directory.CreateDirectory(dir);
-                }
-                catch
-                {  // Do not crash OnLoad for logging setup.
-                }
+                LogUtils.Info(s_Log, () => $"{ModId} {ModTag} v{ModVersion} OnLoad");
             }
 
             Setting setting = new Setting(this);
             Setting = setting;
 
-            LocalizationManager? lm = GameManager.instance?.localizationManager;
-            if (lm != null)
+            try
             {
-                lm.AddSource("en-US", new LocaleEN(setting));
+                LocalizationManager? lm = GameManager.instance?.localizationManager;
+                if (lm != null)
+                {
+                    lm.AddSource("en-US", new LocaleEN(setting));
+                }
+                else
+                {
+                    LogUtils.WarnOnce(
+                        s_Log,
+                        key: "LocalizationManagerNull",
+                        messageFactory: () => $"{ModTag} LocalizationManager is null; skipping locale registration.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                s_Log.Warn($"{ModTag} LocalizationManager is null; skipping locale registration.");
+                LogUtils.WarnOnce(
+                    s_Log,
+                    key: "LocaleRegistrationFailed",
+                    messageFactory: () => $"{ModTag} Locale registration failed; Options UI text may be missing.",
+                    exception: ex);
             }
 
-            Setting defaults = new Setting(this);
-            AssetDatabase.global.LoadSettings(ModId, setting, defaults, userSetting: true);
+            try
+            {
+                Setting defaults = new Setting(this);
+                AssetDatabase.global.LoadSettings(ModId, setting, defaults, userSetting: true);
+            }
+            catch (Exception ex)
+            {
+                LogUtils.WarnOnce(
+                    s_Log,
+                    key: "LoadSettingsFailed",
+                    messageFactory: () => $"{ModTag} LoadSettings failed; using defaults.",
+                    exception: ex);
+            }
 
-            setting.RegisterInOptionsUI();
+            try
+            {
+                setting.RegisterInOptionsUI();
+            }
+            catch (Exception ex)
+            {
+                LogUtils.WarnOnce(
+                    s_Log,
+                    key: "RegisterOptionsFailed",
+                    messageFactory: () => $"{ModTag} RegisterInOptionsUI failed; mod options may be missing.",
+                    exception: ex);
+            }
 
             // Register systems.
             updateSystem.UpdateBefore<MovingAwayFixSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
@@ -83,9 +104,21 @@ namespace RiderControl
 
         public void OnDispose()
         {
-            s_Log.Info(nameof(OnDispose));
+            LogUtils.Info(s_Log, () => $"{ModTag} OnDispose");
 
-            Setting?.UnregisterInOptionsUI();
+            try
+            {
+                Setting?.UnregisterInOptionsUI();
+            }
+            catch (Exception ex)
+            {
+                LogUtils.WarnOnce(
+                    s_Log,
+                    key: "UnregisterOptionsFailed",
+                    messageFactory: () => $"{ModTag} UnregisterInOptionsUI failed.",
+                    exception: ex);
+            }
+
             Setting = null;
         }
     }

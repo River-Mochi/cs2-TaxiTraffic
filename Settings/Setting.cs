@@ -69,6 +69,8 @@ namespace RiderControl
         public const string AboutInfoGroup = "Info";
         public const string AboutLinksGroup = "Support Links";
 
+        private const string StatusValueLocalePrefix = "CBS.Status.Value.";
+
         private const string UrlParadox =
             "https://mods.paradoxplaza.com/authors/River-mochi/cities_skylines_2?games=cities_skylines_2&orderBy=desc&sortBy=best&time=alltime";
 
@@ -126,7 +128,7 @@ namespace RiderControl
             get; set;
         }
 
-        // Independent fix (player choice): moving-away walkers.
+        // Optional toggle: prevent moving-away walking on highway to Outside connection.
         [SettingsUISection(ActionsTab, BehaviorGroup)]
         public bool FixMovingAwayHighwayWalkers
         {
@@ -185,7 +187,8 @@ namespace RiderControl
             }
         }
 
-        // CITY SCAN (labels restored inside value)
+        // CITY SCAN
+
         [SettingsUISection(StatusTab, CityScanGroup)]
         [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
         public string StatusMonthlyPassengers1
@@ -193,9 +196,15 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return
-                    $"Taxi {RiderControlSystem.s_InfoTaxiCitizen:N0} | Bus {RiderControlSystem.s_InfoBusCitizen:N0} | Tram {RiderControlSystem.s_InfoTramCitizen:N0}\n" +
-                    $"Train {RiderControlSystem.s_InfoTrainCitizen:N0} | Subway {RiderControlSystem.s_InfoSubwayCitizen:N0} | Air {RiderControlSystem.s_InfoAirCitizen:N0}";
+
+                return StatusValue(
+                    nameof(StatusMonthlyPassengers1),
+                    RiderControlSystem.s_InfoTaxiCitizen,
+                    RiderControlSystem.s_InfoBusCitizen,
+                    RiderControlSystem.s_InfoTramCitizen,
+                    RiderControlSystem.s_InfoTrainCitizen,
+                    RiderControlSystem.s_InfoSubwayCitizen,
+                    RiderControlSystem.s_InfoAirCitizen);
             }
         }
 
@@ -206,9 +215,15 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return
-                    $"Taxi {RiderControlSystem.s_InfoTaxiTourist:N0} | Bus {RiderControlSystem.s_InfoBusTourist:N0} | Tram {RiderControlSystem.s_InfoTramTourist:N0}\n" +
-                    $"Train {RiderControlSystem.s_InfoTrainTourist:N0} | Subway {RiderControlSystem.s_InfoSubwayTourist:N0} | Air {RiderControlSystem.s_InfoAirTourist:N0}";
+
+                return StatusValue(
+                    nameof(StatusMonthlyTourists),
+                    RiderControlSystem.s_InfoTaxiTourist,
+                    RiderControlSystem.s_InfoBusTourist,
+                    RiderControlSystem.s_InfoTramTourist,
+                    RiderControlSystem.s_InfoTrainTourist,
+                    RiderControlSystem.s_InfoSubwayTourist,
+                    RiderControlSystem.s_InfoAirTourist);
             }
         }
 
@@ -219,12 +234,16 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return
-                    $"WaitNow {RiderControlSystem.s_StatusWaitingTransportTotal:N0} | Tour/mo {RiderControlSystem.s_InfoTotalTourist:N0} | Cit/mo {RiderControlSystem.s_InfoTotalCitizen:N0}";
+
+                return StatusValue(
+                    nameof(StatusMonthlyTotal),
+                    RiderControlSystem.s_StatusWaitingTransportTotal,
+                    RiderControlSystem.s_InfoTotalTourist,
+                    RiderControlSystem.s_InfoTotalCitizen);
             }
         }
 
-        // TAXI SCAN (labels restored inside value)
+        // TAXI SCAN
 
         [SettingsUISection(StatusTab, TaxiScanGroup)]
         [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
@@ -233,8 +252,13 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return
-                    $"Taxis {RiderControlSystem.s_StatusTaxisTotal:N0} | Depots {RiderControlSystem.s_StatusTaxiDepotsTotal:N0} | Dispatch {RiderControlSystem.s_StatusTaxiDepotsWithDispatchCenter:N0} | Stands {RiderControlSystem.s_StatusTaxiStandsTotal:N0}";
+
+                return StatusValue(
+                    nameof(StatusTaxiSupply),
+                    RiderControlSystem.s_StatusTaxisTotal,
+                    RiderControlSystem.s_StatusTaxiDepotsTotal,
+                    RiderControlSystem.s_StatusTaxiDepotsWithDispatchCenter,
+                    RiderControlSystem.s_StatusTaxiStandsTotal);
             }
         }
 
@@ -245,8 +269,12 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return
-                    $"Total {RiderControlSystem.s_StatusPassengerTotal:N0} | IgnoreTaxi {RiderControlSystem.s_StatusPassengerIgnoreTaxi:N0} | HasResident {RiderControlSystem.s_StatusPassengerHasResident:N0}";
+
+                return StatusValue(
+                    nameof(StatusPassengers),
+                    RiderControlSystem.s_StatusPassengerTotal,
+                    RiderControlSystem.s_StatusPassengerIgnoreTaxi,
+                    RiderControlSystem.s_StatusPassengerHasResident);
             }
         }
 
@@ -257,8 +285,12 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return
-                    $"Cust {RiderControlSystem.s_StatusReqCustomer:N0} | Outside {RiderControlSystem.s_StatusReqOutside:N0} | None {RiderControlSystem.s_StatusReqNone:N0}";
+
+                return StatusValue(
+                    nameof(StatusRequests),
+                    RiderControlSystem.s_StatusReqCustomer,
+                    RiderControlSystem.s_StatusReqOutside,
+                    RiderControlSystem.s_StatusReqNone);
             }
         }
 
@@ -269,9 +301,15 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return
-                    $"Trans {RiderControlSystem.s_StatusTaxiTransporting:N0} | Board {RiderControlSystem.s_StatusTaxiBoarding:N0} | Return {RiderControlSystem.s_StatusTaxiReturning:N0}\n" +
-                    $"Dispatch {RiderControlSystem.s_StatusTaxiDispatched:N0} | EnRoute {RiderControlSystem.s_StatusTaxiEnRoute:N0} | Parked {RiderControlSystem.s_StatusTaxiParked:N0}";
+
+                return StatusValue(
+                    nameof(StatusTaxiFleet),
+                    RiderControlSystem.s_StatusTaxiTransporting,
+                    RiderControlSystem.s_StatusTaxiBoarding,
+                    RiderControlSystem.s_StatusTaxiReturning,
+                    RiderControlSystem.s_StatusTaxiDispatched,
+                    RiderControlSystem.s_StatusTaxiEnRoute,
+                    RiderControlSystem.s_StatusTaxiParked);
             }
         }
 
@@ -282,12 +320,15 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return
-                    $"Waiting {RiderControlSystem.s_StatusWaitingTaxiStandTotal:N0} | StandReq {RiderControlSystem.s_StatusReqStand:N0}";
+
+                return StatusValue(
+                    nameof(StatusTaxiStands),
+                    RiderControlSystem.s_StatusWaitingTaxiStandTotal,
+                    RiderControlSystem.s_StatusReqStand);
             }
         }
 
-        // LAST UPDATE (labels restored inside value)
+        // LAST UPDATE
 
         [SettingsUISection(StatusTab, LastUpdateGroup)]
         [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
@@ -296,7 +337,11 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return $"IgnoreTaxi {RiderControlSystem.s_StatusResidentsIgnoreTaxi:N0}/{RiderControlSystem.s_StatusResidentsTotal:N0}";
+
+                return StatusValue(
+                    nameof(StatusCoverage1),
+                    RiderControlSystem.s_StatusResidentsIgnoreTaxi,
+                    RiderControlSystem.s_StatusResidentsTotal);
             }
         }
 
@@ -307,9 +352,13 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return
-                    $"Comm {RiderControlSystem.s_StatusCommutersIgnoreTaxi:N0}/{RiderControlSystem.s_StatusCommutersTotal:N0} | " +
-                    $"Tour {RiderControlSystem.s_StatusTouristsIgnoreTaxi:N0}/{RiderControlSystem.s_StatusTouristsTotal:N0}";
+
+                return StatusValue(
+                    nameof(StatusCoverage2),
+                    RiderControlSystem.s_StatusCommutersIgnoreTaxi,
+                    RiderControlSystem.s_StatusCommutersTotal,
+                    RiderControlSystem.s_StatusTouristsIgnoreTaxi,
+                    RiderControlSystem.s_StatusTouristsTotal);
             }
         }
 
@@ -320,10 +369,12 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return
-                    $"Applied {RiderControlSystem.s_StatusLastAppliedIgnoreTaxi:N0} | " +
-                    $"RideClear {RiderControlSystem.s_StatusLastRemovedRideNeeder:N0} | " +
-                    $"LaneClear {RiderControlSystem.s_StatusLastClearedTaxiLaneWaiting:N0}";
+
+                return StatusValue(
+                    nameof(StatusWorkDone1),
+                    RiderControlSystem.s_StatusLastAppliedIgnoreTaxi,
+                    RiderControlSystem.s_StatusLastRemovedRideNeeder,
+                    RiderControlSystem.s_StatusLastClearedTaxiLaneWaiting);
             }
         }
 
@@ -334,10 +385,12 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return
-                    $"StandClear {RiderControlSystem.s_StatusLastClearedTaxiStandWaiting:N0} | " +
-                    $"SkipComm {RiderControlSystem.s_StatusLastSkippedCommuters:N0} | " +
-                    $"SkipTour {RiderControlSystem.s_StatusLastSkippedTourists:N0}";
+
+                return StatusValue(
+                    nameof(StatusWorkDone2),
+                    RiderControlSystem.s_StatusLastClearedTaxiStandWaiting,
+                    RiderControlSystem.s_StatusLastSkippedCommuters,
+                    RiderControlSystem.s_StatusLastSkippedTourists);
             }
         }
 
@@ -348,7 +401,10 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return $"At {RiderControlSystem.GetStatusLastStampText()} | Age {RiderControlSystem.GetStatusAgeText()}";
+
+                return StatusValue(
+                    nameof(StatusSnapshotMeta),
+                    RiderControlSystem.GetStatusLastStampText());
             }
         }
 
@@ -362,7 +418,12 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return $"Marked {RiderControlSystem.s_StatusResidentsForcedMarker:N0} | IgnoreTaxi {RiderControlSystem.s_StatusResidentsIgnoreTaxi:N0} | Total {RiderControlSystem.s_StatusResidentsTotal:N0}";
+
+                return StatusValue(
+                    nameof(StatusDebugMarkedCoverage),
+                    RiderControlSystem.s_StatusResidentsForcedMarker,
+                    RiderControlSystem.s_StatusResidentsIgnoreTaxi,
+                    RiderControlSystem.s_StatusResidentsTotal);
             }
         }
 
@@ -373,7 +434,12 @@ namespace RiderControl
             get
             {
                 RiderControlSystem.AutoRequestStatusRefreshOnRead();
-                return $"DispatchBuf {RiderControlSystem.s_StatusTaxiWithDispatchBuffer:N0} | Outside {RiderControlSystem.s_StatusTaxiFromOutside:N0} | Disabled {RiderControlSystem.s_StatusTaxiDisabled:N0}";
+
+                return StatusValue(
+                    nameof(StatusDebugTaxiFlags),
+                    RiderControlSystem.s_StatusTaxiWithDispatchBuffer,
+                    RiderControlSystem.s_StatusTaxiFromOutside,
+                    RiderControlSystem.s_StatusTaxiDisabled);
             }
         }
 #endif
@@ -395,8 +461,14 @@ namespace RiderControl
             {
                 if (!value)
                     return;
-                try { Application.OpenURL(UrlParadox); }
-                catch (Exception) { }
+
+                try
+                {
+                    Application.OpenURL(UrlParadox);
+                }
+                catch (Exception)
+                {
+                }
             }
         }
 
@@ -409,8 +481,14 @@ namespace RiderControl
             {
                 if (!value)
                     return;
-                try { Application.OpenURL(UrlDiscord); }
-                catch (Exception) { }
+
+                try
+                {
+                    Application.OpenURL(UrlDiscord);
+                }
+                catch (Exception)
+                {
+                }
             }
         }
 
@@ -430,6 +508,14 @@ namespace RiderControl
         public bool IsTaxiBlockingOff()
         {
             return !BlockTaxiUsage;
+        }
+
+        private static string StatusValue(string propertyName, params object[] args)
+        {
+            string entryId = StatusValueLocalePrefix + propertyName;
+
+            // Fallback is the locale key so missing locale entries are obvious during testing.
+            return LocaleUtils.SafeFormat(entryId, entryId, args);
         }
     }
 }

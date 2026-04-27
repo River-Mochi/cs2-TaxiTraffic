@@ -121,7 +121,11 @@ namespace RiderControl
             {
                 // Direct append keeps routine mod diagnostics out of Colossal's fragile UI-log path.
                 // ShareReadWrite lets the file stay viewable while the game keeps running.
-                Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+                string? dir = Path.GetDirectoryName(logPath);
+                if (!string.IsNullOrEmpty(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
 
                 using FileStream stream = new FileStream(
                     logPath,

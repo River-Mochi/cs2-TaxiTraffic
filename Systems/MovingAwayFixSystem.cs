@@ -106,7 +106,7 @@ namespace RiderControl
                 RiderControlSystem.s_DebugTotalMovingAwayFixCleared += c;
 
             if (setting.EnableDebugLogging && c > 0)
-                Mod.s_Log.Info($"{Mod.ModTag} MovingAwayFix: cleared {c:N0} IgnoreTransport flags.");
+                LogUtils.Info(Mod.s_Log, () => $"{Mod.ModTag} MovingAwayFix: cleared {c:N0} IgnoreTransport flags.");
 #endif
 
             Dependency = handle;
