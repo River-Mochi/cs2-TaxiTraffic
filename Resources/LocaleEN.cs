@@ -93,19 +93,19 @@ namespace RiderControl
                   "City scan not available yet." },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusNotReadyCityScan)),
                   "Open a city and let the simulation run a few minutes, then reopen Options → Status.\n" +
-                  "The value will show '-' until stats are ready." },
+                  "This row stays blank until stats are ready." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusNotReadyTaxiScan)),
                   "Taxi scan not available yet." },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusNotReadyTaxiScan)),
                   "Open a city and let the simulation run a few minutes.\n" +
-                  "The value will show '-' until stats are ready." },
+                  "This row stays blank until stats are ready." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusNotReadyLastUpdate)),
                   "No activity recorded yet." },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusNotReadyLastUpdate)),
                   "Once a scan completes, this section shows what changed in the last update.\n" +
-                  "The value will show '-' until activity exists." },
+                  "This row stays blank until activity exists." },
 
                 // CITY SCAN
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusMonthlyPassengers1)), "Citizens" },
@@ -113,7 +113,7 @@ namespace RiderControl
                     "InfoView passenger table (per month).\n" +
                     "Order: Taxi | Bus | Tram | Train | Subway | Air." },
                 { "CBS.Status.Value." + nameof(Setting.StatusMonthlyPassengers1),
-                    "Taxi {0:N0} | Bus {1:N0} | Tram {2:N0}\n" +
+                    "Taxi {0:N0} | Bus {1:N0} | Tram {2:N0} |\n" +
                     "Train {3:N0} | Subway {4:N0} | Air {5:N0}" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusMonthlyTourists)), "Tourists" },
@@ -121,7 +121,7 @@ namespace RiderControl
                     "InfoView passenger table (per month).\n" +
                     "Order: Taxi | Bus | Tram | Train | Subway | Air." },
                 { "CBS.Status.Value." + nameof(Setting.StatusMonthlyTourists),
-                    "Taxi {0:N0} | Bus {1:N0} | Tram {2:N0}\n" +
+                    "Taxi {0:N0} | Bus {1:N0} | Tram {2:N0} |\n" +
                     "Train {3:N0} | Subway {4:N0} | Air {5:N0}" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusMonthlyTotal)), "Totals" },
@@ -203,10 +203,10 @@ namespace RiderControl
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusSnapshotMeta)), "Snapshot" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusSnapshotMeta)),
-                    "Snapshot timestamp for the current Status scan.\n" +
+                    "Updated time shows when this status snapshot was taken.\n" +
                     "Status updates while Options UI is open (throttled)." },
                 { "CBS.Status.Value." + nameof(Setting.StatusSnapshotMeta),
-                    "At {0}" },
+                    "Updated {0}" },
 
 #if DEBUG
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusDebugMarkedCoverage)), "Marked (dev)" },
@@ -214,7 +214,7 @@ namespace RiderControl
                     "DEV sanity check.\n" +
                     "Marked by this mod / Total residents | IgnoreTaxi now." },
                 { "CBS.Status.Value." + nameof(Setting.StatusDebugMarkedCoverage),
-                    "Marked {0:N0}/{2:N0} | IgnoreTaxi now {1:N0}" },
+                    "Marked {0:N0}/{1:N0} | IgnoreTaxi now {2:N0}" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusDebugTaxiFlags)), "Taxi flags (dev)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusDebugTaxiFlags)),

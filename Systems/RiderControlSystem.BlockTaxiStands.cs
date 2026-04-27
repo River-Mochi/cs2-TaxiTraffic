@@ -3,8 +3,7 @@
 // Notes:
 // - No ECB, no DestroyEntity.
 // - Marks request-like entities with Deleted (game cleans up).
-// - Clears WaitingPassengers and detaches RouteVehicle entries.
-// - Does NOT touch DispatchedRequest (namespace/type varies by game version; avoid compile breaks).
+// - Clears WaitingPassengers, DispatchedRequest, and RouteVehicle entries.
 // - Interval/timer is owned here so Core stays clean.
 
 namespace RiderControl
@@ -12,16 +11,17 @@ namespace RiderControl
     using Game.Common;       // Deleted
     using Game.Pathfind;     // PathOwner, PathFlags
     using Game.Routes;       // TaxiStand, TaxiStandFlags, WaitingPassengers, RouteVehicle, CurrentRoute
-    // using Game.Simulation;   // TaxiRequest, TaxiRequestType  (use full name or compile issues)
+    // using Game.Simulation; // TaxiRequest, TaxiRequestType, DispatchedRequest (use full names or partial source-gen can fail)
     using Game.Tools;        // Temp
+    using Game.Vehicles;     // Taxi, TaxiFlags
     using Unity.Collections; // NativeParallelHashSet
     using Unity.Entities;
     using UTime = UnityEngine.Time;
 
     public partial class RiderControlSystem
     {
-        // Slow side-pass by design: we don't need to do this often.
-        private const float kTaxiStandBlockIntervalSeconds = 12.0f;
+        // TaxiStand is a small targeted pass; keep frequent enough to stop re-created stand demand.
+        private const float kTaxiStandBlockIntervalSeconds = 2.0f;
 
         private float m_TaxiStandBlockTimerSeconds;
 
@@ -69,7 +69,7 @@ namespace RiderControl
                     toDelete.Add(reqEntity);
             }
 
-            // 2) Reset stand state + waiting history + detach staged vehicles.
+            // 2) Reset stand state + waiting history + dispatched requests + staged vehicles.
             foreach ((RefRW<TaxiStand> stand, RefRW<WaitingPassengers> waiting, Entity standEntity) in SystemAPI
                          .Query<RefRW<TaxiStand>, RefRW<WaitingPassengers>>()
                          .WithNone<Deleted, Temp>()
@@ -79,12 +79,14 @@ namespace RiderControl
                 if (count > 0)
                     clearedWaitingCount += count;
 
+                // Reset the full waiting history so taxi demand math trends back to zero.
                 waiting.ValueRW.m_Count = 0;
                 waiting.ValueRW.m_OngoingAccumulation = 0;
                 waiting.ValueRW.m_ConcludedAccumulation = 0;
                 waiting.ValueRW.m_SuccessAccumulation = 0;
                 waiting.ValueRW.m_AverageWaitingTime = 0;
 
+                // Stop the stand advertising that it needs stand-by taxis.
                 stand.ValueRW.m_Flags &= ~TaxiStandFlags.RequireVehicles;
 
                 Entity heldReq = stand.ValueRO.m_TaxiRequest;
@@ -94,7 +96,23 @@ namespace RiderControl
                     toDelete.Add(heldReq);
                 }
 
-                // RouteVehicle detach (prevents “stuck routing” to the stand).
+                // Clear stand-level dispatched requests so taxis stop being repeatedly sent here.
+                if (SystemAPI.HasBuffer<Game.Simulation.DispatchedRequest>(standEntity))
+                {
+                    DynamicBuffer<Game.Simulation.DispatchedRequest> requests =
+                        SystemAPI.GetBuffer<Game.Simulation.DispatchedRequest>(standEntity);
+
+                    for (int i = 0; i < requests.Length; i++)
+                    {
+                        Entity requestEntity = requests[i].m_VehicleRequest;
+                        if (requestEntity != Entity.Null)
+                            toDelete.Add(requestEntity);
+                    }
+
+                    requests.Clear();
+                }
+
+                // Detach vehicles already staged on the stand route.
                 if (SystemAPI.HasBuffer<RouteVehicle>(standEntity))
                 {
                     DynamicBuffer<RouteVehicle> vehicles = SystemAPI.GetBuffer<RouteVehicle>(standEntity);
@@ -107,6 +125,25 @@ namespace RiderControl
                         {
                             vehicles.RemoveAt(i);
                             continue;
+                        }
+
+                        // If it is a taxi, clear stand-assignment states and send it back.
+                        if (SystemAPI.HasComponent<Taxi>(veh))
+                        {
+                            RefRW<Taxi> taxi = SystemAPI.GetComponentRW<Taxi>(veh);
+
+                            TaxiFlags flags = taxi.ValueRO.m_State;
+                            flags &= ~(TaxiFlags.Arriving |
+                                       TaxiFlags.Requested |
+                                       TaxiFlags.Dispatched |
+                                       TaxiFlags.Boarding |
+                                       TaxiFlags.Disembarking |
+                                       TaxiFlags.Transporting);
+
+                            flags |= TaxiFlags.Returning;
+
+                            taxi.ValueRW.m_State = flags;
+                            taxi.ValueRW.m_TargetRequest = Entity.Null;
                         }
 
                         if (SystemAPI.HasComponent<CurrentRoute>(veh))

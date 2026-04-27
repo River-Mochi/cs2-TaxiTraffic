@@ -10,27 +10,27 @@ namespace RiderControl
     using Game.Events;          // InvolvedInAccident
     using Game.Prefabs;         // PrefabSystem, PrefabRef
     using Game.Routes;          // TaxiStand, WaitingPassengers
-   // using Game.Simulation;    // TaxiRequest (use full qualified names or partials get compile issues as Game.Simulation is not in Core.cs)
+    // Game.Simulation types stay fully qualified here because Entities source-gen can misresolve partial-system usings.
     using Game.Tools;           // Temp
     using Game.Vehicles;        // Taxi, TaxiFlags, ParkedCar
     using System;               // DateTime, Math
     using System.Globalization; // CultureInfo
     using Unity.Entities;       // SystemAPI, EntityQuery
-    using BuildingTransportDepot = Game.Buildings.TransportDepot;       // Alias
-    using CreatureResident = Game.Creatures.Resident;                   // Alias
+    using BuildingTransportDepot = Game.Buildings.TransportDepot;
+    using CreatureResident = Game.Creatures.Resident;
     using UTime = UnityEngine.Time;
 
     public partial class RiderControlSystem
     {
         private const double kAutoRefreshMinSeconds = 240.0;      // auto-refresh every 4 min (real time)
-        private const double kAgeShowSecondsMaxSeconds = 3600.0;  // show Xm Ys until 1 hour, then switch to Xh Ym.
+        private const double kAgeShowSecondsMaxSeconds = 3600.0;  // legacy only; remove after Setting.cs stops calling GetStatusAgeText.
 
         private const string kNotReadyValue = "n/a";
 
         private static bool s_StatusRefreshRequested;
         private static bool s_StatusForceRefresh;
 
-        // NOTE: Must NOT be readonly (we assign to these).
+        // NOTE: Must NOT be readonly (assigned after snapshots).
         internal static double s_StatusLastSnapshotRealtime;
         internal static string s_StatusLastSnapshotClock = kNotReadyValue;
 
@@ -55,7 +55,7 @@ namespace RiderControl
         internal static int s_StatusHouseholdsMovingAway;
         internal static int s_StatusResidentsInMovingAwayHousehold;
 
-        // InfoView monthly passengers
+        // InfoView monthly passengers.
         internal static int s_InfoTaxiTourist;
         internal static int s_InfoTaxiCitizen;
         internal static int s_InfoBusTourist;
@@ -75,7 +75,7 @@ namespace RiderControl
         internal static int s_InfoTotalTourist;
         internal static int s_InfoTotalCitizen;
 
-        // Taxi requests
+        // Taxi requests.
         internal static int s_StatusReqStand;
         internal static int s_StatusReqCustomer;
         internal static int s_StatusReqOutside;
@@ -86,7 +86,7 @@ namespace RiderControl
         internal static int s_StatusReqOutsideSeekerHasResident;
         internal static int s_StatusReqOutsideSeekerIgnoreTaxi;
 
-        // Taxi fleet
+        // Taxi fleet.
         internal static int s_StatusTaxisTotal;
         internal static int s_StatusTaxiTransporting;
         internal static int s_StatusTaxiBoarding;
@@ -99,17 +99,17 @@ namespace RiderControl
         internal static int s_StatusTaxiDisabled;
         internal static int s_StatusTaxiWithDispatchBuffer;
 
-        // Passengers in taxis
+        // Passengers in taxis.
         internal static int s_StatusPassengerTotal;
         internal static int s_StatusPassengerHasResident;
         internal static int s_StatusPassengerIgnoreTaxi;
 
-        // Stands/depots
+        // Stands/depots.
         internal static int s_StatusTaxiStandsTotal;
         internal static int s_StatusTaxiDepotsTotal;
         internal static int s_StatusTaxiDepotsWithDispatchCenter;
 
-        // “Last update” counters written by Core.
+        // Last-update counters written by Core.
         internal static int s_StatusLastAppliedIgnoreTaxi;
         internal static int s_StatusLastSkippedCommuters;
         internal static int s_StatusLastSkippedTourists;
@@ -345,7 +345,9 @@ namespace RiderControl
 
                 if (SystemAPI.HasBuffer<Game.Simulation.ServiceDispatch>(taxiEntity))
                 {
-                    DynamicBuffer<Game.Simulation.ServiceDispatch> buf = SystemAPI.GetBuffer<Game.Simulation.ServiceDispatch>(taxiEntity);
+                    DynamicBuffer<Game.Simulation.ServiceDispatch> buf =
+                        SystemAPI.GetBuffer<Game.Simulation.ServiceDispatch>(taxiEntity);
+
                     if (buf.IsCreated && buf.Length > 0)
                         s_StatusTaxiWithDispatchBuffer++;
                 }
@@ -560,6 +562,13 @@ namespace RiderControl
         internal static string GetStatusLastStampText() =>
             string.IsNullOrEmpty(s_StatusLastSnapshotClock) ? kNotReadyValue : s_StatusLastSnapshotClock;
 
+        internal static bool IsStatusSnapshotStale(double maxAgeSeconds)
+        {
+            double age = GetStatusAgeSeconds();
+            return age < 0.0 || age > maxAgeSeconds;
+        }
+
+        // Compatibility only for old StatusSnapshotMeta code. New UI should show only GetStatusLastStampText().
         internal static double GetStatusAgeSeconds()
         {
             if (s_StatusLastSnapshotRealtime <= 0.0)
@@ -569,6 +578,7 @@ namespace RiderControl
             return Math.Max(0.0, now - s_StatusLastSnapshotRealtime);
         }
 
+        // Compatibility only for old StatusSnapshotMeta code. New UI should not display this.
         internal static string GetStatusAgeText()
         {
             double age = GetStatusAgeSeconds();
