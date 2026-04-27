@@ -85,7 +85,9 @@ namespace RiderControl
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableDebugLogging)), "Enable verbose taxi logging" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableDebugLogging)),
                     "When enabled, logs a periodic TaxiSummary line to help debug remaining taxi activity.\n" +
-                    "Disable for normal gameplay or it can hurt performance." },
+                    "Disable for normal gameplay or it can hurt performance.\n" +
+                    "Do not enable this for normal gameplay."
+                },
 
                 // ----- STATUS TAB -----
 

@@ -1,5 +1,5 @@
 // File: Mod.cs
-// Entry point for "Smart Traveler".
+// Entry point for "Cim Be Smart".
 
 namespace RiderControl
 {
@@ -15,10 +15,10 @@ namespace RiderControl
 
     public sealed class Mod : IMod
     {
-        public const string ModName = "Smart Traveler";
-        public const string ModId = "SmartTraveler";
-        public const string ModTag = "[ST]";
-        public const string ShortName = "Smart Traveler";
+        public const string ModName = "Cim Be Smart";
+        public const string ModId = "CimBeSmart";
+        public const string ModTag = "[CBS]";
+        public const string ShortName = "Cim Be Smart";
 
         private static bool s_BannerLogged;
 
