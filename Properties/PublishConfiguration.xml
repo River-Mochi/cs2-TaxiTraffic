@@ -4,35 +4,36 @@
 	<!--Name of the mod to display to players-->
 	<DisplayName Value="CimBeSmart" />
 	<!--Short description of the mod-->
-	<ShortDescription Value="Taxi use can be disabled for the city." />
+	<ShortDescription Value="Reduce taxi traffic and Cim use in the city." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="This is a long description" /-->
 	<LongDescription>
-### Cim Be Smart
-Helps reduce Taxi traffic by blocking taxi usage on the *rider (demand)* side.
- 
-### What it does
-- ✅ Prevents cims from choosing taxis by applying `IgnoreTaxi`
-- ✅ Un-sticks any cims already waiting for a taxi (taxi-lane + taxi-stand cases) so they re-route normally
-- ✅ Cancels dispatchable taxi requests so taxi dispatch/spawn activity drops over time
-- ✅ Optional: include/exclude **Commuters** and **Tourists**
- 
-### What to expect
-- Fewer taxi trips after a short settling period.
-- Existing taxis may still be visible briefly (finishing previous behavior), then traffic should decline.
- 
-### Safety / compatibility
-- Safe to remove anytime; works with new and existing cities.
-- Can be enabled/disabled in-game (turn off checkboxes [ ] to stop applying changes).
-- No Harmony or reflection-based patching; less likely to break on game patch day.
- 
-Tip: If you want to verify it’s working, enable “verbose taxi logging” temporarily and check the Status section in Options.
+		### Cim Be Smart
+		Helps cims make smarter travel choices by reducing taxi use, and fixing moving-away highway walkers.
 
-### Credits
-- RiverMochi: mod author
-- Noel/Noel2: testing, feedback
+		### What it does
+		- ✅ Prevents cims from choosing taxis by applying `IgnoreTaxi`
+		- ✅ Un-sticks any cims already waiting for a taxi (taxi-lane + taxi-stand cases) so they re-route normally
+		- ✅ Cancels dispatchable taxi requests so taxi dispatch/spawn activity drops over time
+		- ✅ Optional: include/exclude **Commuters** and **Tourists**
 
-</LongDescription>
+		### What to expect
+		- Fewer taxi trips after a short settling period.
+		- Existing taxis may still be visible briefly (finishing previous behavior), then traffic should decline.
+		- Can be enabled/disabled in Options menu. Set "citizens allowed to use taxis" to 100% to reset to vanilla; stops applying ignore taxi restrictions.
+
+		### Safety / compatibility
+		- Save-safe and safe to remove anytime; works with new and existing cities.
+		- Can be enabled/disabled in-game (turn off checkboxes [ ] to stop applying changes).
+		- No Harmony or reflection-based patching; less likely to break on game patch day.
+
+		Tip: If you want to verify it’s working, enable “verbose taxi logging” temporarily and check the Status section in Options.
+
+		### Credits
+		- RiverMochi: mod author
+		- Noel/Noel2: testing, feedback
+
+	</LongDescription>
 <!--Thumbnail-->
 <Thumbnail Value="Properties/Thumbnail.png" />
 	<!--Screenshot, can be set multiple times-->
