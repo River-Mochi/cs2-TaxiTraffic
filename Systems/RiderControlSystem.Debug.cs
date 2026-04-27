@@ -3,7 +3,6 @@
 
 namespace RiderControl
 {
-    using Colossal.Logging; // Level
     using Game.Citizens;    // Citizen, CitizenFlags, HouseholdMember, TravelPurpose
     using Game.City;        // StatisticType, PassengerType
     using Game.Companies;   // ResourceBuyer (breadcrumb)
@@ -142,7 +141,7 @@ namespace RiderControl
                     }
                 }
 
-                // Breadcrumb: which “economic/transactional” context is present?
+                // Breadcrumb: which economic/transactional context is present.
                 bool hasResourceBuyer = SystemAPI.HasComponent<ResourceBuyer>(passengerEntity);
 
                 string purpose = "none";
@@ -154,9 +153,8 @@ namespace RiderControl
 
                 TaxiFlags taxiFlags = SystemAPI.GetComponentRO<Taxi>(vehicle).ValueRO.m_State;
 
-                LogUtils.TryLog(
+                LogUtils.Debug(
                     Mod.s_Log,
-                    Level.Debug,
                     () =>
                         $"{Mod.ModTag} TaxiPassengerNow: passenger={passengerEntity.Index}:{passengerEntity.Version} " +
                         $"vehicle={vehicle.Index}:{vehicle.Version} taxiFlags={taxiFlags} " +
@@ -167,9 +165,8 @@ namespace RiderControl
 
             if (inTaxi > 0)
             {
-                LogUtils.TryLog(
+                LogUtils.Debug(
                     Mod.s_Log,
-                    Level.Debug,
                     () => $"{Mod.ModTag} TaxiPassengerNow: totalResidentsInTaxi={inTaxi} (examplesShown={examples}/{kDebugPassengerDetailMax})");
             }
         }

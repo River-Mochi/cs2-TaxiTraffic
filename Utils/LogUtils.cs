@@ -56,6 +56,11 @@ namespace RiderControl
             TryLog(log, Level.Info, messageFactory);
         }
 
+        public static void Debug(ILog log, Func<string> messageFactory)
+        {
+            TryLog(log, Level.Debug, messageFactory);
+        }
+
         public static void Warn(ILog log, Func<string> messageFactory, Exception? exception = null)
         {
             TryLog(log, Level.Warn, messageFactory, exception);

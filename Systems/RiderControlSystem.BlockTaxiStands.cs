@@ -11,7 +11,7 @@ namespace RiderControl
     using Game.Common;       // Deleted
     using Game.Pathfind;     // PathOwner, PathFlags
     using Game.Routes;       // TaxiStand, TaxiStandFlags, WaitingPassengers, RouteVehicle, CurrentRoute
-    // using Game.Simulation; // TaxiRequest, TaxiRequestType, DispatchedRequest (use full names or partial source-gen can fail)
+    // using Game.Simulation; // TaxiRequest, TaxiRequestType (use full names or partial source-gen can fail)
     using Game.Tools;        // Temp
     using Game.Vehicles;     // Taxi, TaxiFlags
     using Unity.Collections; // NativeParallelHashSet
@@ -97,10 +97,10 @@ namespace RiderControl
                 }
 
                 // Clear stand-level dispatched requests so taxis stop being repeatedly sent here.
-                if (SystemAPI.HasBuffer<Game.Simulation.DispatchedRequest>(standEntity))
+                if (SystemAPI.HasBuffer<Game.Routes.DispatchedRequest>(standEntity))
                 {
-                    DynamicBuffer<Game.Simulation.DispatchedRequest> requests =
-                        SystemAPI.GetBuffer<Game.Simulation.DispatchedRequest>(standEntity);
+                    DynamicBuffer<Game.Routes.DispatchedRequest> requests =
+                        SystemAPI.GetBuffer<Game.Routes.DispatchedRequest>(standEntity);
 
                     for (int i = 0; i < requests.Length; i++)
                     {
