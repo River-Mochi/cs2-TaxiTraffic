@@ -1,4 +1,5 @@
 // File: Utils/LogUtils.cs
+// version : 0.5.1
 // Purpose: popup-safe logging helpers for CS2 mods.
 // Based on River-Mochi shared CS2 utilities.
 
