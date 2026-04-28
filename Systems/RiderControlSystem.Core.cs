@@ -1,8 +1,8 @@
 // File: Systems/RiderControlSystem.Core.cs
 // Purpose: Demand-side taxi control (SAFE variant):
-// - Incrementally applies ResidentFlags.IgnoreTaxi for selected residents (batched)
-// - Unwinds taxi waiting states so cims don't freeze (interval-based)
-// - Taxi-stand demand block tick lives in RiderControlSystem.BlockTaxiStands.cs (Core doesn't own its interval)
+// - Uses a stable per-resident taxi permission slider
+// - Applies ResidentFlags.IgnoreTaxi only to residents outside the allowed taxi bucket
+// - Unwinds blocked residents from taxi waiting states so cims don't freeze
 // Notes:
 // - Never touch Deleted/Temp entities.
 // - Never use SystemAPI from static methods (Entities source-gen limitation).
@@ -10,11 +10,11 @@
 namespace RiderControl
 {
     using Game;
-    using Game.Citizens;        // HouseholdMember, CommuterHousehold, TouristHousehold
+    using Game.Citizens;        // Citizen, CitizenPseudoRandom, HouseholdMember, CommuterHousehold, TouristHousehold
     using Game.Common;          // Deleted
     using Game.Creatures;       // ResidentFlags, HumanCurrentLane, CreatureLaneFlags, RideNeeder
     using Game.Pathfind;        // PathOwner, PathFlags
-    using Game.Routes;          // TaxiStand, BoardingVehicle
+    using Game.Routes;          // TaxiStand, BoardingVehicle, Connected
     using Game.Tools;           // Temp
     using Game.Vehicles;        // Taxi
     using Unity.Collections;
@@ -26,27 +26,36 @@ namespace RiderControl
     {
     }
 
+    internal struct TaxiAllowedMark : IComponentData
+    {
+    }
+
     public partial class RiderControlSystem : GameSystemBase
     {
         // -----------------------
         // Knobs (perf + behavior)
         // -----------------------
 
-        // Batch size for applying/removing IgnoreTaxi each update (limits hitching in huge cities).
+        // Batch size for applying/removing eligibility marks each update (limits hitching in huge cities).
         private const int kMarkBatchPerUpdate = 2000;
 
         // Unstick taxi waiting states on an interval (not every frame).
         private const float kUnstickIntervalSeconds = 1.0f;
 
         // Verbose TaxiSummary log interval.
-        // increase this if log is too noisy and to prevent huge log files. 
+        // Increase this if log is too noisy and to prevent huge log files.
         private const float kDebugSummaryIntervalSeconds = 120.0f;
 
         // -----------------------
-        // Timers
+        // Timers / setting cache
         // -----------------------
 
         private float m_UnstickTimer;
+
+        private int m_LastResidentsAllowedToUseTaxis = int.MinValue;
+        private bool m_LastBlockCommuters;
+        private bool m_LastBlockTourists;
+        private bool m_TaxiEligibilityResetInProgress;
 
         protected override void OnCreate()
         {
@@ -72,9 +81,13 @@ namespace RiderControl
 
             m_UnstickTimer = 0f;
 
+            m_LastResidentsAllowedToUseTaxis = int.MinValue;
+            m_LastBlockCommuters = false;
+            m_LastBlockTourists = false;
+            m_TaxiEligibilityResetInProgress = false;
+
             ResetDebugOnCityLoaded();
             ResetStatusOnCityLoaded();
-            ResetBlockTaxiStandsOnCityLoaded(); // interval/timer lives in BlockTaxiStands.cs
 
             Enabled = true;
 
@@ -85,7 +98,7 @@ namespace RiderControl
 
         protected override void OnUpdate()
         {
-            var setting = Mod.Setting;
+            Setting? setting = Mod.Setting;
             if (setting is null)
             {
                 Enabled = false;
@@ -100,44 +113,53 @@ namespace RiderControl
             int clearedTaxiStandWaiting = 0;
             int clearedRideNeederLinks = 0;
 
-            int clearedTaxiStandWaitingPassengers = 0;
+            bool changed = DetectTaxiEligibilitySettingChange(setting);
+            if (changed)
+            {
+                m_TaxiEligibilityResetInProgress = true;
+            }
 
-            // -----------------------
-            // OFF: unwind in batches
-            // -----------------------
-            if (!setting.BlockTaxiUsage)
+            // Setting changes must clear old buckets before applying the new stable bucket.
+            if (m_TaxiEligibilityResetInProgress)
+            {
+                int resetCount = ResetTaxiEligibilityMarkersBatch();
+                if (resetCount > 0)
+                {
+                    TickStatusSnapshot();
+
+                    if (setting.EnableDebugLogging)
+                        TickDebugLogging(setting, kDebugSummaryIntervalSeconds);
+
+                    return;
+                }
+
+                m_TaxiEligibilityResetInProgress = false;
+            }
+
+            // 100% is the clean OFF/vanilla-style state for this mod's taxi restriction.
+            if (setting.ResidentsAllowedToUseTaxis >= Setting.MaxResidentsAllowedToUseTaxis)
             {
                 UnmarkIgnoreTaxiBatch(out _);
-
-                // If the stand toggle is on but main feature is off, do nothing (and reset its timer).
-                TickBlockTaxiStandDemandInterval(enabled: false);
 
                 TickStatusSnapshot();
 
                 if (setting.EnableDebugLogging)
-                    TickDebugLogging(setting, kDebugSummaryIntervalSeconds, 0);
+                    TickDebugLogging(setting, kDebugSummaryIntervalSeconds);
 
                 return;
             }
 
-            // -----------------------
-            // ON: apply + maintain
-            // -----------------------
-            ApplyIgnoreTaxiBatch(setting, out appliedIgnoreTaxi, out skippedCommuters, out skippedTourists);
+            ApplyTaxiEligibilityBatch(setting, out appliedIgnoreTaxi, out skippedCommuters, out skippedTourists);
 
-            // Unstick pass (interval-based)
+            // Unstick pass (interval-based).
             m_UnstickTimer += UTime.unscaledDeltaTime;
             if (m_UnstickTimer >= kUnstickIntervalSeconds)
             {
                 m_UnstickTimer = 0f;
 
-                UnstickTaxiLaneWaiters(out clearedTaxiLaneWaiting, out clearedRideNeederLinks);
-                UnstickTaxiQueues(out clearedTaxiStandWaiting);
+                UnstickTaxiLaneWaiters(setting, out clearedTaxiLaneWaiting, out clearedRideNeederLinks);
+                UnstickTaxiQueues(setting, out clearedTaxiStandWaiting);
             }
-
-            // Taxi-stand demand block (interval lives in BlockTaxiStands.cs).
-            clearedTaxiStandWaitingPassengers =
-                TickBlockTaxiStandDemandInterval(enabled: setting.BlockTaxiStandDemand);
 
             // Status fields (defined in Status partial).
             s_StatusLastAppliedIgnoreTaxi = appliedIgnoreTaxi;
@@ -150,18 +172,84 @@ namespace RiderControl
             TickStatusSnapshot();
 
             if (setting.EnableDebugLogging)
-                TickDebugLogging(setting, kDebugSummaryIntervalSeconds, clearedTaxiStandWaitingPassengers);
+                TickDebugLogging(setting, kDebugSummaryIntervalSeconds);
         }
 
         // -----------------------
-        // Helpers
+        // Marker / eligibility
         // -----------------------
+
+        private bool DetectTaxiEligibilitySettingChange(Setting setting)
+        {
+            int allowed = setting.ResidentsAllowedToUseTaxis;
+
+            bool changed =
+                m_LastResidentsAllowedToUseTaxis != allowed ||
+                m_LastBlockCommuters != setting.BlockCommuters ||
+                m_LastBlockTourists != setting.BlockTourists;
+
+            if (!changed)
+                return false;
+
+            m_LastResidentsAllowedToUseTaxis = allowed;
+            m_LastBlockCommuters = setting.BlockCommuters;
+            m_LastBlockTourists = setting.BlockTourists;
+
+            return true;
+        }
+
+        private int ResetTaxiEligibilityMarkersBatch()
+        {
+            int resetCount = 0;
+
+            using NativeList<Entity> blockedMarks = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> allowedMarks = new NativeList<Entity>(Allocator.Temp);
+
+            foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
+                         .Query<RefRW<CreatureResident>>()
+                         .WithAll<IgnoreTaxiMark>()
+                         .WithNone<Deleted, Temp>()
+                         .WithEntityAccess())
+            {
+                resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
+                blockedMarks.Add(entity);
+
+                resetCount++;
+                if (resetCount >= kMarkBatchPerUpdate)
+                    break;
+            }
+
+            if (resetCount < kMarkBatchPerUpdate)
+            {
+                foreach ((RefRO<CreatureResident> _, Entity entity) in SystemAPI
+                             .Query<RefRO<CreatureResident>>()
+                             .WithAll<TaxiAllowedMark>()
+                             .WithNone<Deleted, Temp>()
+                             .WithEntityAccess())
+                {
+                    allowedMarks.Add(entity);
+
+                    resetCount++;
+                    if (resetCount >= kMarkBatchPerUpdate)
+                        break;
+                }
+            }
+
+            if (blockedMarks.Length > 0)
+                EntityManager.RemoveComponent<IgnoreTaxiMark>(blockedMarks.AsArray());
+
+            if (allowedMarks.Length > 0)
+                EntityManager.RemoveComponent<TaxiAllowedMark>(allowedMarks.AsArray());
+
+            return resetCount;
+        }
 
         private void UnmarkIgnoreTaxiBatch(out int unmarkedCount)
         {
             unmarkedCount = 0;
 
             using NativeList<Entity> toUnmark = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> allowedMarks = new NativeList<Entity>(Allocator.Temp);
 
             int processed = 0;
             foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
@@ -178,14 +266,33 @@ namespace RiderControl
                     break;
             }
 
+            if (processed < kMarkBatchPerUpdate)
+            {
+                foreach ((RefRO<CreatureResident> _, Entity entity) in SystemAPI
+                             .Query<RefRO<CreatureResident>>()
+                             .WithAll<TaxiAllowedMark>()
+                             .WithNone<Deleted, Temp>()
+                             .WithEntityAccess())
+                {
+                    allowedMarks.Add(entity);
+
+                    processed++;
+                    if (processed >= kMarkBatchPerUpdate)
+                        break;
+                }
+            }
+
             if (toUnmark.Length > 0)
             {
                 EntityManager.RemoveComponent<IgnoreTaxiMark>(toUnmark.AsArray());
                 unmarkedCount = toUnmark.Length;
             }
+
+            if (allowedMarks.Length > 0)
+                EntityManager.RemoveComponent<TaxiAllowedMark>(allowedMarks.AsArray());
         }
 
-        private void ApplyIgnoreTaxiBatch(
+        private void ApplyTaxiEligibilityBatch(
             Setting setting,
             out int applied,
             out int skippedCommuters,
@@ -195,70 +302,126 @@ namespace RiderControl
             skippedCommuters = 0;
             skippedTourists = 0;
 
-            using NativeList<Entity> toMark = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> toBlock = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> toAllow = new NativeList<Entity>(Allocator.Temp);
 
             int processed = 0;
             foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<CreatureResident>>()
-                         .WithNone<IgnoreTaxiMark, Deleted, Temp>()
+                         .WithNone<IgnoreTaxiMark, TaxiAllowedMark, Deleted, Temp>()
                          .WithEntityAccess())
             {
-                // Count every scanned resident, including skipped commuter/tourist residents.
                 processed++;
 
-                // Skip commuter/tourist households if those blocks are OFF.
-                Entity citizenEntity = resident.ValueRO.m_Citizen;
-                if (citizenEntity != Entity.Null && SystemAPI.HasComponent<HouseholdMember>(citizenEntity))
+                bool shouldBlock = ShouldResidentIgnoreTaxiBySettings(
+                    setting,
+                    resident.ValueRO,
+                    out bool skippedCommuter,
+                    out bool skippedTourist);
+
+                if (skippedCommuter)
+                    skippedCommuters++;
+
+                if (skippedTourist)
+                    skippedTourists++;
+
+                if (shouldBlock)
                 {
-                    Entity household =
-                        SystemAPI.GetComponentRO<HouseholdMember>(citizenEntity).ValueRO.m_Household;
-
-                    if (household != Entity.Null)
-                    {
-                        if (!setting.BlockCommuters && SystemAPI.HasComponent<CommuterHousehold>(household))
-                        {
-                            skippedCommuters++;
-                            if (processed >= kMarkBatchPerUpdate)
-                                break;
-
-                            continue;
-                        }
-
-                        if (!setting.BlockTourists && SystemAPI.HasComponent<TouristHousehold>(household))
-                        {
-                            skippedTourists++;
-                            if (processed >= kMarkBatchPerUpdate)
-                                break;
-
-                            continue;
-                        }
-                    }
+                    resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
+                    toBlock.Add(entity);
+                    applied++;
                 }
-
-                // Apply IgnoreTaxi and mark so we never rescan the whole population.
-                resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
-                toMark.Add(entity);
-                applied++;
+                else
+                {
+                    // Mark as checked so the batch can progress through very large populations.
+                    toAllow.Add(entity);
+                }
 
                 if (processed >= kMarkBatchPerUpdate)
                     break;
             }
 
-            if (toMark.Length > 0)
-                EntityManager.AddComponent<IgnoreTaxiMark>(toMark.AsArray());
+            if (toBlock.Length > 0)
+                EntityManager.AddComponent<IgnoreTaxiMark>(toBlock.AsArray());
+
+            if (toAllow.Length > 0)
+                EntityManager.AddComponent<TaxiAllowedMark>(toAllow.AsArray());
         }
 
-        private void UnstickTaxiLaneWaiters(out int clearedTaxiLaneWaiting, out int clearedRideNeederLinks)
+        private bool ShouldResidentIgnoreTaxiBySettings(
+            Setting setting,
+            CreatureResident resident,
+            out bool skippedCommuter,
+            out bool skippedTourist)
+        {
+            skippedCommuter = false;
+            skippedTourist = false;
+
+            int allowedPercent = setting.ResidentsAllowedToUseTaxis;
+
+            if (allowedPercent >= Setting.MaxResidentsAllowedToUseTaxis)
+                return false;
+
+            Entity citizenEntity = resident.m_Citizen;
+
+            if (citizenEntity != Entity.Null && SystemAPI.HasComponent<HouseholdMember>(citizenEntity))
+            {
+                Entity household =
+                    SystemAPI.GetComponentRO<HouseholdMember>(citizenEntity).ValueRO.m_Household;
+
+                if (household != Entity.Null)
+                {
+                    if (!setting.BlockCommuters && SystemAPI.HasComponent<CommuterHousehold>(household))
+                    {
+                        skippedCommuter = true;
+                        return false;
+                    }
+
+                    if (!setting.BlockTourists && SystemAPI.HasComponent<TouristHousehold>(household))
+                    {
+                        skippedTourist = true;
+                        return false;
+                    }
+                }
+            }
+
+            if (allowedPercent <= Setting.MinResidentsAllowedToUseTaxis)
+                return true;
+
+            if (citizenEntity == Entity.Null || !SystemAPI.HasComponent<Citizen>(citizenEntity))
+            {
+                // No citizen component means no stable citizen random bucket; keep strong-block behavior.
+                return true;
+            }
+
+            Citizen citizen = SystemAPI.GetComponentRO<Citizen>(citizenEntity).ValueRO;
+
+            // Stable bucket: same citizen should stay in the same taxi-allowed bucket after reload.
+            Unity.Mathematics.Random random = citizen.GetPseudoRandom(CitizenPseudoRandom.CarProbability);
+            uint roll = random.NextUInt(100u);
+
+            return roll >= (uint)allowedPercent;
+        }
+
+        // -----------------------
+        // Taxi waiting cleanup
+        // -----------------------
+
+        private void UnstickTaxiLaneWaiters(
+            Setting setting,
+            out int clearedTaxiLaneWaiting,
+            out int clearedRideNeederLinks)
         {
             clearedTaxiLaneWaiting = 0;
             clearedRideNeederLinks = 0;
 
-            // NOTE: Not all RideNeeder entities are guaranteed to be residents; so we keep this broad,
-            // but if the entity is a resident we also enforce IgnoreTaxi "when it matters" (no global sweep).
+            using NativeList<Entity> toBlockMark = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> toRemoveAllowedMark = new NativeList<Entity>(Allocator.Temp);
+
             foreach ((RefRW<RideNeeder> rn,
                       RefRW<HumanCurrentLane> lane,
                       RefRW<PathOwner> pathOwner,
-                      Entity e) in SystemAPI
+                      Entity entity) in SystemAPI
                          .Query<RefRW<RideNeeder>, RefRW<HumanCurrentLane>, RefRW<PathOwner>>()
                          .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
@@ -268,13 +431,23 @@ namespace RiderControl
                 if ((lane.ValueRO.m_Flags & taxiWaitMask) != taxiWaitMask)
                     continue;
 
-                // Enforce IgnoreTaxi for any resident we touch here (cheap + targeted).
-                if (SystemAPI.HasComponent<CreatureResident>(e))
-                {
-                    RefRW<CreatureResident> resident = SystemAPI.GetComponentRW<CreatureResident>(e);
-                    if ((resident.ValueRO.m_Flags & ResidentFlags.IgnoreTaxi) == 0)
-                        resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
-                }
+                if (!SystemAPI.HasComponent<CreatureResident>(entity))
+                    continue;
+
+                RefRW<CreatureResident> resident = SystemAPI.GetComponentRW<CreatureResident>(entity);
+
+                if (!ShouldResidentIgnoreTaxiBySettings(setting, resident.ValueRO, out _, out _))
+                    continue;
+
+                // Enforce IgnoreTaxi only for the blocked resident being unstuck.
+                if ((resident.ValueRO.m_Flags & ResidentFlags.IgnoreTaxi) == 0)
+                    resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
+
+                if (!SystemAPI.HasComponent<IgnoreTaxiMark>(entity))
+                    toBlockMark.Add(entity);
+
+                if (SystemAPI.HasComponent<TaxiAllowedMark>(entity))
+                    toRemoveAllowedMark.Add(entity);
 
                 lane.ValueRW.m_Flags &= ~taxiWaitMask;
                 lane.ValueRW.m_QueueEntity = Entity.Null;
@@ -290,40 +463,51 @@ namespace RiderControl
 
                 clearedTaxiLaneWaiting++;
             }
+
+            if (toRemoveAllowedMark.Length > 0)
+                EntityManager.RemoveComponent<TaxiAllowedMark>(toRemoveAllowedMark.AsArray());
+
+            if (toBlockMark.Length > 0)
+                EntityManager.AddComponent<IgnoreTaxiMark>(toBlockMark.AsArray());
         }
 
-        private void UnstickTaxiQueues(out int clearedTaxiStandWaiting)
+        private void UnstickTaxiQueues(Setting setting, out int clearedTaxiStandWaiting)
         {
             clearedTaxiStandWaiting = 0;
 
+            using NativeList<Entity> toBlockMark = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> toRemoveAllowedMark = new NativeList<Entity>(Allocator.Temp);
+
             foreach ((RefRW<CreatureResident> resident,
                       RefRW<HumanCurrentLane> lane,
-                      RefRW<PathOwner> pathOwner) in SystemAPI
+                      RefRW<PathOwner> pathOwner,
+                      Entity entity) in SystemAPI
                          .Query<RefRW<CreatureResident>, RefRW<HumanCurrentLane>, RefRW<PathOwner>>()
-                         .WithNone<Deleted, Temp>())
+                         .WithNone<Deleted, Temp>()
+                         .WithEntityAccess())
             {
                 if ((resident.ValueRO.m_Flags & ResidentFlags.WaitingTransport) == 0)
                     continue;
 
-                Entity q = lane.ValueRO.m_QueueEntity;
-                if (q == Entity.Null)
+                Entity queueEntity = lane.ValueRO.m_QueueEntity;
+                if (queueEntity == Entity.Null)
                     continue;
 
-                bool isTaxiQueue = SystemAPI.HasComponent<TaxiStand>(q);
-
-                if (!isTaxiQueue && SystemAPI.HasComponent<BoardingVehicle>(q))
-                {
-                    BoardingVehicle bv = SystemAPI.GetComponentRO<BoardingVehicle>(q).ValueRO;
-                    if (bv.m_Vehicle != Entity.Null && SystemAPI.HasComponent<Taxi>(bv.m_Vehicle))
-                        isTaxiQueue = true;
-                }
-
-                if (!isTaxiQueue)
+                if (!IsTaxiQueueEntity(queueEntity))
                     continue;
 
-                // Enforce IgnoreTaxi for the resident we are un-sticking (targeted, no sweep).
+                if (!ShouldResidentIgnoreTaxiBySettings(setting, resident.ValueRO, out _, out _))
+                    continue;
+
+                // Enforce IgnoreTaxi for the resident being unstuck (targeted, no citywide sweep).
                 if ((resident.ValueRO.m_Flags & ResidentFlags.IgnoreTaxi) == 0)
                     resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
+
+                if (!SystemAPI.HasComponent<IgnoreTaxiMark>(entity))
+                    toBlockMark.Add(entity);
+
+                if (SystemAPI.HasComponent<TaxiAllowedMark>(entity))
+                    toRemoveAllowedMark.Add(entity);
 
                 resident.ValueRW.m_Flags &= ~ResidentFlags.WaitingTransport;
                 lane.ValueRW.m_QueueEntity = Entity.Null;
@@ -334,6 +518,52 @@ namespace RiderControl
 
                 clearedTaxiStandWaiting++;
             }
+
+            if (toRemoveAllowedMark.Length > 0)
+                EntityManager.RemoveComponent<TaxiAllowedMark>(toRemoveAllowedMark.AsArray());
+
+            if (toBlockMark.Length > 0)
+                EntityManager.AddComponent<IgnoreTaxiMark>(toBlockMark.AsArray());
+        }
+
+        private bool IsTaxiQueueEntity(Entity queueEntity)
+        {
+            if (queueEntity == Entity.Null)
+                return false;
+
+            if (IsDirectTaxiQueueEntity(queueEntity))
+                return true;
+
+            // Vanilla route waiting can point at a Connected waypoint first.
+            for (int i = 0; i < 3; i++)
+            {
+                if (!SystemAPI.HasComponent<Connected>(queueEntity))
+                    return false;
+
+                Entity connected = SystemAPI.GetComponentRO<Connected>(queueEntity).ValueRO.m_Connected;
+                if (connected == Entity.Null || connected == queueEntity)
+                    return false;
+
+                if (IsDirectTaxiQueueEntity(connected))
+                    return true;
+
+                queueEntity = connected;
+            }
+
+            return false;
+        }
+
+        private bool IsDirectTaxiQueueEntity(Entity queueEntity)
+        {
+            if (SystemAPI.HasComponent<TaxiStand>(queueEntity))
+                return true;
+
+            if (!SystemAPI.HasComponent<BoardingVehicle>(queueEntity))
+                return false;
+
+            BoardingVehicle boardingVehicle = SystemAPI.GetComponentRO<BoardingVehicle>(queueEntity).ValueRO;
+            return boardingVehicle.m_Vehicle != Entity.Null &&
+                   SystemAPI.HasComponent<Taxi>(boardingVehicle.m_Vehicle);
         }
     }
 }
