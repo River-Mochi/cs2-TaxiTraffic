@@ -7,11 +7,13 @@ namespace RiderControl
     using Colossal.IO.AssetDatabase;
     using Game.Modding;
     using Game.Settings;
+    using Game.UI;
     using System;
     using UnityEngine;
 
 #if DEBUG
     [FileLocation("ModsSettings/CimBeSmart/CimBeSmart")]
+    [SettingsUITabOrder(ActionsTab, StatusTab, AboutTab)]
     [SettingsUIGroupOrder(
         BehaviorGroup,
         CityScanGroup,
@@ -34,6 +36,7 @@ namespace RiderControl
     )]
 #else
     [FileLocation("ModsSettings/CimBeSmart/CimBeSmart")]
+    [SettingsUITabOrder(ActionsTab, StatusTab, AboutTab)]
     [SettingsUIGroupOrder(
         BehaviorGroup,
         CityScanGroup,
@@ -71,12 +74,17 @@ namespace RiderControl
         public const string AboutInfoGroup = "Info";
         public const string AboutLinksGroup = "Support Links";
 
-        private const string UrlParadox =
-            "https://mods.paradoxplaza.com/authors/River-mochi/cities_skylines_2?games=cities_skylines_2&orderBy=desc&sortBy=best&time=alltime";
+        internal const int TaxiAllowedPercentMin = 0;
+        internal const int TaxiAllowedPercentMax = 100;
+        internal const int TaxiAllowedPercentStep = 25;
+        internal const int TaxiAllowedPercentDefault = 0;
 
+        private const string UrlParadox =  
+            "https://mods.paradoxplaza.com/authors/River-mochi/cities_skylines_2?games=cities_skylines_2&orderBy=desc&sortBy=best&time=alltime";
+ 
         private const string UrlDiscord = "https://discord.gg/HTav7ARPs2";
 
-        private bool m_BlockTaxiUsage = true;
+        private int m_ResidentsAllowedToUseTaxis = TaxiAllowedPercentDefault;
 
         public Setting(IMod mod) : base(mod)
         {
@@ -85,45 +93,30 @@ namespace RiderControl
 
         // ---- Actions ----
 
+        [SettingsUISlider(
+            min = TaxiAllowedPercentMin,
+            max = TaxiAllowedPercentMax,
+            step = TaxiAllowedPercentStep,
+            scalarMultiplier = 1,
+            unit = Unit.kPercentage)]
         [SettingsUISection(ActionsTab, BehaviorGroup)]
-        public bool BlockTaxiUsage
+        [SettingsUISetter(typeof(Setting), nameof(OnTaxiEligibilitySliderChanged))]
+        public int ResidentsAllowedToUseTaxis
         {
-            get
-            {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead(); // Status update on Options-open.
-                return m_BlockTaxiUsage;
-            }
-            set
-            {
-                m_BlockTaxiUsage = value;
-
-                if (!m_BlockTaxiUsage)
-                {
-                    BlockTaxiStandDemand = false;
-                    BlockCommuters = false;
-                    BlockTourists = false;
-                }
-            }
+            get => m_ResidentsAllowedToUseTaxis;
+            set => m_ResidentsAllowedToUseTaxis = SnapTaxiAllowedPercent(value);
         }
 
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsTaxiBlockingOff))]
         [SettingsUISection(ActionsTab, BehaviorGroup)]
+        [SettingsUISetter(typeof(Setting), nameof(OnTaxiEligibilityToggleChanged))]
         public bool BlockCommuters
         {
             get; set;
         }
 
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsTaxiBlockingOff))]
         [SettingsUISection(ActionsTab, BehaviorGroup)]
+        [SettingsUISetter(typeof(Setting), nameof(OnTaxiEligibilityToggleChanged))]
         public bool BlockTourists
-        {
-            get; set;
-        }
-
-        // Alpha phase: disables TaxiStand-driven taxi demand by clearing TaxiStand WaitingPassengers.
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsTaxiBlockingOff))]
-        [SettingsUISection(ActionsTab, BehaviorGroup)]
-        public bool BlockTaxiStandDemand
         {
             get; set;
         }
@@ -192,20 +185,14 @@ namespace RiderControl
 
         public override void SetDefaults()
         {
-            BlockTaxiUsage = true;
+            ResidentsAllowedToUseTaxis = TaxiAllowedPercentDefault;
+
             BlockCommuters = true;
             BlockTourists = true;
-            BlockTaxiStandDemand = true;
 
             FixMovingAwayHighwayWalkers = false;
 
             EnableDebugLogging = false;
-        }
-
-        // Used by SettingsUIHideByCondition.
-        public bool IsTaxiBlockingOff()
-        {
-            return !BlockTaxiUsage;
         }
 
         public bool IsStatusReady()
@@ -217,5 +204,26 @@ namespace RiderControl
         {
             return !IsStatusReady();
         }
+
+        // SettingsUISetter callback: refresh Status after slider changes.
+        private void OnTaxiEligibilitySliderChanged(int _)
+        {
+            RiderControlSystem.RequestStatusRefresh(force: true);
+        }
+
+        // SettingsUISetter callback: refresh Status after commuter/tourist filter changes.
+        private void OnTaxiEligibilityToggleChanged(bool _)
+        {
+            RiderControlSystem.RequestStatusRefresh(force: true);
+        }
+
+        private static int SnapTaxiAllowedPercent(int value)
+        {
+            int clamped = Math.Max(TaxiAllowedPercentMin, Math.Min(TaxiAllowedPercentMax, value));
+            int snapped = ((clamped + (TaxiAllowedPercentStep / 2)) / TaxiAllowedPercentStep) * TaxiAllowedPercentStep;
+
+            return Math.Max(TaxiAllowedPercentMin, Math.Min(TaxiAllowedPercentMax, snapped));
+        }
     }
 }
+1

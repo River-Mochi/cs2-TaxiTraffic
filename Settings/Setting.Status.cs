@@ -97,7 +97,8 @@ namespace RiderControl
                     nameof(StatusMonthlyTotal),
                     RiderControlSystem.s_StatusWaitingTransportTotal,
                     RiderControlSystem.s_InfoTotalTourist,
-                    RiderControlSystem.s_InfoTotalCitizen);
+                    RiderControlSystem.s_InfoTotalCitizen,
+                    RiderControlSystem.GetStatusLastStampText());
             }
         }
 
@@ -148,7 +149,8 @@ namespace RiderControl
                     nameof(StatusRequests),
                     RiderControlSystem.s_StatusReqCustomer,
                     RiderControlSystem.s_StatusReqOutside,
-                    RiderControlSystem.s_StatusReqNone);
+                    RiderControlSystem.s_StatusReqNone,
+                    RiderControlSystem.s_StatusReqStand);
             }
         }
 
