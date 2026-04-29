@@ -3,6 +3,7 @@
 
 namespace RiderControl
 {
+    using CS2Shared.RiverMochi; // LogUtils
     using Game.Citizens;    // Citizen, CitizenFlags, HouseholdMember, TravelPurpose
     using Game.City;        // StatisticType, PassengerType
     using Game.Companies;   // ResourceBuyer (breadcrumb)

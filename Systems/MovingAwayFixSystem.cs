@@ -4,6 +4,7 @@
 
 namespace RiderControl
 {
+    using CS2Shared.RiverMochi;     // LogUtils
     using Game;
     using Game.Agents;              // MovingAway (on Household)
     using Game.Citizens;            // HouseholdMember
