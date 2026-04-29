@@ -137,7 +137,7 @@ namespace RiderControl
             }
 
             // 100% is the clean OFF/vanilla-style state for this mod's taxi restriction.
-            if (setting.ResidentsAllowedToUseTaxis >= Setting.MaxResidentsAllowedToUseTaxis)
+            if (setting.ResidentsAllowedToUseTaxis >= Setting.TaxiAllowedPercentMax)
             {
                 UnmarkIgnoreTaxiBatch(out _);
 
@@ -308,7 +308,8 @@ namespace RiderControl
             int processed = 0;
             foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<CreatureResident>>()
-                         .WithNone<IgnoreTaxiMark, TaxiAllowedMark, Deleted, Temp>()
+                         .WithNone<IgnoreTaxiMark, TaxiAllowedMark, Deleted>()
+                         .WithNone<Temp>()
                          .WithEntityAccess())
             {
                 processed++;
@@ -359,7 +360,7 @@ namespace RiderControl
 
             int allowedPercent = setting.ResidentsAllowedToUseTaxis;
 
-            if (allowedPercent >= Setting.MaxResidentsAllowedToUseTaxis)
+            if (allowedPercent >= Setting.TaxiAllowedPercentMax)
                 return false;
 
             Entity citizenEntity = resident.m_Citizen;
@@ -385,7 +386,7 @@ namespace RiderControl
                 }
             }
 
-            if (allowedPercent <= Setting.MinResidentsAllowedToUseTaxis)
+            if (allowedPercent <= Setting.TaxiAllowedPercentMin)
                 return true;
 
             if (citizenEntity == Entity.Null || !SystemAPI.HasComponent<Citizen>(citizenEntity))

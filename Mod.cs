@@ -3,15 +3,16 @@
 
 namespace RiderControl
 {
-    using Colossal.IO.AssetDatabase;
-    using Colossal.Localization;
-    using Colossal.Logging;
-    using Game;
-    using Game.Modding;
-    using Game.SceneFlow;
-    using Game.Simulation;
-    using System;
-    using System.Reflection;
+    using Colossal.IO.AssetDatabase; // AssetDatabase
+    using Colossal.Localization;     // LocalizationManager
+    using Colossal.Logging;          // ILog, LogManager
+    using CS2Shared.RiverMochi;      // LogUtils, ShellOpen
+    using Game;                      // UpdateSystem
+    using Game.Modding;              // IMod
+    using Game.SceneFlow;            // GameManager
+    using Game.Simulation;           // ResidentAISystem, taxi/ride systems
+    using System;                    // Exception
+    using System.Reflection;         // For Assembly version number
 
     public sealed class Mod : IMod
     {
@@ -35,6 +36,9 @@ namespace RiderControl
 
         public void OnLoad(UpdateSystem updateSystem)
         {
+            LogUtils.Configure(ModId);
+            ShellOpen.Configure(s_Log, ModId, ModTag);
+
             if (!s_BannerLogged)
             {
                 s_BannerLogged = true;
@@ -84,6 +88,7 @@ namespace RiderControl
 
             try
             {
+                // Locale registration comes first so Options UI can resolve labels at registration.
                 setting.RegisterInOptionsUI();
             }
             catch (Exception ex)
@@ -95,7 +100,7 @@ namespace RiderControl
                     exception: ex);
             }
 
-            // Register systems.
+            // Register systems after settings are loaded.
             updateSystem.UpdateBefore<MovingAwayFixSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateAfter<RiderControlSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateBefore<RiderControlSystem, TaxiDispatchSystem>(SystemUpdatePhase.GameSimulation);
