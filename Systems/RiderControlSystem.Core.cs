@@ -9,6 +9,7 @@
 
 namespace RiderControl
 {
+    using CS2Shared.RiverMochi; // LogUtils
     using Game;
     using Game.Citizens;        // Citizen, CitizenPseudoRandom, HouseholdMember, CommuterHousehold, TouristHousehold
     using Game.Common;          // Deleted
@@ -21,14 +22,6 @@ namespace RiderControl
     using Unity.Entities;
     using CreatureResident = Game.Creatures.Resident;
     using UTime = UnityEngine.Time;
-
-    internal struct IgnoreTaxiMark : IComponentData
-    {
-    }
-
-    internal struct TaxiAllowedMark : IComponentData
-    {
-    }
 
     public partial class RiderControlSystem : GameSystemBase
     {
