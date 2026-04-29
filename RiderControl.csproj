@@ -83,7 +83,6 @@
 		<Compile Include="..\CS2-Shared-RiverMochi\Utils\LocaleUtils.cs" Link="Utils\LocaleUtils.cs" />
 		<Compile Include="..\CS2-Shared-RiverMochi\Utils\LogUtils.cs" Link="Utils\LogUtils.cs" />
 		<Compile Include="..\CS2-Shared-RiverMochi\Utils\ShellOpen.cs" Link="Utils\ShellOpen.cs" />
-		<Compile Include="Scripts\Sync-SharedDotfiles.ps1" />
 	</ItemGroup>
 
 </Project>
