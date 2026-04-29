@@ -12,7 +12,7 @@ namespace RiderControl
     using Game.SceneFlow;            // GameManager
     using Game.Simulation;           // ResidentAISystem, taxi/ride systems
     using System;                    // Exception
-    using System.Reflection;         // For Assembly version number
+    using System.Reflection;         // Assembly version number
 
     public sealed class Mod : IMod
     {
@@ -36,6 +36,7 @@ namespace RiderControl
 
         public void OnLoad(UpdateSystem updateSystem)
         {
+            // Shared helpers need the mod ID so fallback logs still use CimBeSmart.log.
             LogUtils.Configure(ModId);
             ShellOpen.Configure(s_Log, ModId, ModTag);
 
@@ -50,6 +51,7 @@ namespace RiderControl
 
             try
             {
+                // Add locale text before Options UI registration; the UI looks up these keys when it builds the page.
                 LocalizationManager? lm = GameManager.instance?.localizationManager;
                 if (lm != null)
                 {
@@ -74,6 +76,7 @@ namespace RiderControl
 
             try
             {
+                // Saved user settings replace defaults after locale keys exist.
                 Setting defaults = new Setting(this);
                 AssetDatabase.global.LoadSettings(ModId, setting, defaults, userSetting: true);
             }
@@ -88,7 +91,7 @@ namespace RiderControl
 
             try
             {
-                // Locale registration comes first so Options UI can resolve labels at registration.
+                // Locale setup before register so that Options UI can use localized text.
                 setting.RegisterInOptionsUI();
             }
             catch (Exception ex)
@@ -100,8 +103,10 @@ namespace RiderControl
                     exception: ex);
             }
 
-            // Register systems after settings are loaded.
+            // Run the fix before vanilla resident AI updates moving-away behavior.
             updateSystem.UpdateBefore<MovingAwayFixSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
+
+            // Run main rider control after resident AI, then before taxi and ride-need systems can act on ride decisions.
             updateSystem.UpdateAfter<RiderControlSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateBefore<RiderControlSystem, TaxiDispatchSystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateBefore<RiderControlSystem, RideNeederSystem>(SystemUpdatePhase.GameSimulation);
