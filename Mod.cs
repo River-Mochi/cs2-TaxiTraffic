@@ -103,9 +103,6 @@ namespace RiderControl
                     exception: ex);
             }
 
-            // Run the fix before vanilla resident AI updates moving-away behavior.
-            updateSystem.UpdateBefore<MovingAwayFixSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
-
             // Run main rider control after resident AI, then before taxi and ride-need systems can act on ride decisions.
             updateSystem.UpdateAfter<RiderControlSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateBefore<RiderControlSystem, TaxiDispatchSystem>(SystemUpdatePhase.GameSimulation);

@@ -15,12 +15,6 @@ namespace RiderControl
 
     public partial class RiderControlSystem
     {
-#if DEBUG
-        // Used by MovingAwayFixSystem advanced debug.
-        internal static int s_DebugLastMovingAwayFixCleared;
-        internal static int s_DebugTotalMovingAwayFixCleared;
-#endif
-
         private const int kDebugPassengerDetailMax = 8;
 
         // Verbose logging is intentionally slow; logs get huge very fast.
@@ -35,10 +29,6 @@ namespace RiderControl
         {
             m_DebugTimerSeconds = 0f;
 
-#if DEBUG
-            s_DebugLastMovingAwayFixCleared = 0;
-            s_DebugTotalMovingAwayFixCleared = 0;
-#endif
         }
 
         private void TickDebugLogging(Setting setting, float intervalSeconds)

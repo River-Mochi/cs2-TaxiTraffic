@@ -11,7 +11,7 @@ namespace RiderControl
 {
     using CS2Shared.RiverMochi; // LogUtils
     using Game;
-    using Game.Citizens;        // Citizen, CitizenPseudoRandom, HouseholdMember, CommuterHousehold, TouristHousehold
+    using Game.Citizens;        // Citizen, HouseholdMember, CommuterHousehold, TouristHousehold
     using Game.Common;          // Deleted
     using Game.Creatures;       // ResidentFlags, HumanCurrentLane, CreatureLaneFlags, RideNeeder
     using Game.Pathfind;        // PathOwner, PathFlags
@@ -38,6 +38,10 @@ namespace RiderControl
         // Verbose TaxiSummary log interval.
         // Increase this if log is too noisy and to prevent huge log files.
         private const float kDebugSummaryIntervalSeconds = 120.0f;
+
+        // Mod-local salt for stable taxi eligibility buckets.
+        // This keeps the slider independent from vanilla's own pseudo-random "reasons".
+        private const uint kTaxiEligibilityHashSalt = 0x54415849u; // 'TAXI'
 
         // -----------------------
         // Timers / setting cache
@@ -391,10 +395,27 @@ namespace RiderControl
             Citizen citizen = SystemAPI.GetComponentRO<Citizen>(citizenEntity).ValueRO;
 
             // Stable bucket: same citizen should stay in the same taxi-allowed bucket after reload.
-            Unity.Mathematics.Random random = citizen.GetPseudoRandom(CitizenPseudoRandom.CarProbability);
-            uint roll = random.NextUInt(100u);
+            // Use a mod-local hash instead of a vanilla pseudo-random "reason" so this choice stays
+            // independent from unrelated game systems such as car-keeping behavior.
+            uint roll = GetStableTaxiEligibilityRoll(citizen);
 
             return roll >= (uint)allowedPercent;
+        }
+
+        private static uint GetStableTaxiEligibilityRoll(Citizen citizen)
+        {
+            // Citizen.m_PseudoRandom is saved by the game, so this bucket survives save/load.
+            uint seed = ((uint)citizen.m_PseudoRandom << 16) | citizen.m_PseudoRandom;
+            uint hash = seed ^ kTaxiEligibilityHashSalt;
+
+            // Small 32-bit avalanche mix. Deterministic, fast, and independent from vanilla helpers.
+            hash ^= hash >> 16;
+            hash *= 0x7feb352du;
+            hash ^= hash >> 15;
+            hash *= 0x846ca68bu;
+            hash ^= hash >> 16;
+
+            return hash % 100u;
         }
 
         // -----------------------

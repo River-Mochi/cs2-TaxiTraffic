@@ -3,7 +3,6 @@
 
 namespace RiderControl
 {
-    using Game.Agents;          // MovingAway
     using Game.Citizens;        // HouseholdMember, Household
     using Game.Common;          // Deleted
     using Game.Creatures;       // ResidentFlags, Passenger, HumanCurrentLane, Resident
@@ -52,9 +51,6 @@ namespace RiderControl
         internal static int s_StatusHouseholdsCommuter;
         internal static int s_StatusHouseholdsTourist;
         internal static int s_StatusHouseholdsHomeless;
-        internal static int s_StatusHouseholdsMovingAway;
-        internal static int s_StatusResidentsInMovingAwayHousehold;
-
         // InfoView monthly passengers.
         internal static int s_InfoTaxiTourist;
         internal static int s_InfoTaxiCitizen;
@@ -206,8 +202,6 @@ namespace RiderControl
                 if (SystemAPI.HasComponent<HomelessHousehold>(h))
                     s_StatusHouseholdsHomeless++;
 
-                if (SystemAPI.HasComponent<MovingAway>(h))
-                    s_StatusHouseholdsMovingAway++;
             }
 
             foreach ((RefRO<CreatureResident> residentRef, Entity e) in SystemAPI
@@ -235,9 +229,6 @@ namespace RiderControl
                 Entity household = SystemAPI.GetComponentRO<HouseholdMember>(citizenEntity).ValueRO.m_Household;
                 if (household == Entity.Null)
                     continue;
-
-                if (SystemAPI.HasComponent<MovingAway>(household))
-                    s_StatusResidentsInMovingAwayHousehold++;
 
                 if (SystemAPI.HasComponent<CommuterHousehold>(household))
                 {
@@ -482,9 +473,6 @@ namespace RiderControl
             s_StatusHouseholdsCommuter = 0;
             s_StatusHouseholdsTourist = 0;
             s_StatusHouseholdsHomeless = 0;
-            s_StatusHouseholdsMovingAway = 0;
-            s_StatusResidentsInMovingAwayHousehold = 0;
-
             s_StatusResidentsTotal = 0;
             s_StatusResidentsIgnoreTaxi = 0;
             s_StatusResidentsForcedMarker = 0;

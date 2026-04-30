@@ -89,11 +89,6 @@ namespace RiderControl
                     "When enabled, the taxi slider also applies to tourist households.\n" +
                     "Hidden when Residents allowed to use taxis is 100%." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.FixMovingAwayHighwayWalkers)), "Moving-away fix (highway walkers)" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.FixMovingAwayHighwayWalkers)),
-                    "Fixes Moving-Away cims with flag **Ignore Transport** so they can take public transport instead of walking to the outside connection.\n" +
-                    "Tip: add a direct bus connection to outside connection for best results." },
-
                 // Debug
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableDebugLogging)), "Enable verbose taxi logging" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableDebugLogging)),
@@ -148,7 +143,8 @@ namespace RiderControl
                     "TaxiRequest counts by type.\n" +
                     "Customer = normal city pickup request.\n" +
                     "Outside = outside-connection taxi request.\n" +
-                    "None = request with no normal taxi request type." },
+                    "None = request with no normal taxi request type.\n" +
+                    "Stand = taxi stand request." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusPassengers)), "Passengers" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusPassengers)),
@@ -212,7 +208,7 @@ namespace RiderControl
                 { KeyStatusTotalsLine, "AllWait {0} | Tourists/mo {1} | Citizens/mo {2}" },
                 { KeyStatusTaxiSupplyLine, "Taxis {0} | Depots {1} | DispatchCtr {2} | Stands {3}" },
                 { KeyStatusPassengersLine, "Total {0} | IgnoreTaxi {1} | Resident {2}" },
-                { KeyStatusRequestsLine, "Customer {0} | Outside {1} | None {2}" },
+                { KeyStatusRequestsLine, "Customer {0} | Outside {1} | None {2} | Stand {3}" },
                 { KeyStatusTaxiFleetLine, "Ride {0} | Board {1} | Return {2}\nDispatch {3} | EnRoute {4} | Parked {5}" },
                 { KeyStatusTaxiStandsLine, "StandWait {0} | StandReq {1}" },
                 { KeyStatusCoverageLine, "IgnoreTaxi {0}/{1}" },

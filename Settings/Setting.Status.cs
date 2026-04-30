@@ -9,8 +9,6 @@ namespace RiderControl
 
     public sealed partial class Setting
     {
-        private const string StatusValueLocalePrefix = "CBS.Status.Value.";
-
         // ---- Status ----
 
         [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusReady))]
@@ -98,8 +96,7 @@ namespace RiderControl
                     nameof(StatusMonthlyTotal),
                     RiderControlSystem.s_StatusWaitingTransportTotal,
                     RiderControlSystem.s_InfoTotalTourist,
-                    RiderControlSystem.s_InfoTotalCitizen,
-                    RiderControlSystem.GetStatusLastStampText());
+                    RiderControlSystem.s_InfoTotalCitizen);
             }
         }
 
@@ -307,10 +304,35 @@ namespace RiderControl
 
         private static string StatusValue(string propertyName, params object[] args)
         {
-            string entryId = StatusValueLocalePrefix + propertyName;
+            string entryId = GetStatusValueEntryId(propertyName);
 
             // Fallback key makes missing LocaleEN entries obvious during testing.
             return LocaleUtils.SafeFormat(entryId, entryId, args);
+        }
+
+        private static string GetStatusValueEntryId(string propertyName)
+        {
+            return propertyName switch
+            {
+                nameof(StatusMonthlyPassengers1) => LocaleEN.KeyStatusCitizensLine,
+                nameof(StatusMonthlyTourists) => LocaleEN.KeyStatusTouristsLine,
+                nameof(StatusMonthlyTotal) => LocaleEN.KeyStatusTotalsLine,
+                nameof(StatusTaxiSupply) => LocaleEN.KeyStatusTaxiSupplyLine,
+                nameof(StatusPassengers) => LocaleEN.KeyStatusPassengersLine,
+                nameof(StatusRequests) => LocaleEN.KeyStatusRequestsLine,
+                nameof(StatusTaxiFleet) => LocaleEN.KeyStatusTaxiFleetLine,
+                nameof(StatusTaxiStands) => LocaleEN.KeyStatusTaxiStandsLine,
+                nameof(StatusCoverage1) => LocaleEN.KeyStatusCoverageLine,
+                nameof(StatusCoverage2) => LocaleEN.KeyStatusCoverageGroupsLine,
+                nameof(StatusWorkDone1) => LocaleEN.KeyStatusWorkDoneLine,
+                nameof(StatusWorkDone2) => LocaleEN.KeyStatusWorkDone2Line,
+                nameof(StatusSnapshotMeta) => LocaleEN.KeyStatusSnapshotLine,
+#if DEBUG
+                nameof(StatusDebugMarkedCoverage) => LocaleEN.KeyStatusMarkedDevLine,
+                nameof(StatusDebugTaxiFlags) => LocaleEN.KeyStatusTaxiFlagsDevLine,
+#endif
+                _ => propertyName
+            };
         }
     }
 }

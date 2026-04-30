@@ -121,13 +121,6 @@ namespace RiderControl
             get; set;
         }
 
-        // Optional toggle: prevent moving-away walking on highway to Outside connection.
-        [SettingsUISection(ActionsTab, BehaviorGroup)]
-        public bool FixMovingAwayHighwayWalkers
-        {
-            get; set;
-        }
-
         // Moved to About tab so normal gameplay options stay clean.
         [SettingsUISection(AboutTab, DebugGroup)]
         public bool EnableDebugLogging
@@ -189,8 +182,6 @@ namespace RiderControl
 
             BlockCommuters = true;
             BlockTourists = true;
-
-            FixMovingAwayHighwayWalkers = false;
 
             EnableDebugLogging = false;
         }
