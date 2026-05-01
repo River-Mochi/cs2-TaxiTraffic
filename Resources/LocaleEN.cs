@@ -1,4 +1,4 @@
-// File: lang/LocaleEN.cs
+// File: Resources/LocaleEN.cs
 // English (en-US) for Options UI.
 
 namespace RiderControl
