@@ -1,4 +1,4 @@
-﻿## Cim Be Smart (CS2) — stop cims calling taxis
+## Cim Be Smart (CS2) — stop cims calling taxis
  
 **Cim Be Smart** is a Cities: Skylines II game mod that blocks taxis on the *rider (demand)* side.  
 When enabled, cims will choose other travel options (walk, bike, private car, public transport if it exists) instead of taking taxis.
@@ -41,3 +41,13 @@ When enabled:
   - Optional: include/exclude **Commuters** and **Tourists**
 - Let the simulation run for a few minutes to see taxi traffic decline.
 - Taxi Stand - block them from requesting taxis drive to stands and park there. This is a minor bonus feature if it can be made to work.
+
+| Situation | Slider | Commuters | Tourists | Meaning |
+|---|---:|---:|---:|---|
+| First install / mod default | 0% | OFF | OFF | Normal residents avoid taxis; commuters/tourists are left vanilla. |
+| Reset to Game Defaults button | 100% | OFF | OFF | Vanilla-style taxi behavior. |
+
+
+###  Credits
+- River Mochi mod author
+- Noel/Noel2: testing, feedback

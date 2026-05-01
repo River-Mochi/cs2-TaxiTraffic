@@ -1,11 +1,12 @@
 // File: Settings/Setting.Status.cs
 // Status tab Options UI rows for "Cim Be Smart".
-// Status row text is formatted from lang/LocaleEN.cs entries.
+// Status row text is formatted from Resources/LocaleEN.cs entries.
 
 namespace RiderControl
 {
-    using CS2Shared.RiverMochi; // LogUtils
+    using CS2Shared.RiverMochi; // LocaleUtils, LogUtils
     using Game.Settings;
+    using System.Text;
 
     public sealed partial class Setting
     {
@@ -301,6 +302,114 @@ namespace RiderControl
             }
         }
 #endif
+
+        [SettingsUIButtonGroup(StatusActionsGroup)]
+        [SettingsUIButton]
+        [SettingsUISection(StatusTab, StatusActionsGroup)]
+        public bool WriteStatusReportToLog
+        {
+            set
+            {
+                if (!value)
+                    return;
+
+                RiderControlSystem.RequestStatusRefresh(force: true);
+                LogUtils.Info(Mod.s_Log, BuildStatusReportText);
+            }
+        }
+
+        private static string BuildStatusReportText()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine($"{Mod.ModTag} StatusReport:");
+            sb.AppendLine("Citizens: " + StatusValue(
+                nameof(StatusMonthlyPassengers1),
+                RiderControlSystem.s_InfoTaxiCitizen,
+                RiderControlSystem.s_InfoBusCitizen,
+                RiderControlSystem.s_InfoTramCitizen,
+                RiderControlSystem.s_InfoTrainCitizen,
+                RiderControlSystem.s_InfoSubwayCitizen,
+                RiderControlSystem.s_InfoAirCitizen));
+
+            sb.AppendLine("Tourists: " + StatusValue(
+                nameof(StatusMonthlyTourists),
+                RiderControlSystem.s_InfoTaxiTourist,
+                RiderControlSystem.s_InfoBusTourist,
+                RiderControlSystem.s_InfoTramTourist,
+                RiderControlSystem.s_InfoTrainTourist,
+                RiderControlSystem.s_InfoSubwayTourist,
+                RiderControlSystem.s_InfoAirTourist));
+
+            sb.AppendLine("Totals: " + StatusValue(
+                nameof(StatusMonthlyTotal),
+                RiderControlSystem.s_StatusWaitingTransportTotal,
+                RiderControlSystem.s_InfoTotalTourist,
+                RiderControlSystem.s_InfoTotalCitizen));
+
+            sb.AppendLine("Taxi supply: " + StatusValue(
+                nameof(StatusTaxiSupply),
+                RiderControlSystem.s_StatusTaxisTotal,
+                RiderControlSystem.s_StatusTaxiDepotsTotal,
+                RiderControlSystem.s_StatusTaxiDepotsWithDispatchCenter,
+                RiderControlSystem.s_StatusTaxiStandsTotal));
+
+            sb.AppendLine("Passengers: " + StatusValue(
+                nameof(StatusPassengers),
+                RiderControlSystem.s_StatusPassengerTotal,
+                RiderControlSystem.s_StatusPassengerIgnoreTaxi,
+                RiderControlSystem.s_StatusPassengerHasResident));
+
+            sb.AppendLine("Requests: " + StatusValue(
+                nameof(StatusRequests),
+                RiderControlSystem.s_StatusReqCustomer,
+                RiderControlSystem.s_StatusReqOutside,
+                RiderControlSystem.s_StatusReqNone,
+                RiderControlSystem.s_StatusReqStand));
+
+            sb.AppendLine("Fleet: " + StatusValue(
+                nameof(StatusTaxiFleet),
+                RiderControlSystem.s_StatusTaxiTransporting,
+                RiderControlSystem.s_StatusTaxiBoarding,
+                RiderControlSystem.s_StatusTaxiReturning,
+                RiderControlSystem.s_StatusTaxiDispatched,
+                RiderControlSystem.s_StatusTaxiEnRoute,
+                RiderControlSystem.s_StatusTaxiParked));
+
+            sb.AppendLine("Stands: " + StatusValue(
+                nameof(StatusTaxiStands),
+                RiderControlSystem.s_StatusWaitingTaxiStandTotal,
+                RiderControlSystem.s_StatusReqStand));
+
+            sb.AppendLine("Coverage: " + StatusValue(
+                nameof(StatusCoverage1),
+                RiderControlSystem.s_StatusResidentsIgnoreTaxi,
+                RiderControlSystem.s_StatusResidentsTotal));
+
+            sb.AppendLine("Groups: " + StatusValue(
+                nameof(StatusCoverage2),
+                RiderControlSystem.s_StatusCommutersIgnoreTaxi,
+                RiderControlSystem.s_StatusCommutersTotal,
+                RiderControlSystem.s_StatusTouristsIgnoreTaxi,
+                RiderControlSystem.s_StatusTouristsTotal));
+
+            sb.AppendLine("Work: " + StatusValue(
+                nameof(StatusWorkDone1),
+                RiderControlSystem.s_StatusLastAppliedIgnoreTaxi,
+                RiderControlSystem.s_StatusLastRemovedRideNeeder,
+                RiderControlSystem.s_StatusLastClearedTaxiLaneWaiting));
+
+            sb.AppendLine("Work 2: " + StatusValue(
+                nameof(StatusWorkDone2),
+                RiderControlSystem.s_StatusLastClearedTaxiStandWaiting,
+                RiderControlSystem.s_StatusLastSkippedCommuters,
+                RiderControlSystem.s_StatusLastSkippedTourists));
+
+            sb.Append("Snapshot: ");
+            sb.Append(StatusValue(nameof(StatusSnapshotMeta), RiderControlSystem.GetStatusLastStampText()));
+
+            return sb.ToString();
+        }
 
         private static string StatusValue(string propertyName, params object[] args)
         {

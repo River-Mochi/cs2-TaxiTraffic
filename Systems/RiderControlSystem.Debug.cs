@@ -66,7 +66,7 @@ namespace RiderControl
                 Mod.s_Log,
                 () =>
                     $"{Mod.ModTag} TaxiSummary: " +
-                    $"taxiAllowedPercent={setting.ResidentsAllowedToUseTaxis}, includeCommuters={setting.BlockCommuters}, includeTourists={setting.BlockTourists}, " +
+                    $"normalResidentTaxiAllowedPercent={setting.ResidentsAllowedToUseTaxis}, blockCommuters={setting.BlockCommuters}, blockTourists={setting.BlockTourists}, " +
                     $"taxis={s_StatusTaxisTotal}, transporting={s_StatusTaxiTransporting}, boarding={s_StatusTaxiBoarding}, returning={s_StatusTaxiReturning}, dispatched={s_StatusTaxiDispatched}, enRoute={s_StatusTaxiEnRoute}, parked={s_StatusTaxiParked}, accident={s_StatusTaxiAccident}, " +
                     $"fromOutside={s_StatusTaxiFromOutside}, disabled={s_StatusTaxiDisabled}, withServiceDispatch={s_StatusTaxiWithDispatchBuffer}, " +
                     $"requests[stand={s_StatusReqStand}, customer={s_StatusReqCustomer}, outside={s_StatusReqOutside}, none={s_StatusReqNone}], " +

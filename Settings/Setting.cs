@@ -1,10 +1,11 @@
 // File: Settings/Setting.cs
 // Options UI for "Cim Be Smart".
-// All user-facing strings are in lang/LocaleEN.cs.
+// All user-facing strings are in Resources/LocaleEN.cs.
 
 namespace RiderControl
 {
     using Colossal.IO.AssetDatabase;
+    using CS2Shared.RiverMochi; // LogUtils, ShellOpen
     using Game.Modding;
     using Game.Settings;
     using Game.UI;
@@ -20,6 +21,7 @@ namespace RiderControl
         TaxiScanGroup,
         LastUpdateGroup,
         AdvancedDebugGroup,
+        StatusActionsGroup,
         AboutInfoGroup,
         DebugGroup,
         AboutLinksGroup
@@ -30,6 +32,7 @@ namespace RiderControl
         TaxiScanGroup,
         LastUpdateGroup,
         AdvancedDebugGroup,
+        StatusActionsGroup,
         AboutInfoGroup,
         DebugGroup,
         AboutLinksGroup
@@ -42,6 +45,7 @@ namespace RiderControl
         CityScanGroup,
         TaxiScanGroup,
         LastUpdateGroup,
+        StatusActionsGroup,
         AboutInfoGroup,
         DebugGroup,
         AboutLinksGroup
@@ -51,6 +55,7 @@ namespace RiderControl
         CityScanGroup,
         TaxiScanGroup,
         LastUpdateGroup,
+        StatusActionsGroup,
         AboutInfoGroup,
         DebugGroup,
         AboutLinksGroup
@@ -67,6 +72,7 @@ namespace RiderControl
         public const string CityScanGroup = "CityScan";
         public const string TaxiScanGroup = "TaxiScan";
         public const string LastUpdateGroup = "LastUpdate";
+        public const string StatusActionsGroup = "StatusActions";
 
         // Status (DEBUG builds only)
         public const string AdvancedDebugGroup = "AdvancedDebug";
@@ -77,11 +83,13 @@ namespace RiderControl
         internal const int TaxiAllowedPercentMin = 0;
         internal const int TaxiAllowedPercentMax = 100;
         internal const int TaxiAllowedPercentStep = 25;
+
+        // First-install mod default: strongest normal-resident taxi reduction.
         internal const int TaxiAllowedPercentDefault = 0;
 
-        private const string UrlParadox =  
+        private const string UrlParadox =
             "https://mods.paradoxplaza.com/authors/River-mochi/cities_skylines_2?games=cities_skylines_2&orderBy=desc&sortBy=best&time=alltime";
- 
+
         private const string UrlDiscord = "https://discord.gg/HTav7ARPs2";
 
         private int m_ResidentsAllowedToUseTaxis = TaxiAllowedPercentDefault;
@@ -121,11 +129,41 @@ namespace RiderControl
             get; set;
         }
 
+        [SettingsUIButtonGroup(BehaviorGroup)]
+        [SettingsUIButton]
+        [SettingsUISection(ActionsTab, BehaviorGroup)]
+        public bool ResetToGameDefaults
+        {
+            set
+            {
+                if (!value)
+                    return;
+
+                ApplyGameDefaults();
+                RiderControlSystem.RequestStatusRefresh(force: true);
+                LogUtils.Info(Mod.s_Log, () => $"{Mod.ModTag} Reset to game defaults.");
+            }
+        }
+
         // Moved to About tab so normal gameplay options stay clean.
         [SettingsUISection(AboutTab, DebugGroup)]
         public bool EnableDebugLogging
         {
             get; set;
+        }
+
+        [SettingsUIButtonGroup(DebugGroup)]
+        [SettingsUIButton]
+        [SettingsUISection(AboutTab, DebugGroup)]
+        public bool OpenLogFile
+        {
+            set
+            {
+                if (!value)
+                    return;
+
+                ShellOpen.OpenModLogOrLogsFolder();
+            }
         }
 
         // ---- About ----
@@ -178,11 +216,19 @@ namespace RiderControl
 
         public override void SetDefaults()
         {
+            // First install: normal residents avoid taxis; commuters/tourists stay vanilla unless enabled.
             ResidentsAllowedToUseTaxis = TaxiAllowedPercentDefault;
+            BlockCommuters = false;
+            BlockTourists = false;
+            EnableDebugLogging = false;
+        }
 
-            BlockCommuters = true;
-            BlockTourists = true;
-
+        private void ApplyGameDefaults()
+        {
+            // Game Defaults: leave all rider types alone.
+            ResidentsAllowedToUseTaxis = TaxiAllowedPercentMax;
+            BlockCommuters = false;
+            BlockTourists = false;
             EnableDebugLogging = false;
         }
 

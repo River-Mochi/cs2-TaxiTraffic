@@ -133,8 +133,11 @@ namespace RiderControl
                 m_TaxiEligibilityResetInProgress = false;
             }
 
-            // 100% is the clean OFF/vanilla-style state for this mod's taxi restriction.
-            if (setting.ResidentsAllowedToUseTaxis >= Setting.TaxiAllowedPercentMax)
+            // Full vanilla-style state only when normal residents, commuters, and tourists are all left alone.
+            bool vanillaResidents = setting.ResidentsAllowedToUseTaxis >= Setting.TaxiAllowedPercentMax;
+            bool vanillaGroups = !setting.BlockCommuters && !setting.BlockTourists;
+
+            if (vanillaResidents && vanillaGroups)
             {
                 UnmarkIgnoreTaxiBatch(out _);
 
@@ -145,6 +148,8 @@ namespace RiderControl
 
                 return;
             }
+
+
 
             ApplyTaxiEligibilityBatch(setting, out appliedIgnoreTaxi, out skippedCommuters, out skippedTourists);
 
@@ -346,6 +351,7 @@ namespace RiderControl
                 EntityManager.AddComponent<TaxiAllowedMark>(toAllow.AsArray());
         }
 
+
         private bool ShouldResidentIgnoreTaxiBySettings(
             Setting setting,
             CreatureResident resident,
@@ -354,11 +360,6 @@ namespace RiderControl
         {
             skippedCommuter = false;
             skippedTourist = false;
-
-            int allowedPercent = setting.ResidentsAllowedToUseTaxis;
-
-            if (allowedPercent >= Setting.TaxiAllowedPercentMax)
-                return false;
 
             Entity citizenEntity = resident.m_Citizen;
 
@@ -369,19 +370,30 @@ namespace RiderControl
 
                 if (household != Entity.Null)
                 {
-                    if (!setting.BlockCommuters && SystemAPI.HasComponent<CommuterHousehold>(household))
+                    if (SystemAPI.HasComponent<CommuterHousehold>(household))
                     {
+                        if (setting.BlockCommuters)
+                            return true;
+
                         skippedCommuter = true;
                         return false;
                     }
 
-                    if (!setting.BlockTourists && SystemAPI.HasComponent<TouristHousehold>(household))
+                    if (SystemAPI.HasComponent<TouristHousehold>(household))
                     {
+                        if (setting.BlockTourists)
+                            return true;
+
                         skippedTourist = true;
                         return false;
                     }
                 }
             }
+
+            int allowedPercent = setting.ResidentsAllowedToUseTaxis;
+
+            if (allowedPercent >= Setting.TaxiAllowedPercentMax)
+                return false;
 
             if (allowedPercent <= Setting.TaxiAllowedPercentMin)
                 return true;
@@ -395,12 +407,13 @@ namespace RiderControl
             Citizen citizen = SystemAPI.GetComponentRO<Citizen>(citizenEntity).ValueRO;
 
             // Stable bucket: same citizen should stay in the same taxi-allowed bucket after reload.
-            // Use a mod-local hash instead of a vanilla pseudo-random "reason" so this choice stays
-            // independent from unrelated game systems such as car-keeping behavior.
-            uint roll = GetStableTaxiEligibilityRoll(citizen);
+            Unity.Mathematics.Random random = citizen.GetPseudoRandom(CitizenPseudoRandom.CarProbability);
+            uint roll = random.NextUInt(100u);
 
             return roll >= (uint)allowedPercent;
         }
+
+
 
         private static uint GetStableTaxiEligibilityRoll(Citizen citizen)
         {
