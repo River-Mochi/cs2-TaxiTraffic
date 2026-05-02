@@ -148,8 +148,7 @@ namespace RiderControl
                     nameof(StatusRequests),
                     RiderControlSystem.s_StatusReqCustomer,
                     RiderControlSystem.s_StatusReqOutside,
-                    RiderControlSystem.s_StatusReqNone,
-                    RiderControlSystem.s_StatusReqStand);
+                    RiderControlSystem.s_StatusReqNone);
             }
         }
 
@@ -182,8 +181,7 @@ namespace RiderControl
 
                 return StatusValue(
                     nameof(StatusTaxiStands),
-                    RiderControlSystem.s_StatusWaitingTaxiStandTotal,
-                    RiderControlSystem.s_StatusReqStand);
+                    RiderControlSystem.s_StatusWaitingTaxiStandTotal);
             }
         }
 
@@ -250,6 +248,20 @@ namespace RiderControl
                     RiderControlSystem.s_StatusLastClearedTaxiStandWaiting,
                     RiderControlSystem.s_StatusLastSkippedCommuters,
                     RiderControlSystem.s_StatusLastSkippedTourists);
+            }
+        }
+
+        [SettingsUISection(StatusTab, LastUpdateGroup)]
+        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        public string StatusGroupSafety
+        {
+            get
+            {
+                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+
+                return StatusValue(
+                    nameof(StatusGroupSafety),
+                    RiderControlSystem.s_StatusLastSkippedGroupTravelers);
             }
         }
 
@@ -364,8 +376,7 @@ namespace RiderControl
                 nameof(StatusRequests),
                 RiderControlSystem.s_StatusReqCustomer,
                 RiderControlSystem.s_StatusReqOutside,
-                RiderControlSystem.s_StatusReqNone,
-                RiderControlSystem.s_StatusReqStand));
+                RiderControlSystem.s_StatusReqNone));
 
             sb.AppendLine("Fleet: " + StatusValue(
                 nameof(StatusTaxiFleet),
@@ -378,8 +389,14 @@ namespace RiderControl
 
             sb.AppendLine("Stands: " + StatusValue(
                 nameof(StatusTaxiStands),
-                RiderControlSystem.s_StatusWaitingTaxiStandTotal,
-                RiderControlSystem.s_StatusReqStand));
+                RiderControlSystem.s_StatusWaitingTaxiStandTotal));
+
+            sb.AppendLine(
+                "Taxi stand debug: " +
+                RiderControlSystem.s_StatusWaitingTaxiStandTotal +
+                " waiting | " +
+                RiderControlSystem.s_StatusReqStand +
+                " taxis requested to park at stands");
 
             sb.AppendLine("Coverage: " + StatusValue(
                 nameof(StatusCoverage1),
@@ -387,6 +404,19 @@ namespace RiderControl
                 RiderControlSystem.s_StatusResidentsTotal));
 
             sb.AppendLine("Groups: " + StatusValue(
+                nameof(StatusGroupSafety),
+                RiderControlSystem.s_StatusLastSkippedGroupTravelers));
+
+            sb.AppendLine(
+                "Group debug: " +
+                RiderControlSystem.s_StatusLastSkippedGroupTravelers +
+                " skipped | " +
+                RiderControlSystem.s_StatusLastClearedGroupTravelers +
+                " cleared | " +
+                RiderControlSystem.s_StatusResidentsGroupLinked +
+                " currently group-linked");
+
+            sb.AppendLine("Commuter/tourist coverage: " + StatusValue(
                 nameof(StatusCoverage2),
                 RiderControlSystem.s_StatusCommutersIgnoreTaxi,
                 RiderControlSystem.s_StatusCommutersTotal,
@@ -435,6 +465,7 @@ namespace RiderControl
                 nameof(StatusCoverage2) => LocaleEN.KeyStatusCoverageGroupsLine,
                 nameof(StatusWorkDone1) => LocaleEN.KeyStatusWorkDoneLine,
                 nameof(StatusWorkDone2) => LocaleEN.KeyStatusWorkDone2Line,
+                nameof(StatusGroupSafety) => LocaleEN.KeyStatusGroupSafetyLine,
                 nameof(StatusSnapshotMeta) => LocaleEN.KeyStatusSnapshotLine,
 #if DEBUG
                 nameof(StatusDebugMarkedCoverage) => LocaleEN.KeyStatusMarkedDevLine,

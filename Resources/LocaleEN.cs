@@ -22,6 +22,8 @@ namespace RiderControl
         public const string KeyStatusWorkDone2Line = "CimBeSmart.Status.WorkDone2Line";
         public const string KeyStatusSnapshotLine = "CimBeSmart.Status.SnapshotLine";
 
+        public const string KeyStatusGroupSafetyLine = "CimBeSmart.Status.GroupSafetyLine";
+
 #if DEBUG
         public const string KeyStatusMarkedDevLine = "CimBeSmart.Status.MarkedDevLine";
         public const string KeyStatusTaxiFlagsDevLine = "CimBeSmart.Status.TaxiFlagsDevLine";
@@ -73,12 +75,16 @@ namespace RiderControl
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResidentsAllowedToUseTaxis)), "Residents allowed to use taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResidentsAllowedToUseTaxis)),
                     "Controls normal resident taxi eligibility.\n" +
-                    "0% = strongest taxi reduction for normal residents.\n" +
-                    "25% = about 1 in 4 normal residents may use taxis.\n" +
-                    "50% = about half.\n" +
-                    "75% = about 3 in 4.\n" +
-                    "100% = vanilla taxi behavior for residents.\n" +
-                    "Commuter and tourist toggles are separate." },
+                    "0% = set all residents to ignore Taxis.\n" +
+                    "25% = ~1 in 4 residents may use taxis.\n" +
+                    "50% = ~half may use taxis.\n" +
+                    "75% = ~3 in 4 may use taxis\n" +
+                    "100% = residents use taxis like vanilla (heavy).\n" +
+                    "Notes:\n" +
+                    "- commuters and tourists toggles are separate behavior.\n" +
+                    "- a few vanilla systems (e.g. Leisure) can can directly call taxis for cims and doesn't care if they have IgnoreTaxi,\n" +
+                    " so there is some small usage at 0% setting; majority of cims will ignore taxis."
+                    },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.BlockCommuters)), "Commuters avoid taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.BlockCommuters)),
@@ -202,6 +208,11 @@ namespace RiderControl
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.WriteStatusReportToLog)),
                     "Writes the latest completed Status snapshot to this mod's log file and requests a fresh refresh." },
 
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusGroupSafety)), "Groups left vanilla" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusGroupSafety)),
+                    "Residents traveling as part of a group are left alone (vanilla) to prevent mishaps.\n" +
+                    "Mod only adjusts solo travelers (majority)." },
+
 #if DEBUG
                 // Advanced Debug (DEV builds only)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusDebugMarkedCoverage)), "Marked (dev)" },
@@ -229,6 +240,7 @@ namespace RiderControl
                 { KeyStatusCoverageGroupsLine, "{0}/{1} commuter | {2}/{3} tourist" },
                 { KeyStatusWorkDoneLine, "{0} applied | {1} ride clear | {2} lane clear" },
                 { KeyStatusWorkDone2Line, "{0} queue clear | {1} skip comm | {2} skip tour" },
+                { KeyStatusGroupSafetyLine, "{0} skipped" },
                 { KeyStatusSnapshotLine, "Updated {0}" },
 
 #if DEBUG

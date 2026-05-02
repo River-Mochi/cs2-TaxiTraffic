@@ -6,8 +6,8 @@ namespace RiderControl
     using CS2Shared.RiverMochi; // LogUtils
     using Game.Citizens;    // Citizen, CitizenFlags, HouseholdMember, TravelPurpose
     using Game.City;        // StatisticType, PassengerType
-    using Game.Companies;   // ResourceBuyer (breadcrumb)
-    using Game.Creatures;   // ResidentFlags
+    using Game.Companies;   // ResourceBuyer
+    using Game.Creatures;   // ResidentFlags, GroupMember, GroupCreature
     using Game.Vehicles;    // CurrentVehicle, Taxi, TaxiFlags
     using System;           // Math
     using Unity.Entities;
@@ -28,7 +28,6 @@ namespace RiderControl
         private void ResetDebugOnCityLoaded()
         {
             m_DebugTimerSeconds = 0f;
-
         }
 
         private void TickDebugLogging(Setting setting, float intervalSeconds)
@@ -66,16 +65,18 @@ namespace RiderControl
                 Mod.s_Log,
                 () =>
                     $"{Mod.ModTag} TaxiSummary: " +
-                    $"normalResidentTaxiAllowedPercent={setting.ResidentsAllowedToUseTaxis}, blockCommuters={setting.BlockCommuters}, blockTourists={setting.BlockTourists}, " +
+                    $"residentTaxiAllowedPercent={setting.ResidentsAllowedToUseTaxis}, blockCommuters={setting.BlockCommuters}, blockTourists={setting.BlockTourists}, " +
                     $"taxis={s_StatusTaxisTotal}, transporting={s_StatusTaxiTransporting}, boarding={s_StatusTaxiBoarding}, returning={s_StatusTaxiReturning}, dispatched={s_StatusTaxiDispatched}, enRoute={s_StatusTaxiEnRoute}, parked={s_StatusTaxiParked}, accident={s_StatusTaxiAccident}, " +
                     $"fromOutside={s_StatusTaxiFromOutside}, disabled={s_StatusTaxiDisabled}, withServiceDispatch={s_StatusTaxiWithDispatchBuffer}, " +
-                    $"requests[stand={s_StatusReqStand}, customer={s_StatusReqCustomer}, outside={s_StatusReqOutside}, none={s_StatusReqNone}], " +
+                    $"requests[customer={s_StatusReqCustomer}, outside={s_StatusReqOutside}, none={s_StatusReqNone}], " +
+                    $"taxiStandDebug(waiting={s_StatusWaitingTaxiStandTotal}, taxisRequestedToParkAtStands={s_StatusReqStand}), " +
                     $"custSeekers(ignoreTaxi={s_StatusReqCustomerSeekerIgnoreTaxi}/{s_StatusReqCustomerSeekerHasResident}), " +
                     $"outSeekers(ignoreTaxi={s_StatusReqOutsideSeekerIgnoreTaxi}/{s_StatusReqOutsideSeekerHasResident}), " +
                     $"passengers(ignoreTaxi={s_StatusPassengerIgnoreTaxi}/{s_StatusPassengerHasResident}, totalPassengers={s_StatusPassengerTotal}), " +
                     $"residents(ignoreTaxi={s_StatusResidentsIgnoreTaxi}/{s_StatusResidentsTotal}, blockedMark={s_StatusResidentsForcedMarker}, allowedMark={s_StatusResidentsAllowedMarker}), " +
                     $"commuters(ignoreTaxi={s_StatusCommutersIgnoreTaxi}/{s_StatusCommutersTotal}), " +
                     $"tourists(ignoreTaxi={s_StatusTouristsIgnoreTaxi}/{s_StatusTouristsTotal}), " +
+                    $"groups(skipped={s_StatusLastSkippedGroupTravelers}, cleared={s_StatusLastClearedGroupTravelers}, linkedNow={s_StatusResidentsGroupLinked}, linkedIgnoreTaxi={s_StatusResidentsGroupLinkedIgnoreTaxi}), " +
                     $"waitingTransport(total={s_StatusWaitingTransportTotal}, taxiStand={s_StatusWaitingTaxiStandTotal}), " +
                     $"statsDailyTaxi(citizen={dailyTaxiCitizen}, tourist={dailyTaxiTourist}, approxPerMonth={30 * (dailyTaxiCitizen + dailyTaxiTourist)})");
 
@@ -109,6 +110,8 @@ namespace RiderControl
                 bool ignoreTaxi = (rf & ResidentFlags.IgnoreTaxi) != 0;
                 bool blockedMark = SystemAPI.HasComponent<IgnoreTaxiMark>(passengerEntity);
                 bool allowedMark = SystemAPI.HasComponent<TaxiAllowedMark>(passengerEntity);
+                bool groupMember = SystemAPI.HasComponent<GroupMember>(passengerEntity);
+                bool groupCreature = SystemAPI.HasBuffer<GroupCreature>(passengerEntity);
 
                 Entity citizenEntity = resident.ValueRO.m_Citizen;
 
@@ -132,7 +135,6 @@ namespace RiderControl
                     }
                 }
 
-                // Breadcrumb: which economic/transactional context is present.
                 bool hasResourceBuyer = SystemAPI.HasComponent<ResourceBuyer>(passengerEntity);
 
                 string purpose = "none";
@@ -150,6 +152,7 @@ namespace RiderControl
                         $"{Mod.ModTag} TaxiPassengerNow: passenger={passengerEntity.Index}:{passengerEntity.Version} " +
                         $"vehicle={vehicle.Index}:{vehicle.Version} taxiFlags={taxiFlags} " +
                         $"ignoreTaxi={ignoreTaxi} blockedMark={blockedMark} allowedMark={allowedMark} " +
+                        $"groupMember={groupMember} groupCreature={groupCreature} " +
                         $"citizenFlags={citizenFlags} hhCommuter={hhCommuter} hhTourist={hhTourist} " +
                         $"purpose={purpose} resourceBuyer={hasResourceBuyer}");
             }
@@ -163,4 +166,3 @@ namespace RiderControl
         }
     }
 }
-

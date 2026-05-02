@@ -30,18 +30,16 @@ namespace RiderControl
         // Knobs (perf + behavior)
         // -----------------------
 
-        // Batch size for applying/removing eligibility marks each update (limits hitching in huge cities).
+        // Batch size for applying/removing eligibility marks each update.
         private const int kMarkBatchPerUpdate = 2000;
 
-        // Unstick taxi waiting states on an interval (not every frame).
+        // Unstick taxi waiting states on an interval, not every frame.
         private const float kUnstickIntervalSeconds = 1.0f;
 
         // Verbose TaxiSummary log interval.
-        // Increase this if log is too noisy and to prevent huge log files.
         private const float kDebugSummaryIntervalSeconds = 120.0f;
 
         // Mod-local salt for stable taxi eligibility buckets.
-        // This keeps the slider independent from vanilla's own pseudo-random "reasons".
         private const uint kTaxiEligibilityHashSalt = 0x54415849u; // 'TAXI'
 
         // -----------------------
@@ -112,6 +110,7 @@ namespace RiderControl
             int clearedTaxiStandWaiting = 0;
             int clearedRideNeederLinks = 0;
 
+            // Safety pass runs first so residents that became group-linked are returned to vanilla handling.
             int clearedGroupTravelers = ClearGroupLinkedTaxiMarksBatch();
 
             bool changed = DetectTaxiEligibilitySettingChange(setting);
@@ -124,6 +123,7 @@ namespace RiderControl
             if (m_TaxiEligibilityResetInProgress)
             {
                 int resetCount = ResetTaxiEligibilityMarkersBatch();
+
                 RecordLastUpdateCounters(
                     appliedIgnoreTaxi,
                     skippedCommuters,
@@ -180,7 +180,7 @@ namespace RiderControl
                 out skippedTourists,
                 out skippedGroupTravelers);
 
-            // Unstick pass (interval-based).
+            // Unstick pass runs on an interval.
             m_UnstickTimer += UTime.unscaledDeltaTime;
             if (m_UnstickTimer >= kUnstickIntervalSeconds)
             {
@@ -299,7 +299,8 @@ namespace RiderControl
         {
             int cleared = 0;
 
-            using NativeList<Entity> toUnmark = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> blockedMarks = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> allowedMarks = new NativeList<Entity>(Allocator.Temp);
 
             foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<CreatureResident>>()
@@ -311,15 +312,21 @@ namespace RiderControl
                     continue;
 
                 resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
-                toUnmark.Add(entity);
+                blockedMarks.Add(entity);
+
+                if (SystemAPI.HasComponent<TaxiAllowedMark>(entity))
+                    allowedMarks.Add(entity);
 
                 cleared++;
                 if (cleared >= kMarkBatchPerUpdate)
                     break;
             }
 
-            if (toUnmark.Length > 0)
-                EntityManager.RemoveComponent<IgnoreTaxiMark>(toUnmark.AsArray());
+            if (blockedMarks.Length > 0)
+                EntityManager.RemoveComponent<IgnoreTaxiMark>(blockedMarks.AsArray());
+
+            if (allowedMarks.Length > 0)
+                EntityManager.RemoveComponent<TaxiAllowedMark>(allowedMarks.AsArray());
 
             return cleared;
         }
@@ -625,7 +632,7 @@ namespace RiderControl
                 if (!ShouldResidentIgnoreTaxiBySettings(setting, resident.ValueRO, out _, out _))
                     continue;
 
-                // Enforce IgnoreTaxi for the resident being unstuck (targeted, no citywide sweep).
+                // Enforce IgnoreTaxi for the resident being unstuck.
                 if ((resident.ValueRO.m_Flags & ResidentFlags.IgnoreTaxi) == 0)
                     resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
 

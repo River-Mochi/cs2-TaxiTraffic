@@ -37,6 +37,8 @@ namespace RiderControl
         internal static int s_StatusResidentsIgnoreTaxi;
         internal static int s_StatusResidentsForcedMarker;
         internal static int s_StatusResidentsAllowedMarker;
+        internal static int s_StatusResidentsGroupLinked;
+        internal static int s_StatusResidentsGroupLinkedIgnoreTaxi;
 
         internal static int s_StatusCommutersTotal;
         internal static int s_StatusCommutersIgnoreTaxi;
@@ -51,6 +53,7 @@ namespace RiderControl
         internal static int s_StatusHouseholdsCommuter;
         internal static int s_StatusHouseholdsTourist;
         internal static int s_StatusHouseholdsHomeless;
+
         // InfoView monthly passengers.
         internal static int s_InfoTaxiTourist;
         internal static int s_InfoTaxiCitizen;
@@ -109,6 +112,8 @@ namespace RiderControl
         internal static int s_StatusLastAppliedIgnoreTaxi;
         internal static int s_StatusLastSkippedCommuters;
         internal static int s_StatusLastSkippedTourists;
+        internal static int s_StatusLastSkippedGroupTravelers;
+        internal static int s_StatusLastClearedGroupTravelers;
         internal static int s_StatusLastClearedTaxiLaneWaiting;
         internal static int s_StatusLastClearedTaxiStandWaiting;
         internal static int s_StatusLastRemovedRideNeeder;
@@ -134,6 +139,7 @@ namespace RiderControl
             s_StatusForceRefresh = false;
 
             ClearSnapshotValues();
+            ClearLastUpdateValues();
 
             try
             {
@@ -201,7 +207,6 @@ namespace RiderControl
 
                 if (SystemAPI.HasComponent<HomelessHousehold>(h))
                     s_StatusHouseholdsHomeless++;
-
             }
 
             foreach ((RefRO<CreatureResident> residentRef, Entity e) in SystemAPI
@@ -215,6 +220,14 @@ namespace RiderControl
                 bool ignoreTaxi = (rf & ResidentFlags.IgnoreTaxi) != 0;
                 if (ignoreTaxi)
                     s_StatusResidentsIgnoreTaxi++;
+
+                bool groupLinked = IsGroupLinkedTraveler(e);
+                if (groupLinked)
+                {
+                    s_StatusResidentsGroupLinked++;
+                    if (ignoreTaxi)
+                        s_StatusResidentsGroupLinkedIgnoreTaxi++;
+                }
 
                 if (SystemAPI.HasComponent<IgnoreTaxiMark>(e))
                     s_StatusResidentsForcedMarker++;
@@ -473,10 +486,13 @@ namespace RiderControl
             s_StatusHouseholdsCommuter = 0;
             s_StatusHouseholdsTourist = 0;
             s_StatusHouseholdsHomeless = 0;
+
             s_StatusResidentsTotal = 0;
             s_StatusResidentsIgnoreTaxi = 0;
             s_StatusResidentsForcedMarker = 0;
             s_StatusResidentsAllowedMarker = 0;
+            s_StatusResidentsGroupLinked = 0;
+            s_StatusResidentsGroupLinkedIgnoreTaxi = 0;
 
             s_StatusCommutersTotal = 0;
             s_StatusCommutersIgnoreTaxi = 0;
@@ -528,6 +544,18 @@ namespace RiderControl
             s_InfoTotalTourist = 0; s_InfoTotalCitizen = 0;
         }
 
+        private static void ClearLastUpdateValues()
+        {
+            s_StatusLastAppliedIgnoreTaxi = 0;
+            s_StatusLastSkippedCommuters = 0;
+            s_StatusLastSkippedTourists = 0;
+            s_StatusLastSkippedGroupTravelers = 0;
+            s_StatusLastClearedGroupTravelers = 0;
+            s_StatusLastClearedTaxiLaneWaiting = 0;
+            s_StatusLastClearedTaxiStandWaiting = 0;
+            s_StatusLastRemovedRideNeeder = 0;
+        }
+
         internal static void AutoRequestStatusRefreshOnRead()
         {
             if (s_StatusLastSnapshotRealtime <= 0.0)
@@ -577,6 +605,8 @@ namespace RiderControl
             return s_StatusLastAppliedIgnoreTaxi != 0
                 || s_StatusLastSkippedCommuters != 0
                 || s_StatusLastSkippedTourists != 0
+                || s_StatusLastSkippedGroupTravelers != 0
+                || s_StatusLastClearedGroupTravelers != 0
                 || s_StatusLastClearedTaxiLaneWaiting != 0
                 || s_StatusLastClearedTaxiStandWaiting != 0
                 || s_StatusLastRemovedRideNeeder != 0;
