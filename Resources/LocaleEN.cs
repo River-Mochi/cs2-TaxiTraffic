@@ -156,10 +156,10 @@ namespace RiderControl
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusRequests)), "Taxi requests" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusRequests)),
                     "TaxiRequest counts by type.\n" +
-                    "Customer = normal city pickup request.\n" +
+                    "Customer = city pickup request.\n" +
                     "Outside = outside-connection taxi request.\n" +
-                    "None = request with no normal taxi request type.\n" +
-                    "Stand = taxi stand request." },
+                    "None = request with no normal taxi request type."
+               },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusPassengers)), "Passengers" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusPassengers)),
@@ -173,8 +173,7 @@ namespace RiderControl
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusTaxiStands)), "Taxi stands" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusTaxiStands)),
-                    "Waiting = total cims waiting at a taxi stand.\n" +
-                    "Stand request = the taxi stand asking the taxi system to send taxis to the stand."
+                    "Waiting = total cims waiting at a taxi stand.\n"
                 },
 
                 // LAST UPDATE
@@ -200,15 +199,15 @@ namespace RiderControl
                     "QueueClear = blocked residents released from taxi queue entities.\n" +
                     "SkipComm/SkipTour = commuters/tourists skipped because their toggles are OFF." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusSnapshotMeta)), "Snapshot" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusSnapshotMeta)), "Updated" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusSnapshotMeta)),
-                    "Updated time shows when this status snapshot was taken, usually after entering Options menu." },
+                    "Updated time shows when this status snapshot was taken; usually after entering Options menu." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.WriteStatusReportToLog)), "Write Status Report to Log" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.WriteStatusReportToLog)),
                     "Writes the latest completed Status snapshot to this mod's log file and requests a fresh refresh." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusGroupSafety)), "Groups left vanilla" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusGroupSafety)), "Cims in groups stay vanilla" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusGroupSafety)),
                     "Residents traveling as part of a group are left alone (vanilla) to prevent mishaps.\n" +
                     "Mod only adjusts solo travelers (majority)." },
@@ -233,9 +232,9 @@ namespace RiderControl
                 { KeyStatusTotalsLine, "{0} waiting | {1} tourists/mo | {2} citizens/mo" },
                 { KeyStatusTaxiSupplyLine, "{0} taxis | {1} depots | {2} dispatch ctr | {3} stands" },
                 { KeyStatusPassengersLine, "{0} total | {1} IgnoreTaxi | {2} resident" },
-                { KeyStatusRequestsLine, "{0} customer | {1} outside | {2} none | {3} stand" },
+                { KeyStatusRequestsLine, "{0} customer | {1} outside (OC) | {2} none " },
+                { KeyStatusTaxiStandsLine, "{0} waiting" },
                 { KeyStatusTaxiFleetLine, "{0} ride | {1} board | {2} return\n{3} dispatch | {4} en route | {5} parked" },
-                { KeyStatusTaxiStandsLine, "{0} waiting | {1} stand requests" },
                 { KeyStatusCoverageLine, "{0}/{1} IgnoreTaxi" },
                 { KeyStatusCoverageGroupsLine, "{0}/{1} commuter | {2}/{3} tourist" },
                 { KeyStatusWorkDoneLine, "{0} applied | {1} ride clear | {2} lane clear" },
