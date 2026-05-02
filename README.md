@@ -42,11 +42,19 @@ When enabled:
 - Let the simulation run for a few minutes to see taxi traffic decline.
 - Taxi Stand - block them from requesting taxis drive to stands and park there. This is a minor bonus feature if it can be made to work.
 
-| Situation | Slider | Commuters | Tourists | Meaning |
-|---|---:|---:|---:|---|
-| First install / mod default | 0% | OFF | OFF | Normal residents avoid taxis; commuters/tourists are left vanilla. |
-| Reset to Game Defaults button | 100% | OFF | OFF | Vanilla-style taxi behavior. |
+| Setting | Meaning |
+|---:|---|
+| 0% | No residents use taxis |
+| 25% | About 1 in 4 residents may use taxis |
+| 50% | About half of residents may use taxis |
+| 75% | About 3 in 4 residents may use taxis |
+| 100% | Residents use taxis like vanilla |
 
+
+| Situation | Residents allowed to use taxis | Commuters avoid taxis | Tourists avoid taxis | Meaning |
+|---|---:|---:|---:|---|
+| First install / mod default | 0% | OFF | OFF | Residents avoid taxis; commuters/tourists are left vanilla. |
+| Reset to Game Defaults button | 100% | OFF | OFF | Vanilla-style taxi behavior. |
 
 ###  Credits
 - River Mochi mod author

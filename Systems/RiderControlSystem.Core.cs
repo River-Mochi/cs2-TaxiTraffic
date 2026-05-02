@@ -1,8 +1,9 @@
 // File: Systems/RiderControlSystem.Core.cs
 // Purpose: Demand-side taxi control (SAFE variant):
-// - Uses a stable per-resident taxi permission slider
-// - Applies ResidentFlags.IgnoreTaxi only to residents outside the allowed taxi bucket
-// - Unwinds blocked residents from taxi waiting states so cims don't freeze
+// - Uses a stable per-resident taxi permission slider.
+// - Applies ResidentFlags.IgnoreTaxi only to residents outside the allowed taxi bucket.
+// - Leaves obvious group travelers alone for Phase 1 safety.
+// - Unwinds blocked residents from taxi waiting states so cims don't freeze.
 // Notes:
 // - Never touch Deleted/Temp entities.
 // - Never use SystemAPI from static methods (Entities source-gen limitation).
@@ -13,7 +14,7 @@ namespace RiderControl
     using Game;
     using Game.Citizens;        // Citizen, HouseholdMember, CommuterHousehold, TouristHousehold
     using Game.Common;          // Deleted
-    using Game.Creatures;       // ResidentFlags, HumanCurrentLane, CreatureLaneFlags, RideNeeder
+    using Game.Creatures;       // ResidentFlags, HumanCurrentLane, CreatureLaneFlags, RideNeeder, GroupMember, GroupCreature
     using Game.Pathfind;        // PathOwner, PathFlags
     using Game.Routes;          // TaxiStand, BoardingVehicle, Connected
     using Game.Tools;           // Temp
@@ -105,10 +106,13 @@ namespace RiderControl
             int appliedIgnoreTaxi = 0;
             int skippedCommuters = 0;
             int skippedTourists = 0;
+            int skippedGroupTravelers = 0;
 
             int clearedTaxiLaneWaiting = 0;
             int clearedTaxiStandWaiting = 0;
             int clearedRideNeederLinks = 0;
+
+            int clearedGroupTravelers = ClearGroupLinkedTaxiMarksBatch();
 
             bool changed = DetectTaxiEligibilitySettingChange(setting);
             if (changed)
@@ -120,6 +124,16 @@ namespace RiderControl
             if (m_TaxiEligibilityResetInProgress)
             {
                 int resetCount = ResetTaxiEligibilityMarkersBatch();
+                RecordLastUpdateCounters(
+                    appliedIgnoreTaxi,
+                    skippedCommuters,
+                    skippedTourists,
+                    skippedGroupTravelers,
+                    clearedGroupTravelers,
+                    clearedTaxiLaneWaiting,
+                    clearedTaxiStandWaiting,
+                    clearedRideNeederLinks);
+
                 if (resetCount > 0)
                 {
                     TickStatusSnapshot();
@@ -133,13 +147,23 @@ namespace RiderControl
                 m_TaxiEligibilityResetInProgress = false;
             }
 
-            // Full vanilla-style state only when normal residents, commuters, and tourists are all left alone.
+            // Full vanilla-style state only when residents, commuters, and tourists are all left alone.
             bool vanillaResidents = setting.ResidentsAllowedToUseTaxis >= Setting.TaxiAllowedPercentMax;
             bool vanillaGroups = !setting.BlockCommuters && !setting.BlockTourists;
 
             if (vanillaResidents && vanillaGroups)
             {
                 UnmarkIgnoreTaxiBatch(out _);
+
+                RecordLastUpdateCounters(
+                    appliedIgnoreTaxi,
+                    skippedCommuters,
+                    skippedTourists,
+                    skippedGroupTravelers,
+                    clearedGroupTravelers,
+                    clearedTaxiLaneWaiting,
+                    clearedTaxiStandWaiting,
+                    clearedRideNeederLinks);
 
                 TickStatusSnapshot();
 
@@ -149,9 +173,12 @@ namespace RiderControl
                 return;
             }
 
-
-
-            ApplyTaxiEligibilityBatch(setting, out appliedIgnoreTaxi, out skippedCommuters, out skippedTourists);
+            ApplyTaxiEligibilityBatch(
+                setting,
+                out appliedIgnoreTaxi,
+                out skippedCommuters,
+                out skippedTourists,
+                out skippedGroupTravelers);
 
             // Unstick pass (interval-based).
             m_UnstickTimer += UTime.unscaledDeltaTime;
@@ -163,18 +190,40 @@ namespace RiderControl
                 UnstickTaxiQueues(setting, out clearedTaxiStandWaiting);
             }
 
-            // Status fields (defined in Status partial).
-            s_StatusLastAppliedIgnoreTaxi = appliedIgnoreTaxi;
-            s_StatusLastSkippedCommuters = skippedCommuters;
-            s_StatusLastSkippedTourists = skippedTourists;
-            s_StatusLastClearedTaxiLaneWaiting = clearedTaxiLaneWaiting;
-            s_StatusLastClearedTaxiStandWaiting = clearedTaxiStandWaiting;
-            s_StatusLastRemovedRideNeeder = clearedRideNeederLinks;
+            RecordLastUpdateCounters(
+                appliedIgnoreTaxi,
+                skippedCommuters,
+                skippedTourists,
+                skippedGroupTravelers,
+                clearedGroupTravelers,
+                clearedTaxiLaneWaiting,
+                clearedTaxiStandWaiting,
+                clearedRideNeederLinks);
 
             TickStatusSnapshot();
 
             if (setting.EnableDebugLogging)
                 TickDebugLogging(setting, kDebugSummaryIntervalSeconds);
+        }
+
+        private static void RecordLastUpdateCounters(
+            int appliedIgnoreTaxi,
+            int skippedCommuters,
+            int skippedTourists,
+            int skippedGroupTravelers,
+            int clearedGroupTravelers,
+            int clearedTaxiLaneWaiting,
+            int clearedTaxiStandWaiting,
+            int clearedRideNeederLinks)
+        {
+            s_StatusLastAppliedIgnoreTaxi = appliedIgnoreTaxi;
+            s_StatusLastSkippedCommuters = skippedCommuters;
+            s_StatusLastSkippedTourists = skippedTourists;
+            s_StatusLastSkippedGroupTravelers = skippedGroupTravelers;
+            s_StatusLastClearedGroupTravelers = clearedGroupTravelers;
+            s_StatusLastClearedTaxiLaneWaiting = clearedTaxiLaneWaiting;
+            s_StatusLastClearedTaxiStandWaiting = clearedTaxiStandWaiting;
+            s_StatusLastRemovedRideNeeder = clearedRideNeederLinks;
         }
 
         // -----------------------
@@ -246,6 +295,35 @@ namespace RiderControl
             return resetCount;
         }
 
+        private int ClearGroupLinkedTaxiMarksBatch()
+        {
+            int cleared = 0;
+
+            using NativeList<Entity> toUnmark = new NativeList<Entity>(Allocator.Temp);
+
+            foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
+                         .Query<RefRW<CreatureResident>>()
+                         .WithAll<IgnoreTaxiMark>()
+                         .WithNone<Deleted, Temp>()
+                         .WithEntityAccess())
+            {
+                if (!IsGroupLinkedTraveler(entity))
+                    continue;
+
+                resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
+                toUnmark.Add(entity);
+
+                cleared++;
+                if (cleared >= kMarkBatchPerUpdate)
+                    break;
+            }
+
+            if (toUnmark.Length > 0)
+                EntityManager.RemoveComponent<IgnoreTaxiMark>(toUnmark.AsArray());
+
+            return cleared;
+        }
+
         private void UnmarkIgnoreTaxiBatch(out int unmarkedCount)
         {
             unmarkedCount = 0;
@@ -298,11 +376,13 @@ namespace RiderControl
             Setting setting,
             out int applied,
             out int skippedCommuters,
-            out int skippedTourists)
+            out int skippedTourists,
+            out int skippedGroupTravelers)
         {
             applied = 0;
             skippedCommuters = 0;
             skippedTourists = 0;
+            skippedGroupTravelers = 0;
 
             using NativeList<Entity> toBlock = new NativeList<Entity>(Allocator.Temp);
             using NativeList<Entity> toAllow = new NativeList<Entity>(Allocator.Temp);
@@ -315,6 +395,16 @@ namespace RiderControl
                          .WithEntityAccess())
             {
                 processed++;
+
+                if (IsGroupLinkedTraveler(entity))
+                {
+                    skippedGroupTravelers++;
+
+                    if (processed >= kMarkBatchPerUpdate)
+                        break;
+
+                    continue;
+                }
 
                 bool shouldBlock = ShouldResidentIgnoreTaxiBySettings(
                     setting,
@@ -350,7 +440,6 @@ namespace RiderControl
             if (toAllow.Length > 0)
                 EntityManager.AddComponent<TaxiAllowedMark>(toAllow.AsArray());
         }
-
 
         private bool ShouldResidentIgnoreTaxiBySettings(
             Setting setting,
@@ -407,13 +496,10 @@ namespace RiderControl
             Citizen citizen = SystemAPI.GetComponentRO<Citizen>(citizenEntity).ValueRO;
 
             // Stable bucket: same citizen should stay in the same taxi-allowed bucket after reload.
-            Unity.Mathematics.Random random = citizen.GetPseudoRandom(CitizenPseudoRandom.CarProbability);
-            uint roll = random.NextUInt(100u);
+            uint roll = GetStableTaxiEligibilityRoll(citizen);
 
             return roll >= (uint)allowedPercent;
         }
-
-
 
         private static uint GetStableTaxiEligibilityRoll(Citizen citizen)
         {
@@ -429,6 +515,12 @@ namespace RiderControl
             hash ^= hash >> 16;
 
             return hash % 100u;
+        }
+
+        private bool IsGroupLinkedTraveler(Entity entity)
+        {
+            return EntityManager.HasComponent<GroupMember>(entity) ||
+                   EntityManager.HasBuffer<GroupCreature>(entity);
         }
 
         // -----------------------
@@ -460,6 +552,9 @@ namespace RiderControl
                     continue;
 
                 if (!SystemAPI.HasComponent<CreatureResident>(entity))
+                    continue;
+
+                if (IsGroupLinkedTraveler(entity))
                     continue;
 
                 RefRW<CreatureResident> resident = SystemAPI.GetComponentRW<CreatureResident>(entity);
@@ -515,6 +610,9 @@ namespace RiderControl
                          .WithEntityAccess())
             {
                 if ((resident.ValueRO.m_Flags & ResidentFlags.WaitingTransport) == 0)
+                    continue;
+
+                if (IsGroupLinkedTraveler(entity))
                     continue;
 
                 Entity queueEntity = lane.ValueRO.m_QueueEntity;
