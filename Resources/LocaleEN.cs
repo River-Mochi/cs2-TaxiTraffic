@@ -74,16 +74,16 @@ namespace RiderControl
                 // Behavior
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResidentsAllowedToUseTaxis)), "Residents allowed to use taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResidentsAllowedToUseTaxis)),
-                    "Controls normal resident taxi eligibility.\n" +
-                    "0% = set all residents to ignore Taxis.\n" +
-                    "25% = ~1 in 4 residents may use taxis.\n" +
-                    "50% = ~half may use taxis.\n" +
-                    "75% = ~3 in 4 may use taxis\n" +
-                    "100% = residents use taxis like vanilla (heavy).\n" +
+                    "Controls local citizen taxi eligibility.\n" +
+                    "0% = residents <ignore taxis> as much as possible.\n" +
+                    "25% = ~1 in 4 residents are eligible.\n" +
+                    "50% = ~half are eligible.\n" +
+                    "75% = ~3 in 4 are eligible.\n" +
+                    "100% = vanilla taxi levels (heavy usage).\n" +
                     "Notes:\n" +
-                    "- commuters and tourists toggles are separate behavior.\n" +
-                    "- a few vanilla systems (e.g. Leisure) can can directly call taxis for cims and doesn't care if they have IgnoreTaxi,\n" +
-                    " so there is some small usage at 0% setting; majority of cims will ignore taxis."
+                    "- commuters and tourists toggles are separate options.\n" +
+                    "- a few vanilla systems (e.g. Leisure) can directly call taxis and may ignore the IgnoreTaxi flag,\n" +
+                    " so small taxi usage can be seem even at 0%."
                     },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.BlockCommuters)), "Commuters avoid taxis" },
@@ -96,9 +96,10 @@ namespace RiderControl
                     "OFF = tourists are left alone, like vanilla.\n" +
                     "ON = all tourist households get Ignore Taxi flag." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetToGameDefaults)), "Reset to Game Defaults" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetToGameDefaults)), "Game Defaults" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetToGameDefaults)),
-                    "Sets normal residents to 100% taxi eligibility and turns commuter/tourist blocking OFF." },
+                    "Resets to game settings: residents return to vanilla taxi usage levels;\n" +
+                    "any commuter/tourist blocking is OFF." },
 
                 // Debug
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableDebugLogging)), "Enable verbose taxi logging" },
@@ -155,10 +156,10 @@ namespace RiderControl
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusRequests)), "Taxi requests" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusRequests)),
-                    "TaxiRequest counts by type.\n" +
-                    "Customer = city pickup request.\n" +
-                    "Outside = outside-connection taxi request.\n" +
-                    "None = request with no normal taxi request type."
+                    "Active taxi requests by type.\n" +
+                    "**City** = requests inside the city.\n" +
+                    "**Outside** = requests tied to outside-connections.\n" +
+                    "**Other** = request with no normal taxi request type."
                },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusPassengers)), "Passengers" },
@@ -207,10 +208,10 @@ namespace RiderControl
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.WriteStatusReportToLog)),
                     "Writes the latest completed Status snapshot to this mod's log file and requests a fresh refresh." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusGroupSafety)), "Cims in groups stay vanilla" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.StatusGroupSafety)), "Cims in groups" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.StatusGroupSafety)),
-                    "Residents traveling as part of a group are left alone (vanilla) to prevent mishaps.\n" +
-                    "Mod only adjusts solo travelers (majority)." },
+                    "Residents traveling as part of a group are left alone (vanilla) to prevent any mishaps.\n" +
+                    "Mod only adjusts solo cims (majority of travelers)." },
 
 #if DEBUG
                 // Advanced Debug (DEV builds only)
@@ -232,7 +233,7 @@ namespace RiderControl
                 { KeyStatusTotalsLine, "{0} waiting | {1} tourists/mo | {2} citizens/mo" },
                 { KeyStatusTaxiSupplyLine, "{0} taxis | {1} depots | {2} dispatch ctr | {3} stands" },
                 { KeyStatusPassengersLine, "{0} total | {1} IgnoreTaxi | {2} resident" },
-                { KeyStatusRequestsLine, "{0} customer | {1} outside (OC) | {2} none " },
+                { KeyStatusRequestsLine, "{0} city | {1} outside (OC) | {2} none " },
                 { KeyStatusTaxiStandsLine, "{0} waiting" },
                 { KeyStatusTaxiFleetLine, "{0} ride | {1} board | {2} return\n{3} dispatch | {4} en route | {5} parked" },
                 { KeyStatusCoverageLine, "{0}/{1} IgnoreTaxi" },
