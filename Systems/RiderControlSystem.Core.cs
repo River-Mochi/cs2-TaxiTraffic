@@ -11,7 +11,7 @@
 namespace RiderControl
 {
     using CS2Shared.RiverMochi; // LogUtils
-    using Game;
+    using Game;                 // GameSystemBase
     using Game.Citizens;        // Citizen, HouseholdMember, CommuterHousehold, TouristHousehold
     using Game.Common;          // Deleted
     using Game.Creatures;       // ResidentFlags, HumanCurrentLane, CreatureLaneFlags, RideNeeder, GroupMember, GroupCreature
@@ -19,8 +19,8 @@ namespace RiderControl
     using Game.Routes;          // TaxiStand, BoardingVehicle, Connected
     using Game.Tools;           // Temp
     using Game.Vehicles;        // Taxi
-    using Unity.Collections;
-    using Unity.Entities;
+    using Unity.Collections;    // NativeList, Allocator
+    using Unity.Entities;       // Entity, RefRW, RefRO
     using CreatureResident = Game.Creatures.Resident;
     using UTime = UnityEngine.Time;
 
@@ -110,8 +110,8 @@ namespace RiderControl
             int clearedTaxiStandWaiting = 0;
             int clearedRideNeederLinks = 0;
 
-            // Safety pass runs first so residents that became group-linked are returned to vanilla handling.
-            int clearedGroupTravelers = ClearGroupLinkedTaxiMarksBatch();
+            // Do not sweep all marked residents every update; too expensive in large cities.
+            int clearedGroupTravelers = 0;
 
             bool changed = DetectTaxiEligibilitySettingChange(setting);
             if (changed)
@@ -403,9 +403,14 @@ namespace RiderControl
             {
                 processed++;
 
+
                 if (IsGroupLinkedTraveler(entity))
                 {
                     skippedGroupTravelers++;
+
+                    // Group-linked travelers stay vanilla for this settings pass.
+                    // Mark as checked so the batch does not revisit same residents every update.
+                    toAllow.Add(entity);
 
                     if (processed >= kMarkBatchPerUpdate)
                         break;
