@@ -75,26 +75,28 @@ namespace RiderControl
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResidentsAllowedToUseTaxis)), "Residents allowed to use taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResidentsAllowedToUseTaxis)),
                     "Controls local citizen taxi eligibility.\n" +
-                    "0% = residents <ignore taxis> as much as possible.\n" +
-                    "25% = ~1 in 4 residents are eligible.\n" +
-                    "50% = ~half are eligible.\n" +
-                    "75% = ~3 in 4 are eligible.\n" +
-                    "100% = vanilla taxi levels (heavy usage).\n" +
+                    "**0% = residents ignore taxis** as much as possible.\n" +
+                    "**25% = ~1 in 4** residents are eligible to use taxis.\n" +
+                    "**50% = ~half** are eligible to use taxis.\n" +
+                    "**75% = ~3 in 4** are eligible to use taxis.\n" +
+                    "**100% = vanilla taxi** levels (heavy usage).\n" +
                     "Notes:\n" +
-                    "- commuters and tourists toggles are separate options.\n" +
+                    "- commuters and tourists are separate groups, see [ ✓ ] toggles.\n" +
                     "- a few vanilla systems (e.g. Leisure) can directly call taxis and may ignore the IgnoreTaxi flag,\n" +
                     " so small taxi usage can be seem even at 0%."
                     },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.BlockCommuters)), "Commuters avoid taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.BlockCommuters)),
-                    "OFF = commuters are left alone, like vanilla.\n" +
-                    "ON = all commuter households get Ignore Taxi flag." },
+                    "**ON** = commuter households get Ignore Taxi flag." +
+                    "**OFF** = commuters can use taxis (vanilla).\n"
+                     },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.BlockTourists)), "Tourists avoid taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.BlockTourists)),
-                    "OFF = tourists are left alone, like vanilla.\n" +
-                    "ON = all tourist households get Ignore Taxi flag." },
+                    "**ON** = tourist households get Ignore Taxi flag." 
+                    "**OFF** = tourists can use taxis (vanilla).\n" +
+                    },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetToGameDefaults)), "Game Defaults" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetToGameDefaults)),
@@ -102,11 +104,11 @@ namespace RiderControl
                     "any commuter/tourist blocking is OFF." },
 
                 // Debug
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableDebugLogging)), "Enable verbose taxi logging" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableDebugLogging)), "Enable verbose logging" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableDebugLogging)),
-                    "When enabled, logs periodic TaxiSummary lines to help debug remaining taxi activity.\n" +
-                    "Disable for normal gameplay or it can hurt performance.\n" +
-                    "Do not enable this for normal gameplay." },
+                    "When enabled, writes periodic TaxiSummary lines to help debug taxi activity.\n" +
+                    "**OFF** = disable for normal gameplay; heavy logging can hurt performance.\n" +
+                    "<Do not enable this for normal gameplay.>" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLogFile)), "Open Log File" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLogFile)),
