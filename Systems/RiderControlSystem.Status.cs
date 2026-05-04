@@ -3,12 +3,14 @@
 
 namespace RiderControl
 {
+    using Game;                 // GameMode extensions
     using Game.Citizens;        // HouseholdMember, Household
     using Game.Common;          // Deleted
     using Game.Creatures;       // ResidentFlags, Passenger, HumanCurrentLane, Resident
     using Game.Events;          // InvolvedInAccident
     using Game.Prefabs;         // PrefabSystem, PrefabRef
     using Game.Routes;          // TaxiStand, WaitingPassengers
+    using Game.SceneFlow;       // GameManager
     // Game.Simulation types stay fully qualified here because Entities source-gen can misresolve partial-system usings.
     using Game.Tools;           // Temp
     using Game.Vehicles;        // Taxi, TaxiFlags, ParkedCar
@@ -21,12 +23,16 @@ namespace RiderControl
 
     public partial class RiderControlSystem
     {
-        private const double kAutoRefreshMinSeconds = 240.0; // auto-refresh every 4 min (real time)
+        private const int kNewOptionsVisitFrameGap = 30;
 
         private const string kNotReadyValue = "n/a";
 
-        private static bool s_StatusRefreshRequested;
+        private static int s_LastStatusOptionsUiFrame = -100000;
+        private static bool s_HasStatusSnapshotThisOptionsVisit;
+        private static bool s_StatusSnapshotDirty = true;
         private static bool s_StatusForceRefresh;
+        private static bool s_WasInGame;
+        private static uint s_StatusLastSnapshotSimulationFrame = uint.MaxValue;
 
         // NOTE: Must NOT be readonly (assigned after snapshots).
         internal static double s_StatusLastSnapshotRealtime;
@@ -119,6 +125,7 @@ namespace RiderControl
         internal static int s_StatusLastRemovedRideNeeder;
 
         private Game.Simulation.CityStatisticsSystem? m_CityStatisticsSystem;
+        private Game.Simulation.SimulationSystem? m_SimulationSystem;
         private PrefabSystem? m_PrefabSystem;
         private EntityQuery m_TransportConfigQuery;
         private UITransportConfigurationPrefab? m_TransportConfig;
@@ -126,6 +133,7 @@ namespace RiderControl
         private void InitStatusSystemsOnCreate()
         {
             m_CityStatisticsSystem = World.GetOrCreateSystemManaged<Game.Simulation.CityStatisticsSystem>();
+            m_SimulationSystem = World.GetOrCreateSystemManaged<Game.Simulation.SimulationSystem>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             m_TransportConfigQuery = GetEntityQuery(ComponentType.ReadOnly<UITransportConfigurationData>());
         }
@@ -135,8 +143,12 @@ namespace RiderControl
             s_StatusLastSnapshotRealtime = 0.0;
             s_StatusLastSnapshotClock = kNotReadyValue;
 
-            s_StatusRefreshRequested = false;
+            s_LastStatusOptionsUiFrame = -100000;
+            s_HasStatusSnapshotThisOptionsVisit = false;
+            s_StatusSnapshotDirty = true;
             s_StatusForceRefresh = false;
+            s_WasInGame = true;
+            s_StatusLastSnapshotSimulationFrame = uint.MaxValue;
 
             ClearSnapshotValues();
             ClearLastUpdateValues();
@@ -155,26 +167,17 @@ namespace RiderControl
             }
         }
 
-        private void TickStatusSnapshot()
+        private uint GetStatusSimulationFrame()
         {
-            if (!s_StatusRefreshRequested)
-                return;
+            return m_SimulationSystem?.frameIndex ?? uint.MaxValue;
+        }
 
-            double now = UTime.realtimeSinceStartupAsDouble;
-
-            if (!s_StatusForceRefresh && s_StatusLastSnapshotRealtime > 0.0)
-            {
-                double age = Math.Max(0.0, now - s_StatusLastSnapshotRealtime);
-                if (age < kAutoRefreshMinSeconds)
-                    return;
-            }
-
-            s_StatusRefreshRequested = false;
-            s_StatusForceRefresh = false;
-
+        private void BuildStatusSnapshotForOptionsUi(uint simulationFrame)
+        {
+            CompleteDependency();
             UpdateStatusSnapshot();
 
-            s_StatusLastSnapshotRealtime = now;
+            s_StatusLastSnapshotRealtime = UTime.realtimeSinceStartupAsDouble;
             try
             {
                 s_StatusLastSnapshotClock = DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
@@ -183,6 +186,11 @@ namespace RiderControl
             {
                 s_StatusLastSnapshotClock = kNotReadyValue;
             }
+
+            s_StatusLastSnapshotSimulationFrame = simulationFrame;
+            s_StatusSnapshotDirty = false;
+            s_StatusForceRefresh = false;
+            s_HasStatusSnapshotThisOptionsVisit = true;
         }
 
         private void UpdateStatusSnapshot()
@@ -558,21 +566,75 @@ namespace RiderControl
 
         internal static void AutoRequestStatusRefreshOnRead()
         {
-            if (s_StatusLastSnapshotRealtime <= 0.0)
+            RefreshStatusSnapshotForOptionsUi(force: false);
+        }
+
+        internal static void RefreshStatusSnapshotForOptionsUi(bool force)
+        {
+            int frame = UTime.frameCount;
+            bool newOptionsVisit =
+                s_LastStatusOptionsUiFrame < 0 ||
+                frame - s_LastStatusOptionsUiFrame > kNewOptionsVisitFrameGap;
+
+            s_LastStatusOptionsUiFrame = frame;
+
+            bool forceRefresh = force || s_StatusForceRefresh;
+            if (!forceRefresh && !newOptionsVisit && s_HasStatusSnapshotThisOptionsVisit && !s_StatusSnapshotDirty)
+                return;
+
+            World world = World.DefaultGameObjectInjectionWorld;
+            if (world == null || !world.IsCreated)
             {
-                s_StatusRefreshRequested = true;
                 return;
             }
 
-            double now = UTime.realtimeSinceStartupAsDouble;
-            double age = now - s_StatusLastSnapshotRealtime;
-            if (age >= kAutoRefreshMinSeconds)
-                s_StatusRefreshRequested = true;
+            GameManager gm = GameManager.instance;
+            bool isGame = gm != null && gm.gameMode.IsGame();
+
+            if (isGame != s_WasInGame)
+            {
+                s_WasInGame = isGame;
+                s_HasStatusSnapshotThisOptionsVisit = false;
+                s_StatusSnapshotDirty = true;
+                s_StatusLastSnapshotSimulationFrame = uint.MaxValue;
+            }
+
+            if (!isGame)
+            {
+                s_HasStatusSnapshotThisOptionsVisit = true;
+                return;
+            }
+
+            try
+            {
+                RiderControlSystem system = world.GetOrCreateSystemManaged<RiderControlSystem>();
+                uint simulationFrame = system.GetStatusSimulationFrame();
+                bool simulationAdvanced = simulationFrame != s_StatusLastSnapshotSimulationFrame;
+
+                bool shouldBuild =
+                    forceRefresh ||
+                    !HasSnapshot() ||
+                    s_StatusSnapshotDirty ||
+                    (newOptionsVisit && simulationAdvanced);
+
+                if (!shouldBuild)
+                {
+                    s_HasStatusSnapshotThisOptionsVisit = true;
+                    return;
+                }
+
+                system.BuildStatusSnapshotForOptionsUi(simulationFrame);
+            }
+            catch (Exception)
+            {
+                s_StatusSnapshotDirty = true;
+                s_StatusForceRefresh = false;
+            }
         }
 
         internal static void RequestStatusRefresh(bool force)
         {
-            s_StatusRefreshRequested = true;
+            s_StatusSnapshotDirty = true;
             if (force)
                 s_StatusForceRefresh = true;
         }

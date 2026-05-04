@@ -33,6 +33,9 @@ namespace RiderControl
         // Batch size for applying/removing eligibility marks each update.
         private const int kMarkBatchPerUpdate = 2000;
 
+        // Match the game's resident update grouping instead of touching taxi logic every simulation frame.
+        private const int kUpdateIntervalFrames = 16;
+
         // Unstick taxi waiting states on an interval, not every frame.
         private const float kUnstickIntervalSeconds = 1.0f;
 
@@ -46,12 +49,17 @@ namespace RiderControl
         // Timers / setting cache
         // -----------------------
 
-        private float m_UnstickTimer;
+        private double m_LastUnstickRealtime;
 
         private int m_LastResidentsAllowedToUseTaxis = int.MinValue;
         private bool m_LastBlockCommuters;
         private bool m_LastBlockTourists;
         private bool m_TaxiEligibilityResetInProgress;
+
+        public override int GetUpdateInterval(SystemUpdatePhase phase)
+        {
+            return kUpdateIntervalFrames;
+        }
 
         protected override void OnCreate()
         {
@@ -75,7 +83,7 @@ namespace RiderControl
             if (!isRealGame)
                 return;
 
-            m_UnstickTimer = 0f;
+            m_LastUnstickRealtime = UTime.realtimeSinceStartupAsDouble;
 
             m_LastResidentsAllowedToUseTaxis = int.MinValue;
             m_LastBlockCommuters = false;
@@ -136,8 +144,6 @@ namespace RiderControl
 
                 if (resetCount > 0)
                 {
-                    TickStatusSnapshot();
-
                     if (setting.EnableDebugLogging)
                         TickDebugLogging(setting, kDebugSummaryIntervalSeconds);
 
@@ -165,8 +171,6 @@ namespace RiderControl
                     clearedTaxiStandWaiting,
                     clearedRideNeederLinks);
 
-                TickStatusSnapshot();
-
                 if (setting.EnableDebugLogging)
                     TickDebugLogging(setting, kDebugSummaryIntervalSeconds);
 
@@ -181,10 +185,10 @@ namespace RiderControl
                 out skippedGroupTravelers);
 
             // Unstick pass runs on an interval.
-            m_UnstickTimer += UTime.unscaledDeltaTime;
-            if (m_UnstickTimer >= kUnstickIntervalSeconds)
+            double now = UTime.realtimeSinceStartupAsDouble;
+            if (now - m_LastUnstickRealtime >= kUnstickIntervalSeconds)
             {
-                m_UnstickTimer = 0f;
+                m_LastUnstickRealtime = now;
 
                 UnstickTaxiLaneWaiters(setting, out clearedTaxiLaneWaiting, out clearedRideNeederLinks);
                 UnstickTaxiQueues(setting, out clearedTaxiStandWaiting);
@@ -199,8 +203,6 @@ namespace RiderControl
                 clearedTaxiLaneWaiting,
                 clearedTaxiStandWaiting,
                 clearedRideNeederLinks);
-
-            TickStatusSnapshot();
 
             if (setting.EnableDebugLogging)
                 TickDebugLogging(setting, kDebugSummaryIntervalSeconds);

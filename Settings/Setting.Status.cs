@@ -325,7 +325,7 @@ namespace RiderControl
                 if (!value)
                     return;
 
-                RiderControlSystem.RequestStatusRefresh(force: true);
+                RiderControlSystem.RefreshStatusSnapshotForOptionsUi(force: true);
                 LogUtils.Info(Mod.s_Log, BuildStatusReportText);
             }
         }
