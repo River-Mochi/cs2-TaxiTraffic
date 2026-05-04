@@ -94,8 +94,8 @@ namespace RiderControl
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.BlockTourists)), "Tourists avoid taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.BlockTourists)),
-                    "**ON** = tourist households get Ignore Taxi flag." 
-                    "**OFF** = tourists can use taxis (vanilla).\n" +
+                    "**ON** = tourist households get Ignore Taxi flag.\n" +
+                    "**OFF** = tourists can use taxis (vanilla).\n"
                     },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetToGameDefaults)), "Game Defaults" },
