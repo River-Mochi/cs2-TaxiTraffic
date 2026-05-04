@@ -1,5 +1,5 @@
 // File: Mod.cs
-// Entry point for "Cim Be Smart".
+// Entry point for "Smart Traveler".
 
 namespace RiderControl
 {
@@ -16,10 +16,10 @@ namespace RiderControl
 
     public sealed class Mod : IMod
     {
-        public const string ModName = "Cim Be Smart";
-        public const string ModId = "CimBeSmart";
-        public const string ModTag = "[CBS]";
-        public const string ShortName = "Cim Be Smart";
+        public const string ModName = "Smart Traveler";
+        public const string ModId = "SmartTraveler";
+        public const string ModTag = "[SMART]";
+        public const string ShortName = "Smart Traveler";
 
         private static bool s_BannerLogged;
 
@@ -36,7 +36,7 @@ namespace RiderControl
 
         public void OnLoad(UpdateSystem updateSystem)
         {
-            // Shared helpers need the mod ID so fallback logs still use CimBeSmart.log.
+            // Shared helpers need the mod ID so fallback logs still use SmartTraveler.log.
             LogUtils.Configure(ModId);
             ShellOpen.Configure(s_Log, ModId, ModTag);
 

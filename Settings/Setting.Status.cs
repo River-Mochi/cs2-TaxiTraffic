@@ -1,5 +1,5 @@
 // File: Settings/Setting.Status.cs
-// Status tab Options UI rows for "Cim Be Smart".
+// Status tab Options UI rows for "Smart Traveler".
 // Status row text is formatted from Resources/LocaleEN.cs entries.
 
 namespace RiderControl

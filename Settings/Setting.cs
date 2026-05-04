@@ -1,5 +1,5 @@
 // File: Settings/Setting.cs
-// Options UI for "Cim Be Smart".
+// Options UI for "Smart Traveler".
 // All user-facing strings are in Resources/LocaleEN.cs.
 
 namespace RiderControl
@@ -13,7 +13,7 @@ namespace RiderControl
     using UnityEngine;
 
 #if DEBUG
-    [FileLocation("ModsSettings/CimBeSmart/CimBeSmart")]
+    [FileLocation("ModsSettings/SmartTraveler/SmartTraveler")]
     [SettingsUITabOrder(ActionsTab, StatusTab, AboutTab)]
     [SettingsUIGroupOrder(
         BehaviorGroup,
@@ -38,7 +38,7 @@ namespace RiderControl
         AboutLinksGroup
     )]
 #else
-    [FileLocation("ModsSettings/CimBeSmart/CimBeSmart")]
+    [FileLocation("ModsSettings/SmartTraveler/SmartTraveler")]
     [SettingsUITabOrder(ActionsTab, StatusTab, AboutTab)]
     [SettingsUIGroupOrder(
         BehaviorGroup,

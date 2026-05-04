@@ -8,25 +8,25 @@ namespace RiderControl
 
     public sealed class LocaleEN : IDictionarySource
     {
-        public const string KeyStatusCitizensLine = "CimBeSmart.Status.CitizensLine";
-        public const string KeyStatusTouristsLine = "CimBeSmart.Status.TouristsLine";
-        public const string KeyStatusTotalsLine = "CimBeSmart.Status.TotalsLine";
-        public const string KeyStatusTaxiSupplyLine = "CimBeSmart.Status.TaxiSupplyLine";
-        public const string KeyStatusPassengersLine = "CimBeSmart.Status.PassengersLine";
-        public const string KeyStatusRequestsLine = "CimBeSmart.Status.RequestsLine";
-        public const string KeyStatusTaxiFleetLine = "CimBeSmart.Status.TaxiFleetLine";
-        public const string KeyStatusTaxiStandsLine = "CimBeSmart.Status.TaxiStandsLine";
-        public const string KeyStatusCoverageLine = "CimBeSmart.Status.CoverageLine";
-        public const string KeyStatusCoverageGroupsLine = "CimBeSmart.Status.CoverageGroupsLine";
-        public const string KeyStatusWorkDoneLine = "CimBeSmart.Status.WorkDoneLine";
-        public const string KeyStatusWorkDone2Line = "CimBeSmart.Status.WorkDone2Line";
-        public const string KeyStatusSnapshotLine = "CimBeSmart.Status.SnapshotLine";
+        public const string KeyStatusCitizensLine = "SmartTraveler.Status.CitizensLine";
+        public const string KeyStatusTouristsLine = "SmartTraveler.Status.TouristsLine";
+        public const string KeyStatusTotalsLine = "SmartTraveler.Status.TotalsLine";
+        public const string KeyStatusTaxiSupplyLine = "SmartTraveler.Status.TaxiSupplyLine";
+        public const string KeyStatusPassengersLine = "SmartTraveler.Status.PassengersLine";
+        public const string KeyStatusRequestsLine = "SmartTraveler.Status.RequestsLine";
+        public const string KeyStatusTaxiFleetLine = "SmartTraveler.Status.TaxiFleetLine";
+        public const string KeyStatusTaxiStandsLine = "SmartTraveler.Status.TaxiStandsLine";
+        public const string KeyStatusCoverageLine = "SmartTraveler.Status.CoverageLine";
+        public const string KeyStatusCoverageGroupsLine = "SmartTraveler.Status.CoverageGroupsLine";
+        public const string KeyStatusWorkDoneLine = "SmartTraveler.Status.WorkDoneLine";
+        public const string KeyStatusWorkDone2Line = "SmartTraveler.Status.WorkDone2Line";
+        public const string KeyStatusSnapshotLine = "SmartTraveler.Status.SnapshotLine";
 
-        public const string KeyStatusGroupSafetyLine = "CimBeSmart.Status.GroupSafetyLine";
+        public const string KeyStatusGroupSafetyLine = "SmartTraveler.Status.GroupSafetyLine";
 
 #if DEBUG
-        public const string KeyStatusMarkedDevLine = "CimBeSmart.Status.MarkedDevLine";
-        public const string KeyStatusTaxiFlagsDevLine = "CimBeSmart.Status.TaxiFlagsDevLine";
+        public const string KeyStatusMarkedDevLine = "SmartTraveler.Status.MarkedDevLine";
+        public const string KeyStatusTaxiFlagsDevLine = "SmartTraveler.Status.TaxiFlagsDevLine";
 #endif
 
         private readonly Setting m_Setting;
