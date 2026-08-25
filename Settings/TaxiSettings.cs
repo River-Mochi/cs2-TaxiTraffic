@@ -7,8 +7,7 @@
 // ================= </copyright> ======================
 
 // File: Settings/TaxiSettings.cs
-// Purpose: Options UI for "Taxi Traffic".
-// All user-facing strings are in Localization/LocaleEN.cs.
+// Options UI for "Taxi Traffic". All user-facing text is in Localization/LocaleEN.cs.
 
 namespace TaxiTraffic
 {
@@ -27,9 +26,9 @@ namespace TaxiTraffic
         CityScanGroup,
         TaxiScanGroup,
         LastUpdateGroup,
-    #if DEBUG
+#if DEBUG
         AdvancedDebugGroup,
-    #endif
+#endif
         StatusActionsGroup,
         AboutInfoGroup,
         DebugGroup,
@@ -40,15 +39,14 @@ namespace TaxiTraffic
         CityScanGroup,
         TaxiScanGroup,
         LastUpdateGroup,
-    #if DEBUG
+#if DEBUG
         AdvancedDebugGroup,
-    #endif
+#endif
         StatusActionsGroup,
         AboutInfoGroup,
         DebugGroup,
         AboutLinksGroup
     )]
-
     public sealed partial class TaxiSettings : ModSetting
     {
         public const string ActionsTab = "Actions";
@@ -62,7 +60,6 @@ namespace TaxiTraffic
         public const string LastUpdateGroup = "LastUpdate";
         public const string StatusActionsGroup = "StatusActions";
 
-        // Status (DEBUG builds only)
 #if DEBUG
         public const string AdvancedDebugGroup = "AdvancedDebug";
 #endif
@@ -73,14 +70,12 @@ namespace TaxiTraffic
         internal const int kTaxiAllowedPercentMin = 0;
         internal const int kTaxiAllowedPercentMax = 100;
         internal const int kTaxiAllowedPercentStep = 25;
-
-        // First-install mod default: strongest normal-resident taxi reduction.
         internal const int kTaxiAllowedPercentDefault = 0;
 
         private const string kUrlParadox =
             "https://mods.paradoxplaza.com/authors/River-mochi/cities_skylines_2?games=cities_skylines_2&orderBy=desc&sortBy=best&time=alltime";
 
-        private const string kUrlDiscord = "https://discord.gg/gwXgvtyhjc";
+        private const string kUrlDiscord = "https://discord.gg/HTav7ARPs2";
 
         private int m_ResidentsAllowedToUseTaxis = kTaxiAllowedPercentDefault;
 
@@ -119,6 +114,13 @@ namespace TaxiTraffic
             get; set;
         }
 
+        [SettingsUISection(ActionsTab, BehaviorGroup)]
+        [SettingsUISetter(typeof(TaxiSettings), nameof(OnTaxiEligibilityToggleChanged))]
+        public bool BlockOutsideTaxis
+        {
+            get; set;
+        }
+
         [SettingsUIButtonGroup(BehaviorGroup)]
         [SettingsUIButton]
         [SettingsUISection(ActionsTab, BehaviorGroup)]
@@ -135,12 +137,8 @@ namespace TaxiTraffic
             }
         }
 
-        // Verbose logging is a DEBUG-only tool. In Release it is hidden and hard-wired to false so a
-        // stale saved value (e.g. carried over from a DEBUG run, same settings file) can never leave
-        // periodic logging running during normal play. Release users get the Status tab and the
-        // one-shot "Write Report" button instead.
+        // Release always reads false, even if a DEBUG run saved verbose logging as enabled.
 #if DEBUG
-        // Moved to About tab so normal gameplay options stay clean.
         [SettingsUISection(AboutTab, DebugGroup)]
         public bool EnableDebugLogging
         {
@@ -219,19 +217,20 @@ namespace TaxiTraffic
 
         public override void SetDefaults()
         {
-            // First install: normal residents avoid taxis; commuters/tourists stay vanilla unless enabled.
+            // First install: local residents avoid taxis; other groups and outside supply stay vanilla.
             ResidentsAllowedToUseTaxis = kTaxiAllowedPercentDefault;
             BlockCommuters = false;
             BlockTourists = false;
+            BlockOutsideTaxis = false;
             EnableDebugLogging = false;
         }
 
         private void ApplyGameDefaults()
         {
-            // Game Defaults: leave all rider types alone.
             ResidentsAllowedToUseTaxis = kTaxiAllowedPercentMax;
             BlockCommuters = false;
             BlockTourists = false;
+            BlockOutsideTaxis = false;
             EnableDebugLogging = false;
         }
 
@@ -245,13 +244,11 @@ namespace TaxiTraffic
             return !IsStatusReady();
         }
 
-        // SettingsUISetter callback: refresh Status after slider changes.
         private void OnTaxiEligibilitySliderChanged(int _)
         {
             TaxiTrafficSystem.RequestStatusRefresh(force: true);
         }
 
-        // SettingsUISetter callback: refresh Status after commuter/tourist filter changes.
         private void OnTaxiEligibilityToggleChanged(bool _)
         {
             TaxiTrafficSystem.RequestStatusRefresh(force: true);

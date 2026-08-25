@@ -25,11 +25,7 @@ namespace TaxiTraffic
     public partial class TaxiTrafficSystem
     {
         private const int kDebugPassengerDetailMax = 8;
-
-        // Verbose logging is intentionally slow; logs get huge very fast.
         private const float kDebugMinSummaryIntervalSeconds = 60f;
-
-        // Keeps TaxiSummary counters reasonably fresh without tying UI display to an age row.
         private const double kDebugForceStatusRefreshMaxAgeSeconds = 30.0;
 
 #if DEBUG
@@ -152,7 +148,7 @@ namespace TaxiTraffic
             m_DebugTimerSeconds = 0f;
 
             if (IsStatusSnapshotStale(kDebugForceStatusRefreshMaxAgeSeconds))
-                RequestStatusRefresh(force: true);
+                RefreshStatusSnapshotForOptionsUi(force: true);
 
             int dailyTaxiCitizen = 0;
             int dailyTaxiTourist = 0;
@@ -176,17 +172,18 @@ namespace TaxiTraffic
                 Mod.s_Log,
                 () =>
                     $"{Mod.ModTag} TaxiSummary: " +
-                    $"residentTaxiAllowedPercent={setting.ResidentsAllowedToUseTaxis}, blockCommuters={setting.BlockCommuters}, blockTourists={setting.BlockTourists}, " +
+                    $"residentTaxiAllowedPercent={setting.ResidentsAllowedToUseTaxis}, blockCommuters={setting.BlockCommuters}, blockTourists={setting.BlockTourists}, blockOutsideTaxis={setting.BlockOutsideTaxis}, " +
                     $"taxis={s_StatusTaxisTotal}, transporting={s_StatusTaxiTransporting}, boarding={s_StatusTaxiBoarding}, returning={s_StatusTaxiReturning}, dispatched={s_StatusTaxiDispatched}, enRoute={s_StatusTaxiEnRoute}, parked={s_StatusTaxiParked}, accident={s_StatusTaxiAccident}, " +
                     $"fromOutside={s_StatusTaxiFromOutside}, disabled={s_StatusTaxiDisabled}, withServiceDispatch={s_StatusTaxiWithDispatchBuffer}, " +
-                    $"requests[customer={s_StatusReqCustomer}, outside={s_StatusReqOutside}, none={s_StatusReqNone}], " +
-                    $"taxiStandDebug(waiting={s_StatusWaitingTaxiStandTotal}, taxisRequestedToParkAtStands={s_StatusReqStand}), " +
-                    $"custSeekers(ignoreTaxi={s_StatusReqCustomerSeekerIgnoreTaxi}/{s_StatusReqCustomerSeekerHasResident}), " +
-                    $"outSeekers(ignoreTaxi={s_StatusReqOutsideSeekerIgnoreTaxi}/{s_StatusReqOutsideSeekerHasResident}), " +
-                    $"passengers(ignoreTaxi={s_StatusPassengerIgnoreTaxi}/{s_StatusPassengerHasResident}, totalPassengers={s_StatusPassengerTotal}), " +
-                    $"residents(ignoreTaxi={s_StatusResidentsIgnoreTaxi}/{s_StatusResidentsTotal}, blockedMark={s_StatusResidentsForcedMarker}, allowedMark={s_StatusResidentsAllowedMarker}), " +
-                    $"commuters(ignoreTaxi={s_StatusCommutersIgnoreTaxi}/{s_StatusCommutersTotal}), " +
-                    $"tourists(ignoreTaxi={s_StatusTouristsIgnoreTaxi}/{s_StatusTouristsTotal}), " +
+                    $"depots[local={s_StatusTaxiDepotsLocal}, outside={s_StatusTaxiDepotsOutside}, total={s_StatusTaxiDepotsTotal}, dispatchCenter={s_StatusTaxiDepotsWithDispatchCenter}], " +
+                    $"requests[customer={s_StatusReqCustomer}, outsideRider={s_StatusReqOutsideRider}, localSupply={s_StatusReqNone}, outsideSupply={s_StatusReqOutsideSupply}, stand={s_StatusReqStand}], " +
+                    $"outsideSupplySuppressedTotal={s_StatusOutsideSupplySuppressedTotal}, " +
+                    $"custSeekers(blockedMark={s_StatusReqCustomerSeekerBlockedMark}, ignoreTaxi={s_StatusReqCustomerSeekerIgnoreTaxi}/{s_StatusReqCustomerSeekerHasResident}), " +
+                    $"outRiderSeekers(ignoreTaxi={s_StatusReqOutsideSeekerIgnoreTaxi}/{s_StatusReqOutsideSeekerHasResident}), " +
+                    $"passengers(blockedMark={s_StatusPassengerBlockedMark}/{s_StatusPassengerHasResident}, ignoreTaxi={s_StatusPassengerIgnoreTaxi}/{s_StatusPassengerHasResident}, totalPassengers={s_StatusPassengerTotal}), " +
+                    $"residents(blockedMark={s_StatusResidentsForcedMarker}/{s_StatusResidentsTotal}, ignoreTaxiNow={s_StatusResidentsIgnoreTaxi}/{s_StatusResidentsTotal}, allowedMark={s_StatusResidentsAllowedMarker}), " +
+                    $"commuters(blockedMark={s_StatusCommutersBlockedMark}/{s_StatusCommutersTotal}, ignoreTaxiNow={s_StatusCommutersIgnoreTaxi}/{s_StatusCommutersTotal}), " +
+                    $"tourists(blockedMark={s_StatusTouristsBlockedMark}/{s_StatusTouristsTotal}, ignoreTaxiNow={s_StatusTouristsIgnoreTaxi}/{s_StatusTouristsTotal}), " +
                     $"groups(skipped={s_StatusLastSkippedGroupTravelers}, cleared={s_StatusLastClearedGroupTravelers}, linkedNow={s_StatusResidentsGroupLinked}, linkedIgnoreTaxi={s_StatusResidentsGroupLinkedIgnoreTaxi}), " +
                     $"waitingTransport(total={s_StatusWaitingTransportTotal}, taxiStand={s_StatusWaitingTaxiStandTotal}), " +
                     $"statsDailyTaxi(citizen={dailyTaxiCitizen}, tourist={dailyTaxiTourist}, approxPerMonth={30 * (dailyTaxiCitizen + dailyTaxiTourist)})");
@@ -217,8 +214,8 @@ namespace TaxiTraffic
 
                 examples++;
 
-                ResidentFlags rf = resident.ValueRO.m_Flags;
-                bool ignoreTaxi = (rf & ResidentFlags.IgnoreTaxi) != 0;
+                ResidentFlags residentFlags = resident.ValueRO.m_Flags;
+                bool ignoreTaxi = (residentFlags & ResidentFlags.IgnoreTaxi) != 0;
                 bool blockedMark = SystemAPI.HasComponent<IgnoreTaxiMark>(passengerEntity);
                 bool allowedMark = SystemAPI.HasComponent<TaxiAllowedMark>(passengerEntity);
                 bool groupMember = SystemAPI.HasComponent<GroupMember>(passengerEntity);
@@ -251,8 +248,8 @@ namespace TaxiTraffic
                 string purpose = "none";
                 if (SystemAPI.HasComponent<TravelPurpose>(passengerEntity))
                 {
-                    TravelPurpose tp = SystemAPI.GetComponentRO<TravelPurpose>(passengerEntity).ValueRO;
-                    purpose = tp.m_Purpose.ToString();
+                    TravelPurpose travelPurpose = SystemAPI.GetComponentRO<TravelPurpose>(passengerEntity).ValueRO;
+                    purpose = travelPurpose.m_Purpose.ToString();
                 }
 
                 TaxiFlags taxiFlags = SystemAPI.GetComponentRO<Taxi>(vehicle).ValueRO.m_State;

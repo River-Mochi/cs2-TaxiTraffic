@@ -7,7 +7,7 @@
 // ================= </copyright> ======================
 
 // File: Systems/TaxiTrafficSystem.Core.cs
-// Demand-side taxi eligibility, trip-start self-heal, and waiting cleanup.
+// Taxi eligibility, outside taxi-supply control, and waiting cleanup.
 
 namespace TaxiTraffic
 {
@@ -25,28 +25,11 @@ namespace TaxiTraffic
 
     public partial class TaxiTrafficSystem : GameSystemBase
     {
-        // -----------------------
-        // Knobs (perf + behavior)
-        // -----------------------
-
-        // Batch size for applying/removing eligibility marks each update.
         private const int kMarkBatchPerUpdate = 2000;
-
-        // Match the game's resident update grouping instead of touching taxi logic every simulation frame.
         private const int kUpdateIntervalFrames = 16;
-
-        // Unstick taxi waiting states on an interval, not every frame.
         private const float kUnstickIntervalSeconds = 1.0f;
-
-        // Verbose TaxiSummary log interval.
         private const float kDebugSummaryIntervalSeconds = 120.0f;
-
-        // Mod-local salt for stable taxi eligibility buckets.
         private const uint kTaxiEligibilityHashSalt = 0x54415849u; // 'TAXI'
-
-        // -----------------------
-        // Timers / setting cache
-        // -----------------------
 
         private double m_LastUnstickRealtime;
 
@@ -115,18 +98,19 @@ namespace TaxiTraffic
 
             int clearedTaxiLaneWaiting = 0;
             int clearedTaxiStandWaiting = 0;
-            int clearedRideNeederLinks = 0;
+            int removedRideNeeders = 0;
+
+            // Keep outside control independent from the local-rider settings/reset cycle.
+            SuppressOutsideTaxiSupplyRequests(setting);
 
             // Do not sweep all marked residents every update; too expensive in large cities.
             int clearedGroupTravelers = 0;
 
             bool changed = DetectTaxiEligibilitySettingChange(setting);
             if (changed)
-            {
                 m_TaxiEligibilityResetInProgress = true;
-            }
 
-            // TaxiSettings changes must clear old buckets before applying the new stable bucket.
+            // Setting changes clear old buckets before applying the new stable bucket.
             if (m_TaxiEligibilityResetInProgress)
             {
                 int resetCount = ResetTaxiEligibilityMarkersBatch();
@@ -139,7 +123,7 @@ namespace TaxiTraffic
                     clearedGroupTravelers,
                     clearedTaxiLaneWaiting,
                     clearedTaxiStandWaiting,
-                    clearedRideNeederLinks);
+                    removedRideNeeders);
 
                 if (resetCount > 0)
                 {
@@ -152,7 +136,6 @@ namespace TaxiTraffic
                 m_TaxiEligibilityResetInProgress = false;
             }
 
-            // Full vanilla-style state only when residents, commuters, and tourists are not selected.
             bool vanillaResidents = setting.ResidentsAllowedToUseTaxis >= TaxiSettings.kTaxiAllowedPercentMax;
             bool vanillaGroups = !setting.BlockCommuters && !setting.BlockTourists;
 
@@ -168,7 +151,7 @@ namespace TaxiTraffic
                     clearedGroupTravelers,
                     clearedTaxiLaneWaiting,
                     clearedTaxiStandWaiting,
-                    clearedRideNeederLinks);
+                    removedRideNeeders);
 
                 if (setting.EnableDebugLogging)
                     TickDebugLogging(setting, kDebugSummaryIntervalSeconds);
@@ -186,13 +169,14 @@ namespace TaxiTraffic
             // Vanilla clears IgnoreTaxi at arrival; reused creatures keep our blocked marker.
             RepairStaleIgnoreTaxiOnTripStart();
 
-            // Unstick pass runs on an interval.
+            // RideNeeder is already a narrow archetype, so stop invalid taxi requests every system update.
+            UnstickTaxiLaneWaiters(setting, out clearedTaxiLaneWaiting, out removedRideNeeders);
+
+            // The broader waiting-transport scan stays throttled.
             double now = UnityEngine.Time.realtimeSinceStartupAsDouble;
             if (now - m_LastUnstickRealtime >= kUnstickIntervalSeconds)
             {
                 m_LastUnstickRealtime = now;
-
-                UnstickTaxiLaneWaiters(setting, out clearedTaxiLaneWaiting, out clearedRideNeederLinks);
                 UnstickTaxiQueues(setting, out clearedTaxiStandWaiting);
             }
 
@@ -204,7 +188,7 @@ namespace TaxiTraffic
                 clearedGroupTravelers,
                 clearedTaxiLaneWaiting,
                 clearedTaxiStandWaiting,
-                clearedRideNeederLinks);
+                removedRideNeeders);
 
             if (setting.EnableDebugLogging)
                 TickDebugLogging(setting, kDebugSummaryIntervalSeconds);
@@ -218,7 +202,7 @@ namespace TaxiTraffic
             int clearedGroupTravelers,
             int clearedTaxiLaneWaiting,
             int clearedTaxiStandWaiting,
-            int clearedRideNeederLinks)
+            int removedRideNeeders)
         {
             s_StatusLastAppliedIgnoreTaxi = appliedIgnoreTaxi;
             s_StatusLastSkippedCommuters = skippedCommuters;
@@ -227,7 +211,43 @@ namespace TaxiTraffic
             s_StatusLastClearedGroupTravelers = clearedGroupTravelers;
             s_StatusLastClearedTaxiLaneWaiting = clearedTaxiLaneWaiting;
             s_StatusLastClearedTaxiStandWaiting = clearedTaxiStandWaiting;
-            s_StatusLastRemovedRideNeeder = clearedRideNeederLinks;
+            s_StatusLastRemovedRideNeeder = removedRideNeeders;
+        }
+
+        // -----------------------
+        // Outside taxi supply
+        // -----------------------
+
+        private void SuppressOutsideTaxiSupplyRequests(TaxiSettings setting)
+        {
+            if (!setting.BlockOutsideTaxis)
+                return;
+
+            using NativeList<Entity> toDestroy = new(Allocator.Temp);
+
+            foreach ((RefRO<Game.Simulation.TaxiRequest> requestRef,
+                      RefRO<Game.Simulation.ServiceRequest> serviceRef,
+                      Entity requestEntity) in SystemAPI
+                         .Query<RefRO<Game.Simulation.TaxiRequest>, RefRO<Game.Simulation.ServiceRequest>>()
+                         .WithNone<Deleted, Temp>()
+                         .WithEntityAccess())
+            {
+                Game.Simulation.TaxiRequest request = requestRef.ValueRO;
+                if (request.m_Type != Game.Simulation.TaxiRequestType.Outside)
+                    continue;
+
+                // Reversed Outside requests advertise taxi supply; rider requests are not reversed.
+                if ((serviceRef.ValueRO.m_Flags & Game.Simulation.ServiceRequestFlags.Reversed) == 0)
+                    continue;
+
+                toDestroy.Add(requestEntity);
+            }
+
+            if (toDestroy.Length == 0)
+                return;
+
+            EntityManager.DestroyEntity(toDestroy.AsArray());
+            s_StatusOutsideSupplySuppressedTotal += toDestroy.Length;
         }
 
         // -----------------------
@@ -411,8 +431,7 @@ namespace TaxiTraffic
                 {
                     skippedGroupTravelers++;
 
-                    // Group-linked travelers stay vanilla for this settings pass.
-                    // Mark as checked so the batch does not revisit same residents every update.
+                    // Mark as checked so the batch keeps moving through the active population.
                     toAllow.Add(entity);
 
                     if (processed >= kMarkBatchPerUpdate)
@@ -438,10 +457,17 @@ namespace TaxiTraffic
                     resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
                     toBlock.Add(entity);
                     applied++;
+
+                    // TripNeeded can copy a taxi-capable Citizen path before we mark the Resident.
+                    if (SystemAPI.HasComponent<TripSource>(entity) && SystemAPI.HasComponent<PathOwner>(entity))
+                    {
+                        RefRW<PathOwner> pathOwner = SystemAPI.GetComponentRW<PathOwner>(entity);
+                        pathOwner.ValueRW.m_State &= ~PathFlags.Failed;
+                        pathOwner.ValueRW.m_State |= PathFlags.Obsolete;
+                    }
                 }
                 else
                 {
-                    // Mark as checked so the batch can progress through very large populations.
                     toAllow.Add(entity);
                 }
 
@@ -535,13 +561,11 @@ namespace TaxiTraffic
 
             if (citizenEntity == Entity.Null || !SystemAPI.HasComponent<Citizen>(citizenEntity))
             {
-                // No citizen component means no stable citizen random bucket; keep strong-block behavior.
+                // No Citizen component means no stable saved bucket; keep strong-block behavior.
                 return true;
             }
 
             Citizen citizen = SystemAPI.GetComponentRO<Citizen>(citizenEntity).ValueRO;
-
-            // Stable bucket: same citizen should stay in the same taxi-allowed bucket after reload.
             uint roll = GetStableTaxiEligibilityRoll(citizen);
 
             return roll >= (uint)allowedPercent;
@@ -549,11 +573,9 @@ namespace TaxiTraffic
 
         private static uint GetStableTaxiEligibilityRoll(Citizen citizen)
         {
-            // Citizen.m_PseudoRandom is saved by the game, so this bucket survives save/load.
             uint seed = ((uint)citizen.m_PseudoRandom << 16) | citizen.m_PseudoRandom;
             uint hash = seed ^ kTaxiEligibilityHashSalt;
 
-            // Small 32-bit avalanche mix. Deterministic, fast, and independent from vanilla helpers.
             hash ^= hash >> 16;
             hash *= 0x7feb352du;
             hash ^= hash >> 15;
@@ -576,20 +598,21 @@ namespace TaxiTraffic
         private void UnstickTaxiLaneWaiters(
             TaxiSettings setting,
             out int clearedTaxiLaneWaiting,
-            out int clearedRideNeederLinks)
+            out int removedRideNeeders)
         {
             clearedTaxiLaneWaiting = 0;
-            clearedRideNeederLinks = 0;
+            removedRideNeeders = 0;
 
             using NativeList<Entity> toBlockMark = new(Allocator.Temp);
             using NativeList<Entity> toRemoveAllowedMark = new(Allocator.Temp);
+            using NativeList<Entity> toRemoveRideNeeder = new(Allocator.Temp);
 
-            foreach ((RefRW<RideNeeder> rn,
-                      RefRW<Resident> resident,
+            foreach ((RefRW<Resident> resident,
                       RefRW<HumanCurrentLane> lane,
                       RefRW<PathOwner> pathOwner,
                       Entity entity) in SystemAPI
-                         .Query<RefRW<RideNeeder>, RefRW<Resident>, RefRW<HumanCurrentLane>, RefRW<PathOwner>>()
+                         .Query<RefRW<Resident>, RefRW<HumanCurrentLane>, RefRW<PathOwner>>()
+                         .WithAll<RideNeeder>()
                          .WithNone<GroupMember, Deleted, Temp>()
                          .WithNone<GroupCreature>()
                          .WithEntityAccess())
@@ -602,7 +625,6 @@ namespace TaxiTraffic
                 if (!ShouldResidentIgnoreTaxiBySettings(setting, resident.ValueRO, out _, out _))
                     continue;
 
-                // Enforce IgnoreTaxi only for the blocked resident being unstuck.
                 if ((resident.ValueRO.m_Flags & ResidentFlags.IgnoreTaxi) == 0)
                     resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
 
@@ -615,15 +637,11 @@ namespace TaxiTraffic
                 lane.ValueRW.m_Flags &= ~taxiWaitMask;
                 lane.ValueRW.m_QueueEntity = Entity.Null;
 
-                if (rn.ValueRO.m_RideRequest != Entity.Null)
-                {
-                    rn.ValueRW.m_RideRequest = Entity.Null;
-                    clearedRideNeederLinks++;
-                }
-
                 pathOwner.ValueRW.m_State &= ~PathFlags.Failed;
                 pathOwner.ValueRW.m_State |= PathFlags.Obsolete;
 
+                // Removing RideNeeder makes TaxiDispatch invalidate the old request instead of relinking it.
+                toRemoveRideNeeder.Add(entity);
                 clearedTaxiLaneWaiting++;
             }
 
@@ -632,6 +650,12 @@ namespace TaxiTraffic
 
             if (toBlockMark.Length > 0)
                 EntityManager.AddComponent<IgnoreTaxiMark>(toBlockMark.AsArray());
+
+            if (toRemoveRideNeeder.Length > 0)
+            {
+                EntityManager.RemoveComponent<RideNeeder>(toRemoveRideNeeder.AsArray());
+                removedRideNeeders = toRemoveRideNeeder.Length;
+            }
         }
 
         private void UnstickTaxiQueues(TaxiSettings setting, out int clearedTaxiStandWaiting)
@@ -682,7 +706,6 @@ namespace TaxiTraffic
                 if (!ShouldResidentIgnoreTaxiBySettings(setting, resident.ValueRO, out _, out _))
                     continue;
 
-                // Enforce IgnoreTaxi for the resident being unstuck.
                 if ((resident.ValueRO.m_Flags & ResidentFlags.IgnoreTaxi) == 0)
                     resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
 
