@@ -12,7 +12,7 @@
         Helps cims make smarter travel choices by reducing taxi use.
 
         ### What it does
-        - ✅ Prevents cims from choosing taxis by applying `IgnoreTaxi`
+        - ✅ Prevents cims from choosing taxis
         - ✅ Un-sticks any cims already waiting for a taxi (taxi-lane + taxi-stand cases) so they re-route normally
         - ✅ Cancels dispatchable taxi requests so taxi dispatch/spawn activity drops over time
         - ✅ Optional: include/exclude **Commuters** and **Tourists**
@@ -25,7 +25,7 @@
         ### Safety / compatibility
         - Save-safe and safe to remove anytime; works with new and existing cities.
         - Can be enabled/disabled in-game (turn off checkboxes [ ] to stop applying changes).
-        - No Harmony or reflection-based patching; less likely to break on game patch day.
+        - No Harmony based patching; less likely to break on game patch day.
 
         Tip: If you want to verify it’s working, enable “verbose taxi logging” temporarily and check the Status section in Options.
 
@@ -33,6 +33,9 @@
         - RiverMochi: mod author
         - Noel/Noel2 (of MapExt): testing, feedback
         - Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
+
+        ### How it works
+        - applies the game's own vanilla IgnoreTaxi flags.
 
     </LongDescription>
 <!--Thumbnail-->
