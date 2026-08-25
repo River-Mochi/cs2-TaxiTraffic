@@ -464,7 +464,7 @@ namespace TaxiTraffic
             s_StatusTaxiDepotsTotal = 0;
             s_StatusTaxiDepotsWithDispatchCenter = 0;
 
-            foreach ((RefRO<TaxiStand> _, Entity e) in SystemAPI
+            foreach ((RefRO<TaxiStand> _, Entity _) in SystemAPI
                          .Query<RefRO<TaxiStand>>()
                          .WithEntityAccess()
                          .WithNone<Deleted, Temp>())

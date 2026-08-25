@@ -594,7 +594,7 @@ namespace TaxiTraffic
                          .WithNone<GroupCreature>()
                          .WithEntityAccess())
             {
-                var taxiWaitMask = CreatureLaneFlags.ParkingSpace | CreatureLaneFlags.Taxi;
+                CreatureLaneFlags taxiWaitMask = CreatureLaneFlags.ParkingSpace | CreatureLaneFlags.Taxi;
 
                 if ((lane.ValueRO.m_Flags & taxiWaitMask) != taxiWaitMask)
                     continue;
