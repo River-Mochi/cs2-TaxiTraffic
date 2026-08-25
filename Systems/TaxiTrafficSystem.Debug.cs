@@ -7,11 +7,14 @@
 // ================= </copyright> ======================
 
 // File: Systems/TaxiTrafficSystem.Debug.cs
-// Optional debug logging helpers (controlled by settings).
+// Optional debug logging and lightweight DEBUG-only performance sampling.
 
 namespace TaxiTraffic
 {
     using System;           // Math
+#if DEBUG
+    using System.Diagnostics; // Stopwatch
+#endif
     using Game.Citizens;    // Citizen, CitizenFlags, HouseholdMember, TravelPurpose
     using Game.City;        // StatisticType, PassengerType
     using Game.Companies;   // ResourceBuyer
@@ -29,12 +32,114 @@ namespace TaxiTraffic
         // Keeps TaxiSummary counters reasonably fresh without tying UI display to an age row.
         private const double kDebugForceStatusRefreshMaxAgeSeconds = 30.0;
 
+#if DEBUG
+        private const double kDebugPerfLogIntervalSeconds = 30.0;
+
+        private long m_DebugUnstickSamples;
+        private double m_DebugUnstickTotalMs;
+        private double m_DebugUnstickLastMs;
+        private double m_DebugUnstickMaxMs;
+        private int m_DebugUnstickLastScanned;
+        private int m_DebugUnstickMaxScanned;
+        private int m_DebugUnstickLastWaitingTransport;
+        private int m_DebugUnstickLastTaxiQueue;
+        private int m_DebugUnstickLastCleared;
+        private int m_DebugUnstickClearedTotal;
+
+        private int m_DebugTripSourceRepairsSincePerfLog;
+        private int m_DebugTripSourceRepairsTotal;
+        private double m_DebugLastPerfLogRealtime;
+#endif
+
         private float m_DebugTimerSeconds;
 
         private void ResetDebugOnCityLoaded()
         {
             m_DebugTimerSeconds = 0f;
+
+#if DEBUG
+            m_DebugUnstickSamples = 0;
+            m_DebugUnstickTotalMs = 0.0;
+            m_DebugUnstickLastMs = 0.0;
+            m_DebugUnstickMaxMs = 0.0;
+            m_DebugUnstickLastScanned = 0;
+            m_DebugUnstickMaxScanned = 0;
+            m_DebugUnstickLastWaitingTransport = 0;
+            m_DebugUnstickLastTaxiQueue = 0;
+            m_DebugUnstickLastCleared = 0;
+            m_DebugUnstickClearedTotal = 0;
+
+            m_DebugTripSourceRepairsSincePerfLog = 0;
+            m_DebugTripSourceRepairsTotal = 0;
+            m_DebugLastPerfLogRealtime = UnityEngine.Time.realtimeSinceStartupAsDouble;
+#endif
         }
+
+#if DEBUG
+        private static long DebugGetTimestamp()
+        {
+            return Stopwatch.GetTimestamp();
+        }
+
+        private void DebugRecordTripSourceRepairs(int repaired)
+        {
+            if (repaired <= 0)
+                return;
+
+            m_DebugTripSourceRepairsSincePerfLog += repaired;
+            m_DebugTripSourceRepairsTotal += repaired;
+        }
+
+        private void DebugRecordUnstickTaxiQueues(
+            long startTicks,
+            int scanned,
+            int waitingTransport,
+            int taxiQueue,
+            int cleared)
+        {
+            long elapsedTicks = Stopwatch.GetTimestamp() - startTicks;
+            double elapsedMs = elapsedTicks * 1000.0 / Stopwatch.Frequency;
+
+            m_DebugUnstickSamples++;
+            m_DebugUnstickTotalMs += elapsedMs;
+            m_DebugUnstickLastMs = elapsedMs;
+            m_DebugUnstickMaxMs = Math.Max(m_DebugUnstickMaxMs, elapsedMs);
+            m_DebugUnstickLastScanned = scanned;
+            m_DebugUnstickMaxScanned = Math.Max(m_DebugUnstickMaxScanned, scanned);
+            m_DebugUnstickLastWaitingTransport = waitingTransport;
+            m_DebugUnstickLastTaxiQueue = taxiQueue;
+            m_DebugUnstickLastCleared = cleared;
+            m_DebugUnstickClearedTotal += cleared;
+
+            Setting? setting = Mod.Setting;
+            if (setting is null || !setting.EnableDebugLogging)
+                return;
+
+            double now = UnityEngine.Time.realtimeSinceStartupAsDouble;
+            if (now - m_DebugLastPerfLogRealtime < kDebugPerfLogIntervalSeconds)
+                return;
+
+            m_DebugLastPerfLogRealtime = now;
+
+            double averageMs =
+                m_DebugUnstickSamples > 0
+                    ? m_DebugUnstickTotalMs / m_DebugUnstickSamples
+                    : 0.0;
+
+            int repairsSincePerfLog = m_DebugTripSourceRepairsSincePerfLog;
+            m_DebugTripSourceRepairsSincePerfLog = 0;
+
+            CS2Shared.RiverMochi.LogUtils.Info(
+                Mod.s_Log,
+                () =>
+                    $"{Mod.ModTag} TaxiPerf: UnstickTaxiQueues " +
+                    $"lastMs={m_DebugUnstickLastMs:F3}, avgMs={averageMs:F3}, maxMs={m_DebugUnstickMaxMs:F3}, " +
+                    $"samples={m_DebugUnstickSamples}, scannedLast={m_DebugUnstickLastScanned}, scannedMax={m_DebugUnstickMaxScanned}, " +
+                    $"waitingTransportLast={m_DebugUnstickLastWaitingTransport}, taxiQueueLast={m_DebugUnstickLastTaxiQueue}, " +
+                    $"clearedLast={m_DebugUnstickLastCleared}, clearedTotal={m_DebugUnstickClearedTotal}, " +
+                    $"tripSourceRepairsSincePerfLog={repairsSincePerfLog}, tripSourceRepairsTotal={m_DebugTripSourceRepairsTotal}");
+        }
+#endif
 
         private void TickDebugLogging(Setting setting, float intervalSeconds)
         {

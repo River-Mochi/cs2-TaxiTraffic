@@ -85,4 +85,8 @@
 		<Compile Include="..\CS2-Shared-RiverMochi\Utils\ShellOpen.cs" Link="Utils\ShellOpen.cs" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Systems\Status\" />
+	</ItemGroup>
+
 </Project>

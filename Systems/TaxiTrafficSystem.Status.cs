@@ -7,7 +7,7 @@
 // ================= </copyright> ======================
 
 // File: Systems/TaxiTrafficSystem.Status.cs
-// Status snapshot + InfoView-matching passenger statistics.
+// Purpose: Status snapshot + InfoView-matching passenger statistics.
 
 namespace TaxiTraffic
 {

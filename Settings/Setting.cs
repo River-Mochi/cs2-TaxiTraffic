@@ -59,14 +59,9 @@ namespace TaxiTraffic
         AboutLinksGroup
     )]
     [SettingsUIShowGroupName(
-        BehaviorGroup,
-        CityScanGroup,
-        TaxiScanGroup,
-        LastUpdateGroup,
-        StatusActionsGroup,
-        AboutInfoGroup,
-        DebugGroup,
-        AboutLinksGroup
+        BehaviorGroup, CityScanGroup, TaxiScanGroup,
+        LastUpdateGroup, StatusActionsGroup,
+        AboutInfoGroup, DebugGroup, AboutLinksGroup
     )]
 #endif
     public sealed partial class Setting : ModSetting

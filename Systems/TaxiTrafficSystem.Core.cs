@@ -7,11 +7,7 @@
 // ================= </copyright> ======================
 
 // File: Systems/TaxiTrafficSystem.Core.cs
-// Purpose: Demand-side taxi control (SAFE variant):
-// - Uses a stable per-resident taxi permission slider.
-// - Applies ResidentFlags.IgnoreTaxi only to residents outside the allowed taxi bucket.
-// - Leaves obvious group travelers alone for Phase 1 safety.
-// - Unwinds blocked residents from taxi waiting states so cims don't freeze.
+// Demand-side taxi eligibility, trip-start self-heal, and waiting cleanup.
 
 namespace TaxiTraffic
 {
@@ -19,6 +15,7 @@ namespace TaxiTraffic
     using Game.Citizens;        // Citizen, HouseholdMember, CommuterHousehold, TouristHousehold
     using Game.Common;          // Deleted
     using Game.Creatures;       // ResidentFlags, HumanCurrentLane, CreatureLaneFlags, RideNeeder, GroupMember, GroupCreature
+    using Game.Objects;         // TripSource
     using Game.Pathfind;        // PathOwner, PathFlags
     using Game.Routes;          // TaxiStand, BoardingVehicle, Connected
     using Game.Tools;           // Temp
@@ -185,6 +182,9 @@ namespace TaxiTraffic
                 out skippedCommuters,
                 out skippedTourists,
                 out skippedGroupTravelers);
+
+            // Vanilla clears IgnoreTaxi at arrival; reused creatures keep our blocked marker.
+            RepairStaleIgnoreTaxiOnTripStart();
 
             // Unstick pass runs on an interval.
             double now = UnityEngine.Time.realtimeSinceStartupAsDouble;
@@ -407,7 +407,6 @@ namespace TaxiTraffic
             {
                 processed++;
 
-
                 if (IsGroupLinkedTraveler(entity))
                 {
                     skippedGroupTravelers++;
@@ -455,6 +454,37 @@ namespace TaxiTraffic
 
             if (toAllow.Length > 0)
                 EntityManager.AddComponent<TaxiAllowedMark>(toAllow.AsArray());
+        }
+
+        private void RepairStaleIgnoreTaxiOnTripStart()
+        {
+#if DEBUG
+            int repaired = 0;
+#endif
+
+            foreach ((RefRW<Resident> resident, RefRW<PathOwner> pathOwner) in SystemAPI
+                         .Query<RefRW<Resident>, RefRW<PathOwner>>()
+                         .WithAll<IgnoreTaxiMark, TripSource>()
+                         .WithNone<GroupMember, Deleted, Temp>()
+                         .WithNone<GroupCreature>())
+            {
+                if ((resident.ValueRO.m_Flags & ResidentFlags.IgnoreTaxi) != 0)
+                    continue;
+
+                resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
+
+                // ResetTrip can copy a taxi-capable path onto the reused creature.
+                pathOwner.ValueRW.m_State &= ~PathFlags.Failed;
+                pathOwner.ValueRW.m_State |= PathFlags.Obsolete;
+
+#if DEBUG
+                repaired++;
+#endif
+            }
+
+#if DEBUG
+            DebugRecordTripSourceRepairs(repaired);
+#endif
         }
 
         private bool ShouldResidentIgnoreTaxiBySettings(
@@ -555,25 +585,19 @@ namespace TaxiTraffic
             using NativeList<Entity> toRemoveAllowedMark = new(Allocator.Temp);
 
             foreach ((RefRW<RideNeeder> rn,
+                      RefRW<Resident> resident,
                       RefRW<HumanCurrentLane> lane,
                       RefRW<PathOwner> pathOwner,
                       Entity entity) in SystemAPI
-                         .Query<RefRW<RideNeeder>, RefRW<HumanCurrentLane>, RefRW<PathOwner>>()
-                         .WithNone<Deleted, Temp>()
+                         .Query<RefRW<RideNeeder>, RefRW<Resident>, RefRW<HumanCurrentLane>, RefRW<PathOwner>>()
+                         .WithNone<GroupMember, Deleted, Temp>()
+                         .WithNone<GroupCreature>()
                          .WithEntityAccess())
             {
                 var taxiWaitMask = CreatureLaneFlags.ParkingSpace | CreatureLaneFlags.Taxi;
 
                 if ((lane.ValueRO.m_Flags & taxiWaitMask) != taxiWaitMask)
                     continue;
-
-                if (!SystemAPI.HasComponent<Resident>(entity))
-                    continue;
-
-                if (IsGroupLinkedTraveler(entity))
-                    continue;
-
-                RefRW<Resident> resident = SystemAPI.GetComponentRW<Resident>(entity);
 
                 if (!ShouldResidentIgnoreTaxiBySettings(setting, resident.ValueRO, out _, out _))
                     continue;
@@ -612,6 +636,13 @@ namespace TaxiTraffic
 
         private void UnstickTaxiQueues(Setting setting, out int clearedTaxiStandWaiting)
         {
+#if DEBUG
+            long debugStartTicks = DebugGetTimestamp();
+            int debugScanned = 0;
+            int debugWaitingTransport = 0;
+            int debugTaxiQueue = 0;
+#endif
+
             clearedTaxiStandWaiting = 0;
 
             using NativeList<Entity> toBlockMark = new(Allocator.Temp);
@@ -622,14 +653,20 @@ namespace TaxiTraffic
                       RefRW<PathOwner> pathOwner,
                       Entity entity) in SystemAPI
                          .Query<RefRW<Resident>, RefRW<HumanCurrentLane>, RefRW<PathOwner>>()
-                         .WithNone<Deleted, Temp>()
+                         .WithNone<GroupMember, Deleted, Temp>()
+                         .WithNone<GroupCreature>()
                          .WithEntityAccess())
             {
+#if DEBUG
+                debugScanned++;
+#endif
+
                 if ((resident.ValueRO.m_Flags & ResidentFlags.WaitingTransport) == 0)
                     continue;
 
-                if (IsGroupLinkedTraveler(entity))
-                    continue;
+#if DEBUG
+                debugWaitingTransport++;
+#endif
 
                 Entity queueEntity = lane.ValueRO.m_QueueEntity;
                 if (queueEntity == Entity.Null)
@@ -637,6 +674,10 @@ namespace TaxiTraffic
 
                 if (!IsTaxiQueueEntity(queueEntity))
                     continue;
+
+#if DEBUG
+                debugTaxiQueue++;
+#endif
 
                 if (!ShouldResidentIgnoreTaxiBySettings(setting, resident.ValueRO, out _, out _))
                     continue;
@@ -666,6 +707,15 @@ namespace TaxiTraffic
 
             if (toBlockMark.Length > 0)
                 EntityManager.AddComponent<IgnoreTaxiMark>(toBlockMark.AsArray());
+
+#if DEBUG
+            DebugRecordUnstickTaxiQueues(
+                debugStartTicks,
+                debugScanned,
+                debugWaitingTransport,
+                debugTaxiQueue,
+                clearedTaxiStandWaiting);
+#endif
         }
 
         private bool IsTaxiQueueEntity(Entity queueEntity)
