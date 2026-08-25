@@ -1,4 +1,12 @@
-// File: Systems/RiderControlSystem.Core.cs
+// <copyright file="TaxiTrafficSystem.Core.cs" company="River-Mochi">
+// Copyright (c) 2026 River-Mochi. All rights reserved.
+// Licensed under the GNU General Public License v3.0 or later,
+// with the Cities: Skylines II Linking Exception.
+// See LICENSE and LICENSE-EXCEPTION in the project root.
+// This notice MUST be kept with copies or substantial portions of this code.
+// ================= </copyright> ======================
+
+// File: Systems/TaxiTrafficSystem.Core.cs
 // Purpose: Demand-side taxi control (SAFE variant):
 // - Uses a stable per-resident taxi permission slider.
 // - Applies ResidentFlags.IgnoreTaxi only to residents outside the allowed taxi bucket.
@@ -8,7 +16,7 @@
 // - Never touch Deleted/Temp entities.
 // - Never use SystemAPI from static methods (Entities source-gen limitation).
 
-namespace RiderControl
+namespace TaxiTraffic
 {
     using CS2Shared.RiverMochi; // LogUtils
     using Game;                 // GameSystemBase
@@ -24,7 +32,7 @@ namespace RiderControl
     using CreatureResident = Game.Creatures.Resident;
     using UTime = UnityEngine.Time;
 
-    public partial class RiderControlSystem : GameSystemBase
+    public partial class TaxiTrafficSystem : GameSystemBase
     {
         // -----------------------
         // Knobs (perf + behavior)
@@ -96,7 +104,7 @@ namespace RiderControl
             Enabled = true;
 
 #if DEBUG
-            LogUtils.Info(Mod.s_Log, () => $"{Mod.ModTag} RiderControlSystem enabled (city load complete).");
+            LogUtils.Info(Mod.s_Log, () => $"{Mod.ModTag} TaxiTrafficSystem enabled (city load complete).");
 #endif
         }
 
@@ -255,8 +263,8 @@ namespace RiderControl
         {
             int resetCount = 0;
 
-            using NativeList<Entity> blockedMarks = new NativeList<Entity>(Allocator.Temp);
-            using NativeList<Entity> allowedMarks = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> blockedMarks = new(Allocator.Temp);
+            using NativeList<Entity> allowedMarks = new(Allocator.Temp);
 
             foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<CreatureResident>>()
@@ -301,8 +309,8 @@ namespace RiderControl
         {
             int cleared = 0;
 
-            using NativeList<Entity> blockedMarks = new NativeList<Entity>(Allocator.Temp);
-            using NativeList<Entity> allowedMarks = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> blockedMarks = new(Allocator.Temp);
+            using NativeList<Entity> allowedMarks = new(Allocator.Temp);
 
             foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<CreatureResident>>()
@@ -337,8 +345,8 @@ namespace RiderControl
         {
             unmarkedCount = 0;
 
-            using NativeList<Entity> toUnmark = new NativeList<Entity>(Allocator.Temp);
-            using NativeList<Entity> allowedMarks = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> toUnmark = new(Allocator.Temp);
+            using NativeList<Entity> allowedMarks = new(Allocator.Temp);
 
             int processed = 0;
             foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
@@ -393,8 +401,8 @@ namespace RiderControl
             skippedTourists = 0;
             skippedGroupTravelers = 0;
 
-            using NativeList<Entity> toBlock = new NativeList<Entity>(Allocator.Temp);
-            using NativeList<Entity> toAllow = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> toBlock = new(Allocator.Temp);
+            using NativeList<Entity> toAllow = new(Allocator.Temp);
 
             int processed = 0;
             foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
@@ -549,8 +557,8 @@ namespace RiderControl
             clearedTaxiLaneWaiting = 0;
             clearedRideNeederLinks = 0;
 
-            using NativeList<Entity> toBlockMark = new NativeList<Entity>(Allocator.Temp);
-            using NativeList<Entity> toRemoveAllowedMark = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> toBlockMark = new(Allocator.Temp);
+            using NativeList<Entity> toRemoveAllowedMark = new(Allocator.Temp);
 
             foreach ((RefRW<RideNeeder> rn,
                       RefRW<HumanCurrentLane> lane,
@@ -612,8 +620,8 @@ namespace RiderControl
         {
             clearedTaxiStandWaiting = 0;
 
-            using NativeList<Entity> toBlockMark = new NativeList<Entity>(Allocator.Temp);
-            using NativeList<Entity> toRemoveAllowedMark = new NativeList<Entity>(Allocator.Temp);
+            using NativeList<Entity> toBlockMark = new(Allocator.Temp);
+            using NativeList<Entity> toRemoveAllowedMark = new(Allocator.Temp);
 
             foreach ((RefRW<CreatureResident> resident,
                       RefRW<HumanCurrentLane> lane,

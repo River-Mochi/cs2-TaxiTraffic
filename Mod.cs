@@ -1,8 +1,18 @@
-// File: Mod.cs
-// Entry point for "Smart Traveler".
+// <copyright file="Mod.cs" company="River-Mochi">
+// Copyright (c) 2026 River-Mochi. All rights reserved.
+// Licensed under the GNU General Public License v3.0 or later,
+// with the Cities: Skylines II Linking Exception.
+// See LICENSE and LICENSE-EXCEPTION in the project root.
+// This notice MUST be kept with copies or substantial portions of this code.
+// ================= </copyright> ======================
 
-namespace RiderControl
+// File: Mod.cs
+// Entry point for "Taxi Traffic".
+
+namespace TaxiTraffic
 {
+    using System;                    // Exception
+    using System.Reflection;         // Assembly version number
     using Colossal.IO.AssetDatabase; // AssetDatabase
     using Colossal.Localization;     // LocalizationManager
     using Colossal.Logging;          // ILog, LogManager
@@ -11,15 +21,13 @@ namespace RiderControl
     using Game.Modding;              // IMod
     using Game.SceneFlow;            // GameManager
     using Game.Simulation;           // ResidentAISystem, taxi/ride systems
-    using System;                    // Exception
-    using System.Reflection;         // Assembly version number
 
     public sealed class Mod : IMod
     {
-        public const string ModName = "Smart Traveler";
-        public const string ModId = "SmartTraveler";
-        public const string ModTag = "[SMART]";
-        public const string ShortName = "Smart Traveler";
+        public const string ModName = "Taxi Traffic";
+        public const string ModId = "TaxiTraffic";
+        public const string ModTag = "[TAXI]";
+        public const string ShortName = "Taxi Traffic";
 
         private static bool s_BannerLogged;
 
@@ -36,7 +44,7 @@ namespace RiderControl
 
         public void OnLoad(UpdateSystem updateSystem)
         {
-            // Shared helpers need the mod ID so fallback logs still use SmartTraveler.log.
+            // Shared helpers need the mod ID so fallback logs still use TaxiTraffic.log.
             LogUtils.Configure(ModId);
             ShellOpen.Configure(s_Log, ModId, ModTag);
 
@@ -46,7 +54,7 @@ namespace RiderControl
                 LogUtils.Info(s_Log, () => $"{ModId} {ModTag} v{ModVersion} OnLoad");
             }
 
-            Setting setting = new Setting(this);
+            Setting setting = new(this);
             Setting = setting;
 
             try
@@ -77,7 +85,7 @@ namespace RiderControl
             try
             {
                 // Saved user settings replace defaults after locale keys exist.
-                Setting defaults = new Setting(this);
+                Setting defaults = new(this);
                 AssetDatabase.global.LoadSettings(ModId, setting, defaults, userSetting: true);
             }
             catch (Exception ex)
@@ -104,9 +112,9 @@ namespace RiderControl
             }
 
             // Run main rider control after resident AI, then before taxi and ride-need systems can act on ride decisions.
-            updateSystem.UpdateAfter<RiderControlSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
-            updateSystem.UpdateBefore<RiderControlSystem, TaxiDispatchSystem>(SystemUpdatePhase.GameSimulation);
-            updateSystem.UpdateBefore<RiderControlSystem, RideNeederSystem>(SystemUpdatePhase.GameSimulation);
+            updateSystem.UpdateAfter<TaxiTrafficSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
+            updateSystem.UpdateBefore<TaxiTrafficSystem, TaxiDispatchSystem>(SystemUpdatePhase.GameSimulation);
+            updateSystem.UpdateBefore<TaxiTrafficSystem, RideNeederSystem>(SystemUpdatePhase.GameSimulation);
         }
 
         public void OnDispose()

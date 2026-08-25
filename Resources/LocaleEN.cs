@@ -1,32 +1,40 @@
+// <copyright file="LocaleEN.cs" company="River-Mochi">
+// Copyright (c) 2026 River-Mochi. All rights reserved.
+// Licensed under the GNU General Public License v3.0 or later,
+// with the Cities: Skylines II Linking Exception.
+// See LICENSE and LICENSE-EXCEPTION in the project root.
+// This notice MUST be kept with copies or substantial portions of this code.
+// ================= </copyright> ======================
+
 // File: Resources/LocaleEN.cs
 // English (en-US) for Options UI.
 
-namespace RiderControl
+namespace TaxiTraffic
 {
-    using Colossal;
     using System.Collections.Generic;
+    using Colossal;
 
     public sealed class LocaleEN : IDictionarySource
     {
-        public const string KeyStatusCitizensLine = "SmartTraveler.Status.CitizensLine";
-        public const string KeyStatusTouristsLine = "SmartTraveler.Status.TouristsLine";
-        public const string KeyStatusTotalsLine = "SmartTraveler.Status.TotalsLine";
-        public const string KeyStatusTaxiSupplyLine = "SmartTraveler.Status.TaxiSupplyLine";
-        public const string KeyStatusPassengersLine = "SmartTraveler.Status.PassengersLine";
-        public const string KeyStatusRequestsLine = "SmartTraveler.Status.RequestsLine";
-        public const string KeyStatusTaxiFleetLine = "SmartTraveler.Status.TaxiFleetLine";
-        public const string KeyStatusTaxiStandsLine = "SmartTraveler.Status.TaxiStandsLine";
-        public const string KeyStatusCoverageLine = "SmartTraveler.Status.CoverageLine";
-        public const string KeyStatusCoverageGroupsLine = "SmartTraveler.Status.CoverageGroupsLine";
-        public const string KeyStatusWorkDoneLine = "SmartTraveler.Status.WorkDoneLine";
-        public const string KeyStatusWorkDone2Line = "SmartTraveler.Status.WorkDone2Line";
-        public const string KeyStatusSnapshotLine = "SmartTraveler.Status.SnapshotLine";
+        public const string KeyStatusCitizensLine = "TaxiTraffic.Status.CitizensLine";
+        public const string KeyStatusTouristsLine = "TaxiTraffic.Status.TouristsLine";
+        public const string KeyStatusTotalsLine = "TaxiTraffic.Status.TotalsLine";
+        public const string KeyStatusTaxiSupplyLine = "TaxiTraffic.Status.TaxiSupplyLine";
+        public const string KeyStatusPassengersLine = "TaxiTraffic.Status.PassengersLine";
+        public const string KeyStatusRequestsLine = "TaxiTraffic.Status.RequestsLine";
+        public const string KeyStatusTaxiFleetLine = "TaxiTraffic.Status.TaxiFleetLine";
+        public const string KeyStatusTaxiStandsLine = "TaxiTraffic.Status.TaxiStandsLine";
+        public const string KeyStatusCoverageLine = "TaxiTraffic.Status.CoverageLine";
+        public const string KeyStatusCoverageGroupsLine = "TaxiTraffic.Status.CoverageGroupsLine";
+        public const string KeyStatusWorkDoneLine = "TaxiTraffic.Status.WorkDoneLine";
+        public const string KeyStatusWorkDone2Line = "TaxiTraffic.Status.WorkDone2Line";
+        public const string KeyStatusSnapshotLine = "TaxiTraffic.Status.SnapshotLine";
 
-        public const string KeyStatusGroupSafetyLine = "SmartTraveler.Status.GroupSafetyLine";
+        public const string KeyStatusGroupSafetyLine = "TaxiTraffic.Status.GroupSafetyLine";
 
 #if DEBUG
-        public const string KeyStatusMarkedDevLine = "SmartTraveler.Status.MarkedDevLine";
-        public const string KeyStatusTaxiFlagsDevLine = "SmartTraveler.Status.TaxiFlagsDevLine";
+        public const string KeyStatusMarkedDevLine = "TaxiTraffic.Status.MarkedDevLine";
+        public const string KeyStatusTaxiFlagsDevLine = "TaxiTraffic.Status.TaxiFlagsDevLine";
 #endif
 
         private readonly Setting m_Setting;

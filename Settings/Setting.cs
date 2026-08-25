@@ -1,19 +1,27 @@
+// <copyright file="Setting.cs" company="River-Mochi">
+// Copyright (c) 2026 River-Mochi. All rights reserved.
+// Licensed under the GNU General Public License v3.0 or later,
+// with the Cities: Skylines II Linking Exception.
+// See LICENSE and LICENSE-EXCEPTION in the project root.
+// This notice MUST be kept with copies or substantial portions of this code.
+// ================= </copyright> ======================
+
 // File: Settings/Setting.cs
-// Options UI for "Smart Traveler".
+// Options UI for "Taxi Traffic".
 // All user-facing strings are in Resources/LocaleEN.cs.
 
-namespace RiderControl
+namespace TaxiTraffic
 {
+    using System;
     using Colossal.IO.AssetDatabase;
     using CS2Shared.RiverMochi; // LogUtils, ShellOpen
     using Game.Modding;
     using Game.Settings;
     using Game.UI;
-    using System;
     using UnityEngine;
 
 #if DEBUG
-    [FileLocation("ModsSettings/SmartTraveler/SmartTraveler")]
+    [FileLocation("ModsSettings/TaxiTraffic/TaxiTraffic")]
     [SettingsUITabOrder(ActionsTab, StatusTab, AboutTab)]
     [SettingsUIGroupOrder(
         BehaviorGroup,
@@ -38,7 +46,7 @@ namespace RiderControl
         AboutLinksGroup
     )]
 #else
-    [FileLocation("ModsSettings/SmartTraveler/SmartTraveler")]
+    [FileLocation("ModsSettings/TaxiTraffic/TaxiTraffic")]
     [SettingsUITabOrder(ActionsTab, StatusTab, AboutTab)]
     [SettingsUIGroupOrder(
         BehaviorGroup,
@@ -140,7 +148,7 @@ namespace RiderControl
                     return;
 
                 ApplyGameDefaults();
-                RiderControlSystem.RequestStatusRefresh(force: true);
+                TaxiTrafficSystem.RequestStatusRefresh(force: true);
                 LogUtils.Info(Mod.s_Log, () => $"{Mod.ModTag} Reset to game defaults.");
             }
         }
@@ -234,7 +242,7 @@ namespace RiderControl
 
         public bool IsStatusReady()
         {
-            return RiderControlSystem.s_StatusLastSnapshotRealtime > 0.0;
+            return TaxiTrafficSystem.s_StatusLastSnapshotRealtime > 0.0;
         }
 
         public bool IsStatusNotReady()
@@ -245,13 +253,13 @@ namespace RiderControl
         // SettingsUISetter callback: refresh Status after slider changes.
         private void OnTaxiEligibilitySliderChanged(int _)
         {
-            RiderControlSystem.RequestStatusRefresh(force: true);
+            TaxiTrafficSystem.RequestStatusRefresh(force: true);
         }
 
         // SettingsUISetter callback: refresh Status after commuter/tourist filter changes.
         private void OnTaxiEligibilityToggleChanged(bool _)
         {
-            RiderControlSystem.RequestStatusRefresh(force: true);
+            TaxiTrafficSystem.RequestStatusRefresh(force: true);
         }
 
         private static int SnapTaxiAllowedPercent(int value)

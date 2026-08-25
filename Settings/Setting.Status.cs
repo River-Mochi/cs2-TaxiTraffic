@@ -1,12 +1,20 @@
+// <copyright file="Setting.Status.cs" company="River-Mochi">
+// Copyright (c) 2026 River-Mochi. All rights reserved.
+// Licensed under the GNU General Public License v3.0 or later,
+// with the Cities: Skylines II Linking Exception.
+// See LICENSE and LICENSE-EXCEPTION in the project root.
+// This notice MUST be kept with copies or substantial portions of this code.
+// ================= </copyright> ======================
+
 // File: Settings/Setting.Status.cs
-// Status tab Options UI rows for "Smart Traveler".
+// Status tab Options UI rows for "Taxi Traffic".
 // Status row text is formatted from Resources/LocaleEN.cs entries.
 
-namespace RiderControl
+namespace TaxiTraffic
 {
+    using System.Text;
     using CS2Shared.RiverMochi; // LocaleUtils, LogUtils
     using Game.Settings;
-    using System.Text;
 
     public sealed partial class Setting
     {
@@ -18,7 +26,7 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
                 return string.Empty;
             }
         }
@@ -29,7 +37,7 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
                 return string.Empty;
             }
         }
@@ -40,7 +48,7 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
                 return string.Empty;
             }
         }
@@ -53,16 +61,16 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusMonthlyPassengers1),
-                    RiderControlSystem.s_InfoTaxiCitizen,
-                    RiderControlSystem.s_InfoBusCitizen,
-                    RiderControlSystem.s_InfoTramCitizen,
-                    RiderControlSystem.s_InfoTrainCitizen,
-                    RiderControlSystem.s_InfoSubwayCitizen,
-                    RiderControlSystem.s_InfoAirCitizen);
+                    TaxiTrafficSystem.s_InfoTaxiCitizen,
+                    TaxiTrafficSystem.s_InfoBusCitizen,
+                    TaxiTrafficSystem.s_InfoTramCitizen,
+                    TaxiTrafficSystem.s_InfoTrainCitizen,
+                    TaxiTrafficSystem.s_InfoSubwayCitizen,
+                    TaxiTrafficSystem.s_InfoAirCitizen);
             }
         }
 
@@ -72,16 +80,16 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusMonthlyTourists),
-                    RiderControlSystem.s_InfoTaxiTourist,
-                    RiderControlSystem.s_InfoBusTourist,
-                    RiderControlSystem.s_InfoTramTourist,
-                    RiderControlSystem.s_InfoTrainTourist,
-                    RiderControlSystem.s_InfoSubwayTourist,
-                    RiderControlSystem.s_InfoAirTourist);
+                    TaxiTrafficSystem.s_InfoTaxiTourist,
+                    TaxiTrafficSystem.s_InfoBusTourist,
+                    TaxiTrafficSystem.s_InfoTramTourist,
+                    TaxiTrafficSystem.s_InfoTrainTourist,
+                    TaxiTrafficSystem.s_InfoSubwayTourist,
+                    TaxiTrafficSystem.s_InfoAirTourist);
             }
         }
 
@@ -91,13 +99,13 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusMonthlyTotal),
-                    RiderControlSystem.s_StatusWaitingTransportTotal,
-                    RiderControlSystem.s_InfoTotalTourist,
-                    RiderControlSystem.s_InfoTotalCitizen);
+                    TaxiTrafficSystem.s_StatusWaitingTransportTotal,
+                    TaxiTrafficSystem.s_InfoTotalTourist,
+                    TaxiTrafficSystem.s_InfoTotalCitizen);
             }
         }
 
@@ -109,14 +117,14 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusTaxiSupply),
-                    RiderControlSystem.s_StatusTaxisTotal,
-                    RiderControlSystem.s_StatusTaxiDepotsTotal,
-                    RiderControlSystem.s_StatusTaxiDepotsWithDispatchCenter,
-                    RiderControlSystem.s_StatusTaxiStandsTotal);
+                    TaxiTrafficSystem.s_StatusTaxisTotal,
+                    TaxiTrafficSystem.s_StatusTaxiDepotsTotal,
+                    TaxiTrafficSystem.s_StatusTaxiDepotsWithDispatchCenter,
+                    TaxiTrafficSystem.s_StatusTaxiStandsTotal);
             }
         }
 
@@ -126,13 +134,13 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusPassengers),
-                    RiderControlSystem.s_StatusPassengerTotal,
-                    RiderControlSystem.s_StatusPassengerIgnoreTaxi,
-                    RiderControlSystem.s_StatusPassengerHasResident);
+                    TaxiTrafficSystem.s_StatusPassengerTotal,
+                    TaxiTrafficSystem.s_StatusPassengerIgnoreTaxi,
+                    TaxiTrafficSystem.s_StatusPassengerHasResident);
             }
         }
 
@@ -142,13 +150,13 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusRequests),
-                    RiderControlSystem.s_StatusReqCustomer,
-                    RiderControlSystem.s_StatusReqOutside,
-                    RiderControlSystem.s_StatusReqNone);
+                    TaxiTrafficSystem.s_StatusReqCustomer,
+                    TaxiTrafficSystem.s_StatusReqOutside,
+                    TaxiTrafficSystem.s_StatusReqNone);
             }
         }
 
@@ -158,16 +166,16 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusTaxiFleet),
-                    RiderControlSystem.s_StatusTaxiTransporting,
-                    RiderControlSystem.s_StatusTaxiBoarding,
-                    RiderControlSystem.s_StatusTaxiReturning,
-                    RiderControlSystem.s_StatusTaxiDispatched,
-                    RiderControlSystem.s_StatusTaxiEnRoute,
-                    RiderControlSystem.s_StatusTaxiParked);
+                    TaxiTrafficSystem.s_StatusTaxiTransporting,
+                    TaxiTrafficSystem.s_StatusTaxiBoarding,
+                    TaxiTrafficSystem.s_StatusTaxiReturning,
+                    TaxiTrafficSystem.s_StatusTaxiDispatched,
+                    TaxiTrafficSystem.s_StatusTaxiEnRoute,
+                    TaxiTrafficSystem.s_StatusTaxiParked);
             }
         }
 
@@ -177,11 +185,11 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusTaxiStands),
-                    RiderControlSystem.s_StatusWaitingTaxiStandTotal);
+                    TaxiTrafficSystem.s_StatusWaitingTaxiStandTotal);
             }
         }
 
@@ -193,12 +201,12 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusCoverage1),
-                    RiderControlSystem.s_StatusResidentsIgnoreTaxi,
-                    RiderControlSystem.s_StatusResidentsTotal);
+                    TaxiTrafficSystem.s_StatusResidentsIgnoreTaxi,
+                    TaxiTrafficSystem.s_StatusResidentsTotal);
             }
         }
 
@@ -208,14 +216,14 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusCoverage2),
-                    RiderControlSystem.s_StatusCommutersIgnoreTaxi,
-                    RiderControlSystem.s_StatusCommutersTotal,
-                    RiderControlSystem.s_StatusTouristsIgnoreTaxi,
-                    RiderControlSystem.s_StatusTouristsTotal);
+                    TaxiTrafficSystem.s_StatusCommutersIgnoreTaxi,
+                    TaxiTrafficSystem.s_StatusCommutersTotal,
+                    TaxiTrafficSystem.s_StatusTouristsIgnoreTaxi,
+                    TaxiTrafficSystem.s_StatusTouristsTotal);
             }
         }
 
@@ -225,13 +233,13 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusWorkDone1),
-                    RiderControlSystem.s_StatusLastAppliedIgnoreTaxi,
-                    RiderControlSystem.s_StatusLastRemovedRideNeeder,
-                    RiderControlSystem.s_StatusLastClearedTaxiLaneWaiting);
+                    TaxiTrafficSystem.s_StatusLastAppliedIgnoreTaxi,
+                    TaxiTrafficSystem.s_StatusLastRemovedRideNeeder,
+                    TaxiTrafficSystem.s_StatusLastClearedTaxiLaneWaiting);
             }
         }
 
@@ -241,13 +249,13 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusWorkDone2),
-                    RiderControlSystem.s_StatusLastClearedTaxiStandWaiting,
-                    RiderControlSystem.s_StatusLastSkippedCommuters,
-                    RiderControlSystem.s_StatusLastSkippedTourists);
+                    TaxiTrafficSystem.s_StatusLastClearedTaxiStandWaiting,
+                    TaxiTrafficSystem.s_StatusLastSkippedCommuters,
+                    TaxiTrafficSystem.s_StatusLastSkippedTourists);
             }
         }
 
@@ -257,11 +265,11 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusGroupSafety),
-                    RiderControlSystem.s_StatusLastSkippedGroupTravelers);
+                    TaxiTrafficSystem.s_StatusLastSkippedGroupTravelers);
             }
         }
 
@@ -271,11 +279,11 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusSnapshotMeta),
-                    RiderControlSystem.GetStatusLastStampText());
+                    TaxiTrafficSystem.GetStatusLastStampText());
             }
         }
 
@@ -288,13 +296,13 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusDebugMarkedCoverage),
-                    RiderControlSystem.s_StatusResidentsForcedMarker,
-                    RiderControlSystem.s_StatusResidentsTotal,
-                    RiderControlSystem.s_StatusResidentsIgnoreTaxi);
+                    TaxiTrafficSystem.s_StatusResidentsForcedMarker,
+                    TaxiTrafficSystem.s_StatusResidentsTotal,
+                    TaxiTrafficSystem.s_StatusResidentsIgnoreTaxi);
             }
         }
 
@@ -304,13 +312,13 @@ namespace RiderControl
         {
             get
             {
-                RiderControlSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
 
                 return StatusValue(
                     nameof(StatusDebugTaxiFlags),
-                    RiderControlSystem.s_StatusTaxiWithDispatchBuffer,
-                    RiderControlSystem.s_StatusTaxiFromOutside,
-                    RiderControlSystem.s_StatusTaxiDisabled);
+                    TaxiTrafficSystem.s_StatusTaxiWithDispatchBuffer,
+                    TaxiTrafficSystem.s_StatusTaxiFromOutside,
+                    TaxiTrafficSystem.s_StatusTaxiDisabled);
             }
         }
 #endif
@@ -325,118 +333,118 @@ namespace RiderControl
                 if (!value)
                     return;
 
-                RiderControlSystem.RefreshStatusSnapshotForOptionsUi(force: true);
+                TaxiTrafficSystem.RefreshStatusSnapshotForOptionsUi(force: true);
                 LogUtils.Info(Mod.s_Log, BuildStatusReportText);
             }
         }
 
         private static string BuildStatusReportText()
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             sb.AppendLine($"{Mod.ModTag} StatusReport:");
             sb.AppendLine("Citizens: " + StatusValue(
                 nameof(StatusMonthlyPassengers1),
-                RiderControlSystem.s_InfoTaxiCitizen,
-                RiderControlSystem.s_InfoBusCitizen,
-                RiderControlSystem.s_InfoTramCitizen,
-                RiderControlSystem.s_InfoTrainCitizen,
-                RiderControlSystem.s_InfoSubwayCitizen,
-                RiderControlSystem.s_InfoAirCitizen));
+                TaxiTrafficSystem.s_InfoTaxiCitizen,
+                TaxiTrafficSystem.s_InfoBusCitizen,
+                TaxiTrafficSystem.s_InfoTramCitizen,
+                TaxiTrafficSystem.s_InfoTrainCitizen,
+                TaxiTrafficSystem.s_InfoSubwayCitizen,
+                TaxiTrafficSystem.s_InfoAirCitizen));
 
             sb.AppendLine("Tourists: " + StatusValue(
                 nameof(StatusMonthlyTourists),
-                RiderControlSystem.s_InfoTaxiTourist,
-                RiderControlSystem.s_InfoBusTourist,
-                RiderControlSystem.s_InfoTramTourist,
-                RiderControlSystem.s_InfoTrainTourist,
-                RiderControlSystem.s_InfoSubwayTourist,
-                RiderControlSystem.s_InfoAirTourist));
+                TaxiTrafficSystem.s_InfoTaxiTourist,
+                TaxiTrafficSystem.s_InfoBusTourist,
+                TaxiTrafficSystem.s_InfoTramTourist,
+                TaxiTrafficSystem.s_InfoTrainTourist,
+                TaxiTrafficSystem.s_InfoSubwayTourist,
+                TaxiTrafficSystem.s_InfoAirTourist));
 
             sb.AppendLine("Totals: " + StatusValue(
                 nameof(StatusMonthlyTotal),
-                RiderControlSystem.s_StatusWaitingTransportTotal,
-                RiderControlSystem.s_InfoTotalTourist,
-                RiderControlSystem.s_InfoTotalCitizen));
+                TaxiTrafficSystem.s_StatusWaitingTransportTotal,
+                TaxiTrafficSystem.s_InfoTotalTourist,
+                TaxiTrafficSystem.s_InfoTotalCitizen));
 
             sb.AppendLine("Taxi supply: " + StatusValue(
                 nameof(StatusTaxiSupply),
-                RiderControlSystem.s_StatusTaxisTotal,
-                RiderControlSystem.s_StatusTaxiDepotsTotal,
-                RiderControlSystem.s_StatusTaxiDepotsWithDispatchCenter,
-                RiderControlSystem.s_StatusTaxiStandsTotal));
+                TaxiTrafficSystem.s_StatusTaxisTotal,
+                TaxiTrafficSystem.s_StatusTaxiDepotsTotal,
+                TaxiTrafficSystem.s_StatusTaxiDepotsWithDispatchCenter,
+                TaxiTrafficSystem.s_StatusTaxiStandsTotal));
 
             sb.AppendLine("Passengers: " + StatusValue(
                 nameof(StatusPassengers),
-                RiderControlSystem.s_StatusPassengerTotal,
-                RiderControlSystem.s_StatusPassengerIgnoreTaxi,
-                RiderControlSystem.s_StatusPassengerHasResident));
+                TaxiTrafficSystem.s_StatusPassengerTotal,
+                TaxiTrafficSystem.s_StatusPassengerIgnoreTaxi,
+                TaxiTrafficSystem.s_StatusPassengerHasResident));
 
             sb.AppendLine("Requests: " + StatusValue(
                 nameof(StatusRequests),
-                RiderControlSystem.s_StatusReqCustomer,
-                RiderControlSystem.s_StatusReqOutside,
-                RiderControlSystem.s_StatusReqNone));
+                TaxiTrafficSystem.s_StatusReqCustomer,
+                TaxiTrafficSystem.s_StatusReqOutside,
+                TaxiTrafficSystem.s_StatusReqNone));
 
             sb.AppendLine("Fleet: " + StatusValue(
                 nameof(StatusTaxiFleet),
-                RiderControlSystem.s_StatusTaxiTransporting,
-                RiderControlSystem.s_StatusTaxiBoarding,
-                RiderControlSystem.s_StatusTaxiReturning,
-                RiderControlSystem.s_StatusTaxiDispatched,
-                RiderControlSystem.s_StatusTaxiEnRoute,
-                RiderControlSystem.s_StatusTaxiParked));
+                TaxiTrafficSystem.s_StatusTaxiTransporting,
+                TaxiTrafficSystem.s_StatusTaxiBoarding,
+                TaxiTrafficSystem.s_StatusTaxiReturning,
+                TaxiTrafficSystem.s_StatusTaxiDispatched,
+                TaxiTrafficSystem.s_StatusTaxiEnRoute,
+                TaxiTrafficSystem.s_StatusTaxiParked));
 
             sb.AppendLine("Stands: " + StatusValue(
                 nameof(StatusTaxiStands),
-                RiderControlSystem.s_StatusWaitingTaxiStandTotal));
+                TaxiTrafficSystem.s_StatusWaitingTaxiStandTotal));
 
             sb.AppendLine(
                 "Taxi stand debug: " +
-                RiderControlSystem.s_StatusWaitingTaxiStandTotal +
+                TaxiTrafficSystem.s_StatusWaitingTaxiStandTotal +
                 " waiting | " +
-                RiderControlSystem.s_StatusReqStand +
+                TaxiTrafficSystem.s_StatusReqStand +
                 " taxis requested to park at stands");
 
             sb.AppendLine("Coverage: " + StatusValue(
                 nameof(StatusCoverage1),
-                RiderControlSystem.s_StatusResidentsIgnoreTaxi,
-                RiderControlSystem.s_StatusResidentsTotal));
+                TaxiTrafficSystem.s_StatusResidentsIgnoreTaxi,
+                TaxiTrafficSystem.s_StatusResidentsTotal));
 
             sb.AppendLine("Groups: " + StatusValue(
                 nameof(StatusGroupSafety),
-                RiderControlSystem.s_StatusLastSkippedGroupTravelers));
+                TaxiTrafficSystem.s_StatusLastSkippedGroupTravelers));
 
             sb.AppendLine(
                 "Group debug: " +
-                RiderControlSystem.s_StatusLastSkippedGroupTravelers +
+                TaxiTrafficSystem.s_StatusLastSkippedGroupTravelers +
                 " skipped | " +
-                RiderControlSystem.s_StatusLastClearedGroupTravelers +
+                TaxiTrafficSystem.s_StatusLastClearedGroupTravelers +
                 " cleared | " +
-                RiderControlSystem.s_StatusResidentsGroupLinked +
+                TaxiTrafficSystem.s_StatusResidentsGroupLinked +
                 " currently group-linked");
 
             sb.AppendLine("Commuter/tourist coverage: " + StatusValue(
                 nameof(StatusCoverage2),
-                RiderControlSystem.s_StatusCommutersIgnoreTaxi,
-                RiderControlSystem.s_StatusCommutersTotal,
-                RiderControlSystem.s_StatusTouristsIgnoreTaxi,
-                RiderControlSystem.s_StatusTouristsTotal));
+                TaxiTrafficSystem.s_StatusCommutersIgnoreTaxi,
+                TaxiTrafficSystem.s_StatusCommutersTotal,
+                TaxiTrafficSystem.s_StatusTouristsIgnoreTaxi,
+                TaxiTrafficSystem.s_StatusTouristsTotal));
 
             sb.AppendLine("Work: " + StatusValue(
                 nameof(StatusWorkDone1),
-                RiderControlSystem.s_StatusLastAppliedIgnoreTaxi,
-                RiderControlSystem.s_StatusLastRemovedRideNeeder,
-                RiderControlSystem.s_StatusLastClearedTaxiLaneWaiting));
+                TaxiTrafficSystem.s_StatusLastAppliedIgnoreTaxi,
+                TaxiTrafficSystem.s_StatusLastRemovedRideNeeder,
+                TaxiTrafficSystem.s_StatusLastClearedTaxiLaneWaiting));
 
             sb.AppendLine("Work 2: " + StatusValue(
                 nameof(StatusWorkDone2),
-                RiderControlSystem.s_StatusLastClearedTaxiStandWaiting,
-                RiderControlSystem.s_StatusLastSkippedCommuters,
-                RiderControlSystem.s_StatusLastSkippedTourists));
+                TaxiTrafficSystem.s_StatusLastClearedTaxiStandWaiting,
+                TaxiTrafficSystem.s_StatusLastSkippedCommuters,
+                TaxiTrafficSystem.s_StatusLastSkippedTourists));
 
             sb.Append("Snapshot: ");
-            sb.Append(StatusValue(nameof(StatusSnapshotMeta), RiderControlSystem.GetStatusLastStampText()));
+            sb.Append(StatusValue(nameof(StatusSnapshotMeta), TaxiTrafficSystem.GetStatusLastStampText()));
 
             return sb.ToString();
         }

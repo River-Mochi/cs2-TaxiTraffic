@@ -1,19 +1,27 @@
-// File: Systems/RiderControlSystem.Debug.cs
+// <copyright file="TaxiTrafficSystem.Debug.cs" company="River-Mochi">
+// Copyright (c) 2026 River-Mochi. All rights reserved.
+// Licensed under the GNU General Public License v3.0 or later,
+// with the Cities: Skylines II Linking Exception.
+// See LICENSE and LICENSE-EXCEPTION in the project root.
+// This notice MUST be kept with copies or substantial portions of this code.
+// ================= </copyright> ======================
+
+// File: Systems/TaxiTrafficSystem.Debug.cs
 // Optional debug logging helpers (controlled by settings).
 
-namespace RiderControl
+namespace TaxiTraffic
 {
+    using System;           // Math
     using CS2Shared.RiverMochi; // LogUtils
     using Game.Citizens;    // Citizen, CitizenFlags, HouseholdMember, TravelPurpose
     using Game.City;        // StatisticType, PassengerType
     using Game.Companies;   // ResourceBuyer
     using Game.Creatures;   // ResidentFlags, GroupMember, GroupCreature
     using Game.Vehicles;    // CurrentVehicle, Taxi, TaxiFlags
-    using System;           // Math
     using Unity.Entities;
     using CreatureResident = Game.Creatures.Resident;
 
-    public partial class RiderControlSystem
+    public partial class TaxiTrafficSystem
     {
         private const int kDebugPassengerDetailMax = 8;
 

@@ -1,8 +1,18 @@
-// File: Systems/RiderControlSystem.Status.cs
+// <copyright file="TaxiTrafficSystem.Status.cs" company="River-Mochi">
+// Copyright (c) 2026 River-Mochi. All rights reserved.
+// Licensed under the GNU General Public License v3.0 or later,
+// with the Cities: Skylines II Linking Exception.
+// See LICENSE and LICENSE-EXCEPTION in the project root.
+// This notice MUST be kept with copies or substantial portions of this code.
+// ================= </copyright> ======================
+
+// File: Systems/TaxiTrafficSystem.Status.cs
 // Status snapshot + InfoView-matching passenger statistics.
 
-namespace RiderControl
+namespace TaxiTraffic
 {
+    using System;               // DateTime, Math
+    using System.Globalization; // CultureInfo
     using Game;                 // GameMode extensions
     using Game.Citizens;        // HouseholdMember, Household
     using Game.Common;          // Deleted
@@ -14,14 +24,12 @@ namespace RiderControl
     // Game.Simulation types stay fully qualified here because Entities source-gen can misresolve partial-system usings.
     using Game.Tools;           // Temp
     using Game.Vehicles;        // Taxi, TaxiFlags, ParkedCar
-    using System;               // DateTime, Math
-    using System.Globalization; // CultureInfo
     using Unity.Entities;       // SystemAPI, EntityQuery
     using BuildingTransportDepot = Game.Buildings.TransportDepot;
     using CreatureResident = Game.Creatures.Resident;
     using UTime = UnityEngine.Time;
 
-    public partial class RiderControlSystem
+    public partial class TaxiTrafficSystem
     {
         private const int kNewOptionsVisitFrameGap = 30;
 
@@ -607,7 +615,7 @@ namespace RiderControl
 
             try
             {
-                RiderControlSystem system = world.GetOrCreateSystemManaged<RiderControlSystem>();
+                TaxiTrafficSystem system = world.GetOrCreateSystemManaged<TaxiTrafficSystem>();
                 uint simulationFrame = system.GetStatusSimulationFrame();
                 bool simulationAdvanced = simulationFrame != s_StatusLastSnapshotSimulationFrame;
 

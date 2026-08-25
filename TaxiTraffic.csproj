@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
@@ -13,8 +13,8 @@
 		<FileVersion>$(Version).0</FileVersion>
 		<!-- for file properties -->
 
-		<AssemblyName>RiderControl</AssemblyName>
-		<RootNamespace>RiderControl</RootNamespace>
+		<AssemblyName>TaxiTraffic</AssemblyName>
+		<RootNamespace>TaxiTraffic</RootNamespace>
 
 	</PropertyGroup>
 	
