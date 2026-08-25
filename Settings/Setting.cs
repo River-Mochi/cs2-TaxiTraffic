@@ -153,12 +153,25 @@ namespace TaxiTraffic
             }
         }
 
+        // Verbose logging is a DEBUG-only tool. In Release it is hidden and hard-wired to false so a
+        // stale saved value (e.g. carried over from a DEBUG run, same settings file) can never leave
+        // periodic logging running during normal play. Release users get the Status tab and the
+        // one-shot "Write Report" button instead.
+#if DEBUG
         // Moved to About tab so normal gameplay options stay clean.
         [SettingsUISection(AboutTab, DebugGroup)]
         public bool EnableDebugLogging
         {
             get; set;
         }
+#else
+        [SettingsUIHidden]
+        public bool EnableDebugLogging
+        {
+            get => false;
+            set { }
+        }
+#endif
 
         [SettingsUIButtonGroup(DebugGroup)]
         [SettingsUIButton]

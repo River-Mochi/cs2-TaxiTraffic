@@ -12,9 +12,6 @@
 // - Applies ResidentFlags.IgnoreTaxi only to residents outside the allowed taxi bucket.
 // - Leaves obvious group travelers alone for Phase 1 safety.
 // - Unwinds blocked residents from taxi waiting states so cims don't freeze.
-// Notes:
-// - Never touch Deleted/Temp entities.
-// - Never use SystemAPI from static methods (Entities source-gen limitation).
 
 namespace TaxiTraffic
 {
@@ -538,8 +535,8 @@ namespace TaxiTraffic
 
         private bool IsGroupLinkedTraveler(Entity entity)
         {
-            return EntityManager.HasComponent<GroupMember>(entity) ||
-                   EntityManager.HasBuffer<GroupCreature>(entity);
+            return SystemAPI.HasComponent<GroupMember>(entity) ||
+                   SystemAPI.HasBuffer<GroupCreature>(entity);
         }
 
         // -----------------------

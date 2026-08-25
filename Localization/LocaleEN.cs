@@ -112,11 +112,13 @@ namespace TaxiTraffic
                     "any commuter/tourist blocking is OFF." },
 
                 // Debug
+#if DEBUG
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableDebugLogging)), "Enable verbose logging" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableDebugLogging)),
                     "When enabled, writes periodic TaxiSummary lines to help debug taxi activity.\n" +
                     "**OFF** = disable for normal gameplay; heavy logging can hurt performance.\n" +
                     "<Do not enable this for normal gameplay.>" },
+#endif
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLogFile)), "Open Log File" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLogFile)),

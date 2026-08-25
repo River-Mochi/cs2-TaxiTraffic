@@ -125,7 +125,7 @@ namespace TaxiTraffic
                 bool hhCommuter = false;
                 bool hhTourist = false;
 
-                if (citizenEntity != Entity.Null && EntityManager.Exists(citizenEntity))
+                if (citizenEntity != Entity.Null && SystemAPI.Exists(citizenEntity))
                 {
                     if (SystemAPI.HasComponent<Citizen>(citizenEntity))
                         citizenFlags = SystemAPI.GetComponentRO<Citizen>(citizenEntity).ValueRO.m_State;
