@@ -7,8 +7,8 @@
 // ================= </copyright> ======================
 
 // File: Settings/TaxiSettings.cs
-// Options UI for "Taxi Traffic".
-// All user-facing strings are in Resources/LocaleEN.cs.
+// Purpose: Options UI for "Taxi Traffic".
+// All user-facing strings are in Localization/LocaleEN.cs.
 
 namespace TaxiTraffic
 {
@@ -20,7 +20,6 @@ namespace TaxiTraffic
     using Game.UI;
     using UnityEngine;
 
-#if DEBUG
     [FileLocation("ModsSettings/TaxiTraffic/TaxiTraffic")]
     [SettingsUITabOrder(ActionsTab, StatusTab, AboutTab)]
     [SettingsUIGroupOrder(
@@ -28,7 +27,9 @@ namespace TaxiTraffic
         CityScanGroup,
         TaxiScanGroup,
         LastUpdateGroup,
+    #if DEBUG
         AdvancedDebugGroup,
+    #endif
         StatusActionsGroup,
         AboutInfoGroup,
         DebugGroup,
@@ -39,31 +40,15 @@ namespace TaxiTraffic
         CityScanGroup,
         TaxiScanGroup,
         LastUpdateGroup,
+    #if DEBUG
         AdvancedDebugGroup,
+    #endif
         StatusActionsGroup,
         AboutInfoGroup,
         DebugGroup,
         AboutLinksGroup
     )]
-#else
-    [FileLocation("ModsSettings/TaxiTraffic/TaxiTraffic")]
-    [SettingsUITabOrder(ActionsTab, StatusTab, AboutTab)]
-    [SettingsUIGroupOrder(
-        BehaviorGroup,
-        CityScanGroup,
-        TaxiScanGroup,
-        LastUpdateGroup,
-        StatusActionsGroup,
-        AboutInfoGroup,
-        DebugGroup,
-        AboutLinksGroup
-    )]
-    [SettingsUIShowGroupName(
-        BehaviorGroup, CityScanGroup, TaxiScanGroup,
-        LastUpdateGroup, StatusActionsGroup,
-        AboutInfoGroup, DebugGroup, AboutLinksGroup
-    )]
-#endif
+
     public sealed partial class TaxiSettings : ModSetting
     {
         public const string ActionsTab = "Actions";
@@ -78,7 +63,9 @@ namespace TaxiTraffic
         public const string StatusActionsGroup = "StatusActions";
 
         // Status (DEBUG builds only)
+#if DEBUG
         public const string AdvancedDebugGroup = "AdvancedDebug";
+#endif
 
         public const string AboutInfoGroup = "Info";
         public const string AboutLinksGroup = "Support Links";

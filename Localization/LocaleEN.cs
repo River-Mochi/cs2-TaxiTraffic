@@ -6,8 +6,8 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-// File: Resources/LocaleEN.cs
-// English (en-US) for Options UI.
+// File: Localization/LocaleEN.cs
+// Purpose: English (en-US) for Options UI.
 
 namespace TaxiTraffic
 {
@@ -91,13 +91,13 @@ namespace TaxiTraffic
                     "Notes:\n" +
                     "- commuters and tourists are separate groups, see [ ✓ ] toggles.\n" +
                     "- a few vanilla systems (e.g. Leisure) can directly call taxis and may ignore the IgnoreTaxi flag,\n" +
-                    " so small taxi usage can be seem even at 0%."
+                    " so small taxi usage can be seen even at 0%."
                     },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "Commuters avoid taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockCommuters)),
-                    "**ON** = commuter households get Ignore Taxi flag." +
-                    "**OFF** = commuters can use taxis (vanilla).\n"
+                    "**ON** = commuter households get Ignore Taxi flag.\n" +
+                    "**OFF** = commuters can use taxis (vanilla)."
                      },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockTourists)), "Tourists avoid taxis" },

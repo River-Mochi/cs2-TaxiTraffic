@@ -8,7 +8,7 @@
 
 // File: Settings/TaxiSettings.Status.cs
 // Status tab Options UI rows for "Taxi Traffic".
-// Status row text is formatted from Resources/LocaleEN.cs entries.
+// Status row text is formatted from Localization/LocaleEN.cs
 
 namespace TaxiTraffic
 {
