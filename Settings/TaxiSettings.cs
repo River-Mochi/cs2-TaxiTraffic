@@ -1,4 +1,4 @@
-// <copyright file="Setting.cs" company="River-Mochi">
+// <copyright file="TaxiSettings.cs" company="River-Mochi">
 // Copyright (c) 2026 River-Mochi. All rights reserved.
 // Licensed under the GNU General Public License v3.0 or later,
 // with the Cities: Skylines II Linking Exception.
@@ -6,7 +6,7 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-// File: Settings/Setting.cs
+// File: Settings/TaxiSettings.cs
 // Options UI for "Taxi Traffic".
 // All user-facing strings are in Resources/LocaleEN.cs.
 
@@ -64,7 +64,7 @@ namespace TaxiTraffic
         AboutInfoGroup, DebugGroup, AboutLinksGroup
     )]
 #endif
-    public sealed partial class Setting : ModSetting
+    public sealed partial class TaxiSettings : ModSetting
     {
         public const string ActionsTab = "Actions";
         public const string StatusTab = "Status";
@@ -97,7 +97,7 @@ namespace TaxiTraffic
 
         private int m_ResidentsAllowedToUseTaxis = kTaxiAllowedPercentDefault;
 
-        public Setting(IMod mod) : base(mod)
+        public TaxiSettings(IMod mod) : base(mod)
         {
             SetDefaults();
         }
@@ -111,7 +111,7 @@ namespace TaxiTraffic
             scalarMultiplier = 1,
             unit = Unit.kPercentage)]
         [SettingsUISection(ActionsTab, BehaviorGroup)]
-        [SettingsUISetter(typeof(Setting), nameof(OnTaxiEligibilitySliderChanged))]
+        [SettingsUISetter(typeof(TaxiSettings), nameof(OnTaxiEligibilitySliderChanged))]
         public int ResidentsAllowedToUseTaxis
         {
             get => m_ResidentsAllowedToUseTaxis;
@@ -119,14 +119,14 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(ActionsTab, BehaviorGroup)]
-        [SettingsUISetter(typeof(Setting), nameof(OnTaxiEligibilityToggleChanged))]
+        [SettingsUISetter(typeof(TaxiSettings), nameof(OnTaxiEligibilityToggleChanged))]
         public bool BlockCommuters
         {
             get; set;
         }
 
         [SettingsUISection(ActionsTab, BehaviorGroup)]
-        [SettingsUISetter(typeof(Setting), nameof(OnTaxiEligibilityToggleChanged))]
+        [SettingsUISetter(typeof(TaxiSettings), nameof(OnTaxiEligibilityToggleChanged))]
         public bool BlockTourists
         {
             get; set;

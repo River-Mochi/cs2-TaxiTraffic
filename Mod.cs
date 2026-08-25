@@ -37,7 +37,7 @@ namespace TaxiTraffic
         public static readonly ILog s_Log =
             LogManager.GetLogger(ModId).SetShowsErrorsInUI(false);
 
-        public static Setting? Setting
+        public static TaxiSettings? Setting
         {
             get; private set;
         }
@@ -54,7 +54,7 @@ namespace TaxiTraffic
                 LogUtils.Info(s_Log, () => $"{ModId} {ModTag} v{ModVersion} OnLoad");
             }
 
-            Setting setting = new(this);
+            TaxiSettings setting = new(this);
             Setting = setting;
 
             try
@@ -85,7 +85,7 @@ namespace TaxiTraffic
             try
             {
                 // Saved user settings replace defaults after locale keys exist.
-                Setting defaults = new(this);
+                TaxiSettings defaults = new(this);
                 AssetDatabase.global.LoadSettings(ModId, setting, defaults, userSetting: true);
             }
             catch (Exception ex)

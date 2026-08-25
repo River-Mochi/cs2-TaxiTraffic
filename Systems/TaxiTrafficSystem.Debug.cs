@@ -111,7 +111,7 @@ namespace TaxiTraffic
             m_DebugUnstickLastCleared = cleared;
             m_DebugUnstickClearedTotal += cleared;
 
-            Setting? setting = Mod.Setting;
+            TaxiSettings? setting = Mod.Setting;
             if (setting is null || !setting.EnableDebugLogging)
                 return;
 
@@ -141,7 +141,7 @@ namespace TaxiTraffic
         }
 #endif
 
-        private void TickDebugLogging(Setting setting, float intervalSeconds)
+        private void TickDebugLogging(TaxiSettings setting, float intervalSeconds)
         {
             float effectiveIntervalSeconds = Math.Max(intervalSeconds, kDebugMinSummaryIntervalSeconds);
 

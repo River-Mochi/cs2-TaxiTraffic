@@ -101,7 +101,7 @@ namespace TaxiTraffic
 
         protected override void OnUpdate()
         {
-            Setting? setting = Mod.Setting;
+            TaxiSettings? setting = Mod.Setting;
             if (setting is null)
             {
                 Enabled = false;
@@ -126,7 +126,7 @@ namespace TaxiTraffic
                 m_TaxiEligibilityResetInProgress = true;
             }
 
-            // Setting changes must clear old buckets before applying the new stable bucket.
+            // TaxiSettings changes must clear old buckets before applying the new stable bucket.
             if (m_TaxiEligibilityResetInProgress)
             {
                 int resetCount = ResetTaxiEligibilityMarkersBatch();
@@ -153,7 +153,7 @@ namespace TaxiTraffic
             }
 
             // Full vanilla-style state only when residents, commuters, and tourists are not selected.
-            bool vanillaResidents = setting.ResidentsAllowedToUseTaxis >= Setting.kTaxiAllowedPercentMax;
+            bool vanillaResidents = setting.ResidentsAllowedToUseTaxis >= TaxiSettings.kTaxiAllowedPercentMax;
             bool vanillaGroups = !setting.BlockCommuters && !setting.BlockTourists;
 
             if (vanillaResidents && vanillaGroups)
@@ -234,7 +234,7 @@ namespace TaxiTraffic
         // Marker / eligibility
         // -----------------------
 
-        private bool DetectTaxiEligibilitySettingChange(Setting setting)
+        private bool DetectTaxiEligibilitySettingChange(TaxiSettings setting)
         {
             int allowed = setting.ResidentsAllowedToUseTaxis;
 
@@ -384,7 +384,7 @@ namespace TaxiTraffic
         }
 
         private void ApplyTaxiEligibilityBatch(
-            Setting setting,
+            TaxiSettings setting,
             out int applied,
             out int skippedCommuters,
             out int skippedTourists,
@@ -488,7 +488,7 @@ namespace TaxiTraffic
         }
 
         private bool ShouldResidentIgnoreTaxiBySettings(
-            Setting setting,
+            TaxiSettings setting,
             Resident resident,
             out bool skippedCommuter,
             out bool skippedTourist)
@@ -527,10 +527,10 @@ namespace TaxiTraffic
 
             int allowedPercent = setting.ResidentsAllowedToUseTaxis;
 
-            if (allowedPercent >= Setting.kTaxiAllowedPercentMax)
+            if (allowedPercent >= TaxiSettings.kTaxiAllowedPercentMax)
                 return false;
 
-            if (allowedPercent <= Setting.kTaxiAllowedPercentMin)
+            if (allowedPercent <= TaxiSettings.kTaxiAllowedPercentMin)
                 return true;
 
             if (citizenEntity == Entity.Null || !SystemAPI.HasComponent<Citizen>(citizenEntity))
@@ -574,7 +574,7 @@ namespace TaxiTraffic
         // -----------------------
 
         private void UnstickTaxiLaneWaiters(
-            Setting setting,
+            TaxiSettings setting,
             out int clearedTaxiLaneWaiting,
             out int clearedRideNeederLinks)
         {
@@ -634,7 +634,7 @@ namespace TaxiTraffic
                 EntityManager.AddComponent<IgnoreTaxiMark>(toBlockMark.AsArray());
         }
 
-        private void UnstickTaxiQueues(Setting setting, out int clearedTaxiStandWaiting)
+        private void UnstickTaxiQueues(TaxiSettings setting, out int clearedTaxiStandWaiting)
         {
 #if DEBUG
             long debugStartTicks = DebugGetTimestamp();

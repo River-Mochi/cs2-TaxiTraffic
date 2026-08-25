@@ -1,4 +1,4 @@
-// <copyright file="Setting.Status.cs" company="River-Mochi">
+// <copyright file="TaxiSettings.Status.cs" company="River-Mochi">
 // Copyright (c) 2026 River-Mochi. All rights reserved.
 // Licensed under the GNU General Public License v3.0 or later,
 // with the Cities: Skylines II Linking Exception.
@@ -6,7 +6,7 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-// File: Settings/Setting.Status.cs
+// File: Settings/TaxiSettings.Status.cs
 // Status tab Options UI rows for "Taxi Traffic".
 // Status row text is formatted from Resources/LocaleEN.cs entries.
 
@@ -16,11 +16,11 @@ namespace TaxiTraffic
     using CS2Shared.RiverMochi; // LocaleUtils, LogUtils
     using Game.Settings;
 
-    public sealed partial class Setting
+    public sealed partial class TaxiSettings
     {
         // ---- Status ----
 
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusReady))]
         [SettingsUISection(StatusTab, CityScanGroup)]
         public string StatusNotReadyCityScan
         {
@@ -31,7 +31,7 @@ namespace TaxiTraffic
             }
         }
 
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusReady))]
         [SettingsUISection(StatusTab, TaxiScanGroup)]
         public string StatusNotReadyTaxiScan
         {
@@ -42,7 +42,7 @@ namespace TaxiTraffic
             }
         }
 
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusReady))]
         [SettingsUISection(StatusTab, LastUpdateGroup)]
         public string StatusNotReadyLastUpdate
         {
@@ -56,7 +56,7 @@ namespace TaxiTraffic
         // CITY SCAN
 
         [SettingsUISection(StatusTab, CityScanGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusMonthlyPassengers1
         {
             get
@@ -75,7 +75,7 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(StatusTab, CityScanGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusMonthlyTourists
         {
             get
@@ -94,7 +94,7 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(StatusTab, CityScanGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusMonthlyTotal
         {
             get
@@ -112,7 +112,7 @@ namespace TaxiTraffic
         // TAXI SCAN
 
         [SettingsUISection(StatusTab, TaxiScanGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusTaxiSupply
         {
             get
@@ -129,7 +129,7 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(StatusTab, TaxiScanGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusPassengers
         {
             get
@@ -145,7 +145,7 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(StatusTab, TaxiScanGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusRequests
         {
             get
@@ -161,7 +161,7 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(StatusTab, TaxiScanGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusTaxiFleet
         {
             get
@@ -180,7 +180,7 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(StatusTab, TaxiScanGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusTaxiStands
         {
             get
@@ -196,7 +196,7 @@ namespace TaxiTraffic
         // LAST UPDATE
 
         [SettingsUISection(StatusTab, LastUpdateGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusCoverage1
         {
             get
@@ -211,7 +211,7 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(StatusTab, LastUpdateGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusCoverage2
         {
             get
@@ -228,7 +228,7 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(StatusTab, LastUpdateGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusWorkDone1
         {
             get
@@ -244,7 +244,7 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(StatusTab, LastUpdateGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusWorkDone2
         {
             get
@@ -260,7 +260,7 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(StatusTab, LastUpdateGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusGroupSafety
         {
             get
@@ -274,7 +274,7 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(StatusTab, LastUpdateGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusSnapshotMeta
         {
             get
@@ -291,7 +291,7 @@ namespace TaxiTraffic
         // ---- Status → Advanced Debug (DEV builds only) ----
 
         [SettingsUISection(StatusTab, AdvancedDebugGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusDebugMarkedCoverage
         {
             get
@@ -307,7 +307,7 @@ namespace TaxiTraffic
         }
 
         [SettingsUISection(StatusTab, AdvancedDebugGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsStatusNotReady))]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusDebugTaxiFlags
         {
             get
