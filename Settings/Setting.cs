@@ -88,19 +88,19 @@ namespace TaxiTraffic
         public const string AboutInfoGroup = "Info";
         public const string AboutLinksGroup = "Support Links";
 
-        internal const int TaxiAllowedPercentMin = 0;
-        internal const int TaxiAllowedPercentMax = 100;
-        internal const int TaxiAllowedPercentStep = 25;
+        internal const int kTaxiAllowedPercentMin = 0;
+        internal const int kTaxiAllowedPercentMax = 100;
+        internal const int kTaxiAllowedPercentStep = 25;
 
         // First-install mod default: strongest normal-resident taxi reduction.
-        internal const int TaxiAllowedPercentDefault = 0;
+        internal const int kTaxiAllowedPercentDefault = 0;
 
-        private const string UrlParadox =
+        private const string kUrlParadox =
             "https://mods.paradoxplaza.com/authors/River-mochi/cities_skylines_2?games=cities_skylines_2&orderBy=desc&sortBy=best&time=alltime";
 
-        private const string UrlDiscord = "https://discord.gg/HTav7ARPs2";
+        private const string kUrlDiscord = "https://discord.gg/HTav7ARPs2";
 
-        private int m_ResidentsAllowedToUseTaxis = TaxiAllowedPercentDefault;
+        private int m_ResidentsAllowedToUseTaxis = kTaxiAllowedPercentDefault;
 
         public Setting(IMod mod) : base(mod)
         {
@@ -110,9 +110,9 @@ namespace TaxiTraffic
         // ---- Actions ----
 
         [SettingsUISlider(
-            min = TaxiAllowedPercentMin,
-            max = TaxiAllowedPercentMax,
-            step = TaxiAllowedPercentStep,
+            min = kTaxiAllowedPercentMin,
+            max = kTaxiAllowedPercentMax,
+            step = kTaxiAllowedPercentStep,
             scalarMultiplier = 1,
             unit = Unit.kPercentage)]
         [SettingsUISection(ActionsTab, BehaviorGroup)]
@@ -194,7 +194,7 @@ namespace TaxiTraffic
 
                 try
                 {
-                    Application.OpenURL(UrlParadox);
+                    Application.OpenURL(kUrlParadox);
                 }
                 catch (Exception)
                 {
@@ -214,7 +214,7 @@ namespace TaxiTraffic
 
                 try
                 {
-                    Application.OpenURL(UrlDiscord);
+                    Application.OpenURL(kUrlDiscord);
                 }
                 catch (Exception)
                 {
@@ -225,7 +225,7 @@ namespace TaxiTraffic
         public override void SetDefaults()
         {
             // First install: normal residents avoid taxis; commuters/tourists stay vanilla unless enabled.
-            ResidentsAllowedToUseTaxis = TaxiAllowedPercentDefault;
+            ResidentsAllowedToUseTaxis = kTaxiAllowedPercentDefault;
             BlockCommuters = false;
             BlockTourists = false;
             EnableDebugLogging = false;
@@ -234,7 +234,7 @@ namespace TaxiTraffic
         private void ApplyGameDefaults()
         {
             // Game Defaults: leave all rider types alone.
-            ResidentsAllowedToUseTaxis = TaxiAllowedPercentMax;
+            ResidentsAllowedToUseTaxis = kTaxiAllowedPercentMax;
             BlockCommuters = false;
             BlockTourists = false;
             EnableDebugLogging = false;
@@ -264,10 +264,10 @@ namespace TaxiTraffic
 
         private static int SnapTaxiAllowedPercent(int value)
         {
-            int clamped = Math.Max(TaxiAllowedPercentMin, Math.Min(TaxiAllowedPercentMax, value));
-            int snapped = ((clamped + (TaxiAllowedPercentStep / 2)) / TaxiAllowedPercentStep) * TaxiAllowedPercentStep;
+            int clamped = Math.Max(kTaxiAllowedPercentMin, Math.Min(kTaxiAllowedPercentMax, value));
+            int snapped = ((clamped + (kTaxiAllowedPercentStep / 2)) / kTaxiAllowedPercentStep) * kTaxiAllowedPercentStep;
 
-            return Math.Max(TaxiAllowedPercentMin, Math.Min(TaxiAllowedPercentMax, snapped));
+            return Math.Max(kTaxiAllowedPercentMin, Math.Min(kTaxiAllowedPercentMax, snapped));
         }
     }
 }

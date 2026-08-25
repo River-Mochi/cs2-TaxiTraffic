@@ -16,7 +16,7 @@ namespace TaxiTraffic
     using Game;                 // GameMode extensions
     using Game.Citizens;        // HouseholdMember, Household
     using Game.Common;          // Deleted
-    using Game.Creatures;       // ResidentFlags, Passenger, HumanCurrentLane, Resident
+    using Game.Creatures;       // ResidentFlags, Passenger, HumanCurrentLane, Game.Creatures.Resident
     using Game.Events;          // InvolvedInAccident
     using Game.Prefabs;         // PrefabSystem, PrefabRef
     using Game.Routes;          // TaxiStand, WaitingPassengers
@@ -25,9 +25,6 @@ namespace TaxiTraffic
     using Game.Tools;           // Temp
     using Game.Vehicles;        // Taxi, TaxiFlags, ParkedCar
     using Unity.Entities;       // SystemAPI, EntityQuery
-    using BuildingTransportDepot = Game.Buildings.TransportDepot;
-    using CreatureResident = Game.Creatures.Resident;
-    using UTime = UnityEngine.Time;
 
     public partial class TaxiTrafficSystem
     {
@@ -185,7 +182,7 @@ namespace TaxiTraffic
             CompleteDependency();
             UpdateStatusSnapshot();
 
-            s_StatusLastSnapshotRealtime = UTime.realtimeSinceStartupAsDouble;
+            s_StatusLastSnapshotRealtime = UnityEngine.Time.realtimeSinceStartupAsDouble;
             try
             {
                 s_StatusLastSnapshotClock = DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
@@ -225,8 +222,8 @@ namespace TaxiTraffic
                     s_StatusHouseholdsHomeless++;
             }
 
-            foreach ((RefRO<CreatureResident> residentRef, Entity e) in SystemAPI
-                         .Query<RefRO<CreatureResident>>()
+            foreach ((RefRO<Game.Creatures.Resident> residentRef, Entity e) in SystemAPI
+                         .Query<RefRO<Game.Creatures.Resident>>()
                          .WithEntityAccess()
                          .WithNone<Deleted, Temp>())
             {
@@ -274,8 +271,8 @@ namespace TaxiTraffic
                 }
             }
 
-            foreach ((RefRO<CreatureResident> residentRef, RefRO<HumanCurrentLane> _) in SystemAPI
-                         .Query<RefRO<CreatureResident>, RefRO<HumanCurrentLane>>()
+            foreach ((RefRO<Game.Creatures.Resident> residentRef, RefRO<HumanCurrentLane> _) in SystemAPI
+                         .Query<RefRO<Game.Creatures.Resident>, RefRO<HumanCurrentLane>>()
                          .WithNone<Deleted, Temp>())
             {
                 if ((residentRef.ValueRO.m_Flags & ResidentFlags.WaitingTransport) == 0)
@@ -308,11 +305,11 @@ namespace TaxiTraffic
 
                     case Game.Simulation.TaxiRequestType.Customer:
                         s_StatusReqCustomer++;
-                        if (SystemAPI.HasComponent<CreatureResident>(req.m_Seeker))
+                        if (SystemAPI.HasComponent<Game.Creatures.Resident>(req.m_Seeker))
                         {
                             s_StatusReqCustomerSeekerHasResident++;
                             ResidentFlags seekerFlags =
-                                SystemAPI.GetComponentRO<CreatureResident>(req.m_Seeker).ValueRO.m_Flags;
+                                SystemAPI.GetComponentRO<Game.Creatures.Resident>(req.m_Seeker).ValueRO.m_Flags;
                             if ((seekerFlags & ResidentFlags.IgnoreTaxi) != 0)
                                 s_StatusReqCustomerSeekerIgnoreTaxi++;
                         }
@@ -320,11 +317,11 @@ namespace TaxiTraffic
 
                     case Game.Simulation.TaxiRequestType.Outside:
                         s_StatusReqOutside++;
-                        if (SystemAPI.HasComponent<CreatureResident>(req.m_Seeker))
+                        if (SystemAPI.HasComponent<Game.Creatures.Resident>(req.m_Seeker))
                         {
                             s_StatusReqOutsideSeekerHasResident++;
                             ResidentFlags seekerFlags =
-                                SystemAPI.GetComponentRO<CreatureResident>(req.m_Seeker).ValueRO.m_Flags;
+                                SystemAPI.GetComponentRO<Game.Creatures.Resident>(req.m_Seeker).ValueRO.m_Flags;
                             if ((seekerFlags & ResidentFlags.IgnoreTaxi) != 0)
                                 s_StatusReqOutsideSeekerIgnoreTaxi++;
                         }
@@ -383,10 +380,10 @@ namespace TaxiTraffic
                         Entity p = passengers[i].m_Passenger;
                         s_StatusPassengerTotal++;
 
-                        if (SystemAPI.HasComponent<CreatureResident>(p))
+                        if (SystemAPI.HasComponent<Game.Creatures.Resident>(p))
                         {
                             s_StatusPassengerHasResident++;
-                            ResidentFlags pf = SystemAPI.GetComponentRO<CreatureResident>(p).ValueRO.m_Flags;
+                            ResidentFlags pf = SystemAPI.GetComponentRO<Game.Creatures.Resident>(p).ValueRO.m_Flags;
                             if ((pf & ResidentFlags.IgnoreTaxi) != 0)
                                 s_StatusPassengerIgnoreTaxi++;
                         }
@@ -475,8 +472,8 @@ namespace TaxiTraffic
                 s_StatusTaxiStandsTotal++;
             }
 
-            foreach ((RefRO<BuildingTransportDepot> depot, RefRO<PrefabRef> prefabRef) in SystemAPI
-                         .Query<RefRO<BuildingTransportDepot>, RefRO<PrefabRef>>()
+            foreach ((RefRO<Game.Buildings.TransportDepot> depot, RefRO<PrefabRef> prefabRef) in SystemAPI
+                         .Query<RefRO<Game.Buildings.TransportDepot>, RefRO<PrefabRef>>()
                          .WithNone<Deleted, Temp>())
             {
                 Entity prefab = prefabRef.ValueRO.m_Prefab;
@@ -579,7 +576,7 @@ namespace TaxiTraffic
 
         internal static void RefreshStatusSnapshotForOptionsUi(bool force)
         {
-            int frame = UTime.frameCount;
+            int frame = UnityEngine.Time.frameCount;
             bool newOptionsVisit =
                 s_LastStatusOptionsUiFrame < 0 ||
                 frame - s_LastStatusOptionsUiFrame > kNewOptionsVisitFrameGap;
@@ -663,7 +660,7 @@ namespace TaxiTraffic
             if (s_StatusLastSnapshotRealtime <= 0.0)
                 return -1.0;
 
-            double now = UTime.realtimeSinceStartupAsDouble;
+            double now = UnityEngine.Time.realtimeSinceStartupAsDouble;
             return Math.Max(0.0, now - s_StatusLastSnapshotRealtime);
         }
 

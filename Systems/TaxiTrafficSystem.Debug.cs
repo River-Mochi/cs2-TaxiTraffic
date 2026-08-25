@@ -12,14 +12,12 @@
 namespace TaxiTraffic
 {
     using System;           // Math
-    using CS2Shared.RiverMochi; // LogUtils
     using Game.Citizens;    // Citizen, CitizenFlags, HouseholdMember, TravelPurpose
     using Game.City;        // StatisticType, PassengerType
     using Game.Companies;   // ResourceBuyer
     using Game.Creatures;   // ResidentFlags, GroupMember, GroupCreature
     using Game.Vehicles;    // CurrentVehicle, Taxi, TaxiFlags
     using Unity.Entities;
-    using CreatureResident = Game.Creatures.Resident;
 
     public partial class TaxiTrafficSystem
     {
@@ -69,7 +67,7 @@ namespace TaxiTraffic
             {
             }
 
-            LogUtils.Info(
+            CS2Shared.RiverMochi.LogUtils.Info(
                 Mod.s_Log,
                 () =>
                     $"{Mod.ModTag} TaxiSummary: " +
@@ -99,8 +97,8 @@ namespace TaxiTraffic
             int inTaxi = 0;
             int examples = 0;
 
-            foreach ((RefRO<CreatureResident> resident, RefRO<CurrentVehicle> currentVehicle, Entity passengerEntity) in SystemAPI
-                         .Query<RefRO<CreatureResident>, RefRO<CurrentVehicle>>()
+            foreach ((RefRO<Game.Creatures.Resident> resident, RefRO<CurrentVehicle> currentVehicle, Entity passengerEntity) in SystemAPI
+                         .Query<RefRO<Game.Creatures.Resident>, RefRO<CurrentVehicle>>()
                          .WithEntityAccess())
             {
                 Entity vehicle = currentVehicle.ValueRO.m_Vehicle;
@@ -154,7 +152,7 @@ namespace TaxiTraffic
 
                 TaxiFlags taxiFlags = SystemAPI.GetComponentRO<Taxi>(vehicle).ValueRO.m_State;
 
-                LogUtils.Debug(
+                CS2Shared.RiverMochi.LogUtils.Debug(
                     Mod.s_Log,
                     () =>
                         $"{Mod.ModTag} TaxiPassengerNow: passenger={passengerEntity.Index}:{passengerEntity.Version} " +
@@ -167,7 +165,7 @@ namespace TaxiTraffic
 
             if (inTaxi > 0)
             {
-                LogUtils.Debug(
+                CS2Shared.RiverMochi.LogUtils.Debug(
                     Mod.s_Log,
                     () => $"{Mod.ModTag} TaxiPassengerNow: totalResidentsInTaxi={inTaxi} (examplesShown={examples}/{kDebugPassengerDetailMax})");
             }

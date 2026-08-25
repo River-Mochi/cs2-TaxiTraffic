@@ -18,7 +18,6 @@
 
 namespace TaxiTraffic
 {
-    using CS2Shared.RiverMochi; // LogUtils
     using Game;                 // GameSystemBase
     using Game.Citizens;        // Citizen, HouseholdMember, CommuterHousehold, TouristHousehold
     using Game.Common;          // Deleted
@@ -29,8 +28,6 @@ namespace TaxiTraffic
     using Game.Vehicles;        // Taxi
     using Unity.Collections;    // NativeList, Allocator
     using Unity.Entities;       // Entity, RefRW, RefRO
-    using CreatureResident = Game.Creatures.Resident;
-    using UTime = UnityEngine.Time;
 
     public partial class TaxiTrafficSystem : GameSystemBase
     {
@@ -91,7 +88,7 @@ namespace TaxiTraffic
             if (!isRealGame)
                 return;
 
-            m_LastUnstickRealtime = UTime.realtimeSinceStartupAsDouble;
+            m_LastUnstickRealtime = UnityEngine.Time.realtimeSinceStartupAsDouble;
 
             m_LastResidentsAllowedToUseTaxis = int.MinValue;
             m_LastBlockCommuters = false;
@@ -104,7 +101,7 @@ namespace TaxiTraffic
             Enabled = true;
 
 #if DEBUG
-            LogUtils.Info(Mod.s_Log, () => $"{Mod.ModTag} TaxiTrafficSystem enabled (city load complete).");
+            CS2Shared.RiverMochi.LogUtils.Info(Mod.s_Log, () => $"{Mod.ModTag} TaxiTrafficSystem enabled (city load complete).");
 #endif
         }
 
@@ -161,8 +158,8 @@ namespace TaxiTraffic
                 m_TaxiEligibilityResetInProgress = false;
             }
 
-            // Full vanilla-style state only when residents, commuters, and tourists are all left alone.
-            bool vanillaResidents = setting.ResidentsAllowedToUseTaxis >= Setting.TaxiAllowedPercentMax;
+            // Full vanilla-style state only when residents, commuters, and tourists are not selected.
+            bool vanillaResidents = setting.ResidentsAllowedToUseTaxis >= Setting.kTaxiAllowedPercentMax;
             bool vanillaGroups = !setting.BlockCommuters && !setting.BlockTourists;
 
             if (vanillaResidents && vanillaGroups)
@@ -193,7 +190,7 @@ namespace TaxiTraffic
                 out skippedGroupTravelers);
 
             // Unstick pass runs on an interval.
-            double now = UTime.realtimeSinceStartupAsDouble;
+            double now = UnityEngine.Time.realtimeSinceStartupAsDouble;
             if (now - m_LastUnstickRealtime >= kUnstickIntervalSeconds)
             {
                 m_LastUnstickRealtime = now;
@@ -266,8 +263,8 @@ namespace TaxiTraffic
             using NativeList<Entity> blockedMarks = new(Allocator.Temp);
             using NativeList<Entity> allowedMarks = new(Allocator.Temp);
 
-            foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
-                         .Query<RefRW<CreatureResident>>()
+            foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
+                         .Query<RefRW<Resident>>()
                          .WithAll<IgnoreTaxiMark>()
                          .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
@@ -282,8 +279,8 @@ namespace TaxiTraffic
 
             if (resetCount < kMarkBatchPerUpdate)
             {
-                foreach ((RefRO<CreatureResident> _, Entity entity) in SystemAPI
-                             .Query<RefRO<CreatureResident>>()
+                foreach ((RefRO<Resident> _, Entity entity) in SystemAPI
+                             .Query<RefRO<Resident>>()
                              .WithAll<TaxiAllowedMark>()
                              .WithNone<Deleted, Temp>()
                              .WithEntityAccess())
@@ -312,8 +309,8 @@ namespace TaxiTraffic
             using NativeList<Entity> blockedMarks = new(Allocator.Temp);
             using NativeList<Entity> allowedMarks = new(Allocator.Temp);
 
-            foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
-                         .Query<RefRW<CreatureResident>>()
+            foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
+                         .Query<RefRW<Resident>>()
                          .WithAll<IgnoreTaxiMark>()
                          .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
@@ -349,8 +346,8 @@ namespace TaxiTraffic
             using NativeList<Entity> allowedMarks = new(Allocator.Temp);
 
             int processed = 0;
-            foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
-                         .Query<RefRW<CreatureResident>>()
+            foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
+                         .Query<RefRW<Resident>>()
                          .WithAll<IgnoreTaxiMark>()
                          .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
@@ -365,8 +362,8 @@ namespace TaxiTraffic
 
             if (processed < kMarkBatchPerUpdate)
             {
-                foreach ((RefRO<CreatureResident> _, Entity entity) in SystemAPI
-                             .Query<RefRO<CreatureResident>>()
+                foreach ((RefRO<Resident> _, Entity entity) in SystemAPI
+                             .Query<RefRO<Resident>>()
                              .WithAll<TaxiAllowedMark>()
                              .WithNone<Deleted, Temp>()
                              .WithEntityAccess())
@@ -405,8 +402,8 @@ namespace TaxiTraffic
             using NativeList<Entity> toAllow = new(Allocator.Temp);
 
             int processed = 0;
-            foreach ((RefRW<CreatureResident> resident, Entity entity) in SystemAPI
-                         .Query<RefRW<CreatureResident>>()
+            foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
+                         .Query<RefRW<Resident>>()
                          .WithNone<IgnoreTaxiMark, TaxiAllowedMark, Deleted>()
                          .WithNone<Temp>()
                          .WithEntityAccess())
@@ -465,7 +462,7 @@ namespace TaxiTraffic
 
         private bool ShouldResidentIgnoreTaxiBySettings(
             Setting setting,
-            CreatureResident resident,
+            Resident resident,
             out bool skippedCommuter,
             out bool skippedTourist)
         {
@@ -503,10 +500,10 @@ namespace TaxiTraffic
 
             int allowedPercent = setting.ResidentsAllowedToUseTaxis;
 
-            if (allowedPercent >= Setting.TaxiAllowedPercentMax)
+            if (allowedPercent >= Setting.kTaxiAllowedPercentMax)
                 return false;
 
-            if (allowedPercent <= Setting.TaxiAllowedPercentMin)
+            if (allowedPercent <= Setting.kTaxiAllowedPercentMin)
                 return true;
 
             if (citizenEntity == Entity.Null || !SystemAPI.HasComponent<Citizen>(citizenEntity))
@@ -573,13 +570,13 @@ namespace TaxiTraffic
                 if ((lane.ValueRO.m_Flags & taxiWaitMask) != taxiWaitMask)
                     continue;
 
-                if (!SystemAPI.HasComponent<CreatureResident>(entity))
+                if (!SystemAPI.HasComponent<Resident>(entity))
                     continue;
 
                 if (IsGroupLinkedTraveler(entity))
                     continue;
 
-                RefRW<CreatureResident> resident = SystemAPI.GetComponentRW<CreatureResident>(entity);
+                RefRW<Resident> resident = SystemAPI.GetComponentRW<Resident>(entity);
 
                 if (!ShouldResidentIgnoreTaxiBySettings(setting, resident.ValueRO, out _, out _))
                     continue;
@@ -623,11 +620,11 @@ namespace TaxiTraffic
             using NativeList<Entity> toBlockMark = new(Allocator.Temp);
             using NativeList<Entity> toRemoveAllowedMark = new(Allocator.Temp);
 
-            foreach ((RefRW<CreatureResident> resident,
+            foreach ((RefRW<Resident> resident,
                       RefRW<HumanCurrentLane> lane,
                       RefRW<PathOwner> pathOwner,
                       Entity entity) in SystemAPI
-                         .Query<RefRW<CreatureResident>, RefRW<HumanCurrentLane>, RefRW<PathOwner>>()
+                         .Query<RefRW<Resident>, RefRW<HumanCurrentLane>, RefRW<PathOwner>>()
                          .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
             {
