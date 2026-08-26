@@ -103,6 +103,9 @@ namespace TaxiTraffic
             // Keep outside control independent from the local-rider settings/reset cycle.
             SuppressOutsideTaxiSupplyRequests(setting);
 
+            // Evidence for the old outside-taxi move-in issue; count each Resident trip only once.
+            ObserveOutsideTaxiMoveInEvidence();
+
             // Do not sweep all marked residents every update; too expensive in large cities.
             int clearedGroupTravelers = 0;
 
@@ -135,6 +138,10 @@ namespace TaxiTraffic
 
                 m_TaxiEligibilityResetInProgress = false;
             }
+
+            // Group membership is dynamic: entering a group gets a temporary exemption; leaving it must re-enter normal eligibility.
+            clearedGroupTravelers = MaintainGroupTaxiExemptionsBatch();
+            s_StatusGroupRepairsTotal += clearedGroupTravelers;
 
             bool vanillaResidents = setting.ResidentsAllowedToUseTaxis >= TaxiSettings.kTaxiAllowedPercentMax;
             bool vanillaGroups = !setting.BlockCommuters && !setting.BlockTourists;
@@ -250,6 +257,84 @@ namespace TaxiTraffic
             s_StatusOutsideSupplySuppressedTotal += toDestroy.Length;
         }
 
+
+        private void ObserveOutsideTaxiMoveInEvidence()
+        {
+            using NativeList<Entity> seen = new(Allocator.Temp);
+
+            foreach ((RefRO<Taxi> taxiRef, Entity taxiEntity) in SystemAPI
+                         .Query<RefRO<Taxi>>()
+                         .WithEntityAccess()
+                         .WithNone<Deleted, Temp>())
+            {
+                if ((taxiRef.ValueRO.m_State & Game.Vehicles.TaxiFlags.FromOutside) == 0 ||
+                    !SystemAPI.HasBuffer<Game.Creatures.Passenger>(taxiEntity))
+                {
+                    continue;
+                }
+
+                DynamicBuffer<Game.Creatures.Passenger> passengers =
+                    SystemAPI.GetBuffer<Game.Creatures.Passenger>(taxiEntity);
+
+                for (int i = 0; i < passengers.Length; i++)
+                {
+                    Entity passenger = passengers[i].m_Passenger;
+                    if (passenger == Entity.Null ||
+                        !SystemAPI.Exists(passenger) ||
+                        SystemAPI.HasComponent<OutsideTaxiMoveInSeenMark>(passenger) ||
+                        !SystemAPI.HasComponent<Resident>(passenger))
+                    {
+                        continue;
+                    }
+
+                    Resident resident = SystemAPI.GetComponentRO<Resident>(passenger).ValueRO;
+                    if (!IsLocalMoveInFromOutsideConnection(passenger, resident))
+                        continue;
+
+                    seen.Add(passenger);
+                }
+            }
+
+            if (seen.Length == 0)
+                return;
+
+            EntityManager.AddComponent<OutsideTaxiMoveInSeenMark>(seen.AsArray());
+            s_StatusOutsideTaxiMoveInFromOcSeenTotal += seen.Length;
+        }
+
+        private bool IsLocalMoveInFromOutsideConnection(Entity residentEntity, Resident resident)
+        {
+            Entity citizen = resident.m_Citizen;
+            if (citizen == Entity.Null ||
+                !SystemAPI.Exists(citizen) ||
+                !SystemAPI.HasComponent<HouseholdMember>(citizen))
+            {
+                return false;
+            }
+
+            Entity household = SystemAPI.GetComponentRO<HouseholdMember>(citizen).ValueRO.m_Household;
+            if (household == Entity.Null ||
+                !SystemAPI.Exists(household) ||
+                !SystemAPI.HasComponent<Household>(household) ||
+                SystemAPI.HasComponent<TouristHousehold>(household) ||
+                SystemAPI.HasComponent<CommuterHousehold>(household))
+            {
+                return false;
+            }
+
+            Household householdData = SystemAPI.GetComponentRO<Household>(household).ValueRO;
+            if ((householdData.m_Flags & HouseholdFlags.MovedIn) != 0 ||
+                !SystemAPI.HasComponent<TripSource>(residentEntity))
+            {
+                return false;
+            }
+
+            Entity source = SystemAPI.GetComponentRO<TripSource>(residentEntity).ValueRO.m_Source;
+            return source != Entity.Null &&
+                   SystemAPI.Exists(source) &&
+                   SystemAPI.HasComponent<Game.Objects.OutsideConnection>(source);
+        }
+
         // -----------------------
         // Marker / eligibility
         // -----------------------
@@ -279,6 +364,7 @@ namespace TaxiTraffic
 
             using NativeList<Entity> blockedMarks = new(Allocator.Temp);
             using NativeList<Entity> allowedMarks = new(Allocator.Temp);
+            using NativeList<Entity> groupAllowedMarks = new(Allocator.Temp);
 
             foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<Resident>>()
@@ -310,40 +396,20 @@ namespace TaxiTraffic
                 }
             }
 
-            if (blockedMarks.Length > 0)
-                EntityManager.RemoveComponent<IgnoreTaxiMark>(blockedMarks.AsArray());
-
-            if (allowedMarks.Length > 0)
-                EntityManager.RemoveComponent<TaxiAllowedMark>(allowedMarks.AsArray());
-
-            return resetCount;
-        }
-
-        private int ClearGroupLinkedTaxiMarksBatch()
-        {
-            int cleared = 0;
-
-            using NativeList<Entity> blockedMarks = new(Allocator.Temp);
-            using NativeList<Entity> allowedMarks = new(Allocator.Temp);
-
-            foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
-                         .Query<RefRW<Resident>>()
-                         .WithAll<IgnoreTaxiMark>()
-                         .WithNone<Deleted, Temp>()
-                         .WithEntityAccess())
+            if (resetCount < kMarkBatchPerUpdate)
             {
-                if (!IsGroupLinkedTraveler(entity))
-                    continue;
+                foreach ((RefRO<Resident> _, Entity entity) in SystemAPI
+                             .Query<RefRO<Resident>>()
+                             .WithAll<GroupTaxiAllowedMark>()
+                             .WithNone<Deleted, Temp>()
+                             .WithEntityAccess())
+                {
+                    groupAllowedMarks.Add(entity);
 
-                resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
-                blockedMarks.Add(entity);
-
-                if (SystemAPI.HasComponent<TaxiAllowedMark>(entity))
-                    allowedMarks.Add(entity);
-
-                cleared++;
-                if (cleared >= kMarkBatchPerUpdate)
-                    break;
+                    resetCount++;
+                    if (resetCount >= kMarkBatchPerUpdate)
+                        break;
+                }
             }
 
             if (blockedMarks.Length > 0)
@@ -352,7 +418,129 @@ namespace TaxiTraffic
             if (allowedMarks.Length > 0)
                 EntityManager.RemoveComponent<TaxiAllowedMark>(allowedMarks.AsArray());
 
-            return cleared;
+            if (groupAllowedMarks.Length > 0)
+                EntityManager.RemoveComponent<GroupTaxiAllowedMark>(groupAllowedMarks.AsArray());
+
+            return resetCount;
+        }
+
+        private int MaintainGroupTaxiExemptionsBatch()
+        {
+            int changed = 0;
+
+            // A blocked solo Resident can become group-linked later. Move that Resident to a temporary group exemption.
+            using (NativeList<Entity> toUnblock = new(Allocator.Temp))
+            using (NativeList<Entity> toGroupAllow = new(Allocator.Temp))
+            {
+                foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
+                             .Query<RefRW<Resident>>()
+                             .WithAll<IgnoreTaxiMark, GroupMember>()
+                             .WithNone<GroupTaxiAllowedMark, Deleted, Temp>()
+                             .WithEntityAccess())
+                {
+                    resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
+                    toUnblock.Add(entity);
+                    toGroupAllow.Add(entity);
+
+                    changed++;
+                    if (changed >= kMarkBatchPerUpdate)
+                        break;
+                }
+
+                if (changed < kMarkBatchPerUpdate)
+                {
+                    foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
+                                 .Query<RefRW<Resident>>()
+                                 .WithAll<IgnoreTaxiMark, GroupCreature>()
+                                 .WithNone<GroupMember, GroupTaxiAllowedMark, Deleted, Temp>()
+                                 .WithEntityAccess())
+                    {
+                        resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
+                        toUnblock.Add(entity);
+                        toGroupAllow.Add(entity);
+
+                        changed++;
+                        if (changed >= kMarkBatchPerUpdate)
+                            break;
+                    }
+                }
+
+                if (toUnblock.Length > 0)
+                    EntityManager.RemoveComponent<IgnoreTaxiMark>(toUnblock.AsArray());
+
+                if (toGroupAllow.Length > 0)
+                    EntityManager.AddComponent<GroupTaxiAllowedMark>(toGroupAllow.AsArray());
+            }
+
+            if (changed >= kMarkBatchPerUpdate)
+                return changed;
+
+            // Migrate any old normal-allowed marker that is currently being used only because the Resident is in a group.
+            using (NativeList<Entity> oldAllowedMarks = new(Allocator.Temp))
+            using (NativeList<Entity> toGroupAllow = new(Allocator.Temp))
+            {
+                foreach ((RefRO<Resident> _, Entity entity) in SystemAPI
+                             .Query<RefRO<Resident>>()
+                             .WithAll<TaxiAllowedMark, GroupMember>()
+                             .WithNone<GroupTaxiAllowedMark, Deleted, Temp>()
+                             .WithEntityAccess())
+                {
+                    oldAllowedMarks.Add(entity);
+                    toGroupAllow.Add(entity);
+
+                    changed++;
+                    if (changed >= kMarkBatchPerUpdate)
+                        break;
+                }
+
+                if (changed < kMarkBatchPerUpdate)
+                {
+                    foreach ((RefRO<Resident> _, Entity entity) in SystemAPI
+                                 .Query<RefRO<Resident>>()
+                                 .WithAll<TaxiAllowedMark, GroupCreature>()
+                                 .WithNone<GroupMember, GroupTaxiAllowedMark, Deleted, Temp>()
+                                 .WithEntityAccess())
+                    {
+                        oldAllowedMarks.Add(entity);
+                        toGroupAllow.Add(entity);
+
+                        changed++;
+                        if (changed >= kMarkBatchPerUpdate)
+                            break;
+                    }
+                }
+
+                if (oldAllowedMarks.Length > 0)
+                    EntityManager.RemoveComponent<TaxiAllowedMark>(oldAllowedMarks.AsArray());
+
+                if (toGroupAllow.Length > 0)
+                    EntityManager.AddComponent<GroupTaxiAllowedMark>(toGroupAllow.AsArray());
+            }
+
+            if (changed >= kMarkBatchPerUpdate)
+                return changed;
+
+            // This is the leak fix: once group links disappear, remove only the temporary exemption.
+            // The same update can then classify the Resident normally in ApplyTaxiEligibilityBatch().
+            using NativeList<Entity> staleGroupMarks = new(Allocator.Temp);
+
+            foreach ((RefRO<Resident> _, Entity entity) in SystemAPI
+                         .Query<RefRO<Resident>>()
+                         .WithAll<GroupTaxiAllowedMark>()
+                         .WithNone<GroupMember, GroupCreature, Deleted, Temp>()
+                         .WithEntityAccess())
+            {
+                staleGroupMarks.Add(entity);
+
+                changed++;
+                if (changed >= kMarkBatchPerUpdate)
+                    break;
+            }
+
+            if (staleGroupMarks.Length > 0)
+                EntityManager.RemoveComponent<GroupTaxiAllowedMark>(staleGroupMarks.AsArray());
+
+            return changed;
         }
 
         private void UnmarkIgnoreTaxiBatch(out int unmarkedCount)
@@ -361,6 +549,7 @@ namespace TaxiTraffic
 
             using NativeList<Entity> toUnmark = new(Allocator.Temp);
             using NativeList<Entity> allowedMarks = new(Allocator.Temp);
+            using NativeList<Entity> groupAllowedMarks = new(Allocator.Temp);
 
             int processed = 0;
             foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
@@ -393,6 +582,22 @@ namespace TaxiTraffic
                 }
             }
 
+            if (processed < kMarkBatchPerUpdate)
+            {
+                foreach ((RefRO<Resident> _, Entity entity) in SystemAPI
+                             .Query<RefRO<Resident>>()
+                             .WithAll<GroupTaxiAllowedMark>()
+                             .WithNone<Deleted, Temp>()
+                             .WithEntityAccess())
+                {
+                    groupAllowedMarks.Add(entity);
+
+                    processed++;
+                    if (processed >= kMarkBatchPerUpdate)
+                        break;
+                }
+            }
+
             if (toUnmark.Length > 0)
             {
                 EntityManager.RemoveComponent<IgnoreTaxiMark>(toUnmark.AsArray());
@@ -401,6 +606,9 @@ namespace TaxiTraffic
 
             if (allowedMarks.Length > 0)
                 EntityManager.RemoveComponent<TaxiAllowedMark>(allowedMarks.AsArray());
+
+            if (groupAllowedMarks.Length > 0)
+                EntityManager.RemoveComponent<GroupTaxiAllowedMark>(groupAllowedMarks.AsArray());
         }
 
         private void ApplyTaxiEligibilityBatch(
@@ -417,11 +625,12 @@ namespace TaxiTraffic
 
             using NativeList<Entity> toBlock = new(Allocator.Temp);
             using NativeList<Entity> toAllow = new(Allocator.Temp);
+            using NativeList<Entity> toGroupAllow = new(Allocator.Temp);
 
             int processed = 0;
             foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<Resident>>()
-                         .WithNone<IgnoreTaxiMark, TaxiAllowedMark, Deleted>()
+                         .WithNone<IgnoreTaxiMark, TaxiAllowedMark, GroupTaxiAllowedMark, Deleted>()
                          .WithNone<Temp>()
                          .WithEntityAccess())
             {
@@ -431,8 +640,8 @@ namespace TaxiTraffic
                 {
                     skippedGroupTravelers++;
 
-                    // Mark as checked so the batch keeps moving through the active population.
-                    toAllow.Add(entity);
+                    // Group exemption is temporary; do not reuse the normal TaxiAllowedMark.
+                    toGroupAllow.Add(entity);
 
                     if (processed >= kMarkBatchPerUpdate)
                         break;
@@ -480,6 +689,9 @@ namespace TaxiTraffic
 
             if (toAllow.Length > 0)
                 EntityManager.AddComponent<TaxiAllowedMark>(toAllow.AsArray());
+
+            if (toGroupAllow.Length > 0)
+                EntityManager.AddComponent<GroupTaxiAllowedMark>(toGroupAllow.AsArray());
         }
 
         private void RepairStaleIgnoreTaxiOnTripStart()

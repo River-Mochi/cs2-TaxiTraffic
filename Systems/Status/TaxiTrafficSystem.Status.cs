@@ -6,7 +6,7 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-// File: Systems/Status/TaxiTrafficSystem.Status.cs
+// File: Systems/TaxiTrafficSystem.Status.cs
 // Status snapshots and InfoView-matching passenger statistics.
 
 namespace TaxiTraffic
@@ -46,6 +46,7 @@ namespace TaxiTraffic
         internal static int s_StatusResidentsIgnoreTaxi;
         internal static int s_StatusResidentsForcedMarker;
         internal static int s_StatusResidentsAllowedMarker;
+        internal static int s_StatusResidentsGroupAllowedMarker;
         internal static int s_StatusResidentsGroupLinked;
         internal static int s_StatusResidentsGroupLinkedIgnoreTaxi;
 
@@ -64,6 +65,7 @@ namespace TaxiTraffic
         internal static int s_StatusHouseholdsCommuter;
         internal static int s_StatusHouseholdsTourist;
         internal static int s_StatusHouseholdsHomeless;
+        internal static int s_StatusHouseholdsMovingInLocal;
 
         // InfoView monthly passengers.
         internal static int s_InfoTaxiTourist;
@@ -119,6 +121,13 @@ namespace TaxiTraffic
         internal static int s_StatusPassengerIgnoreTaxi;
         internal static int s_StatusPassengerBlockedMark;
 
+        // Resident passengers currently riding FromOutside taxis.
+        internal static int s_StatusOutsideTaxiResidentPassengers;
+        internal static int s_StatusOutsideTaxiNotMovedInPassengers;
+        internal static int s_StatusOutsideTaxiMoveInFromOcPassengers;
+        internal static int s_StatusOutsideTaxiMoveInFromOcSeenTotal;
+        internal static int s_StatusGroupRepairsTotal;
+
         // Stands and taxi supply nodes.
         internal static int s_StatusTaxiStandsTotal;
         internal static int s_StatusTaxiDepotsTotal;
@@ -165,6 +174,8 @@ namespace TaxiTraffic
             s_WasInGame = true;
             s_StatusLastSnapshotSimulationFrame = uint.MaxValue;
             s_StatusOutsideSupplySuppressedTotal = 0;
+            s_StatusOutsideTaxiMoveInFromOcSeenTotal = 0;
+            s_StatusGroupRepairsTotal = 0;
 
             ClearSnapshotValues();
             ClearLastUpdateValues();
@@ -216,7 +227,7 @@ namespace TaxiTraffic
             UpdateStatusMonthlyPassengers();
             UpdateStatusTaxiDepotAndStandCounts();
 
-            foreach ((RefRO<Household> _, Entity h) in SystemAPI
+            foreach ((RefRO<Household> householdRef, Entity h) in SystemAPI
                          .Query<RefRO<Household>>()
                          .WithEntityAccess()
                          .WithNone<Deleted, Temp>())
@@ -231,6 +242,14 @@ namespace TaxiTraffic
 
                 if (SystemAPI.HasComponent<HomelessHousehold>(h))
                     s_StatusHouseholdsHomeless++;
+
+                bool touristHousehold = SystemAPI.HasComponent<TouristHousehold>(h);
+                bool commuterHousehold = SystemAPI.HasComponent<CommuterHousehold>(h);
+                if (!touristHousehold && !commuterHousehold &&
+                    (householdRef.ValueRO.m_Flags & HouseholdFlags.MovedIn) == 0)
+                {
+                    s_StatusHouseholdsMovingInLocal++;
+                }
             }
 
             foreach ((RefRO<Game.Creatures.Resident> residentRef, Entity e) in SystemAPI
@@ -252,6 +271,9 @@ namespace TaxiTraffic
 
                 if (SystemAPI.HasComponent<TaxiAllowedMark>(e))
                     s_StatusResidentsAllowedMarker++;
+
+                if (SystemAPI.HasComponent<GroupTaxiAllowedMark>(e))
+                    s_StatusResidentsGroupAllowedMarker++;
 
                 bool groupLinked = IsGroupLinkedTraveler(e);
                 if (groupLinked)
@@ -388,7 +410,8 @@ namespace TaxiTraffic
                 else
                     s_StatusTaxiEnRoute++;
 
-                if ((flags & TaxiFlags.FromOutside) != 0)
+                bool fromOutsideTaxi = (flags & TaxiFlags.FromOutside) != 0;
+                if (fromOutsideTaxi)
                     s_StatusTaxiFromOutside++;
 
                 if ((flags & TaxiFlags.Disabled) != 0)
@@ -417,16 +440,57 @@ namespace TaxiTraffic
 
                     s_StatusPassengerHasResident++;
 
-                    ResidentFlags passengerFlags =
-                        SystemAPI.GetComponentRO<Game.Creatures.Resident>(passenger).ValueRO.m_Flags;
+                    Game.Creatures.Resident passengerResident =
+                        SystemAPI.GetComponentRO<Game.Creatures.Resident>(passenger).ValueRO;
+                    ResidentFlags passengerFlags = passengerResident.m_Flags;
 
                     if ((passengerFlags & ResidentFlags.IgnoreTaxi) != 0)
                         s_StatusPassengerIgnoreTaxi++;
 
                     if (SystemAPI.HasComponent<IgnoreTaxiMark>(passenger))
                         s_StatusPassengerBlockedMark++;
+
+                    if (fromOutsideTaxi)
+                        CountOutsideTaxiResidentPassenger(passenger, passengerResident);
                 }
             }
+        }
+
+        private void CountOutsideTaxiResidentPassenger(Entity passenger, Game.Creatures.Resident resident)
+        {
+            s_StatusOutsideTaxiResidentPassengers++;
+
+            Entity citizen = resident.m_Citizen;
+            if (citizen == Entity.Null || !SystemAPI.Exists(citizen) ||
+                !SystemAPI.HasComponent<HouseholdMember>(citizen))
+            {
+                return;
+            }
+
+            Entity household = SystemAPI.GetComponentRO<HouseholdMember>(citizen).ValueRO.m_Household;
+            if (household == Entity.Null || !SystemAPI.Exists(household) ||
+                !SystemAPI.HasComponent<Household>(household))
+            {
+                return;
+            }
+
+            // Tourist and commuter households are not city move-ins.
+            if (SystemAPI.HasComponent<TouristHousehold>(household) ||
+                SystemAPI.HasComponent<CommuterHousehold>(household))
+            {
+                return;
+            }
+
+            Household householdData = SystemAPI.GetComponentRO<Household>(household).ValueRO;
+            if ((householdData.m_Flags & HouseholdFlags.MovedIn) != 0)
+                return;
+
+            s_StatusOutsideTaxiNotMovedInPassengers++;
+
+            // Strong Brucey-style signal: an unmoved-in local household member whose active trip
+            // started at an outside connection while riding a FromOutside taxi.
+            if (IsLocalMoveInFromOutsideConnection(passenger, resident))
+                s_StatusOutsideTaxiMoveInFromOcPassengers++;
         }
 
         private void CountRequestSeekerResident(
@@ -571,11 +635,13 @@ namespace TaxiTraffic
             s_StatusHouseholdsCommuter = 0;
             s_StatusHouseholdsTourist = 0;
             s_StatusHouseholdsHomeless = 0;
+            s_StatusHouseholdsMovingInLocal = 0;
 
             s_StatusResidentsTotal = 0;
             s_StatusResidentsIgnoreTaxi = 0;
             s_StatusResidentsForcedMarker = 0;
             s_StatusResidentsAllowedMarker = 0;
+            s_StatusResidentsGroupAllowedMarker = 0;
             s_StatusResidentsGroupLinked = 0;
             s_StatusResidentsGroupLinkedIgnoreTaxi = 0;
 
@@ -620,6 +686,9 @@ namespace TaxiTraffic
             s_StatusPassengerHasResident = 0;
             s_StatusPassengerIgnoreTaxi = 0;
             s_StatusPassengerBlockedMark = 0;
+            s_StatusOutsideTaxiResidentPassengers = 0;
+            s_StatusOutsideTaxiNotMovedInPassengers = 0;
+            s_StatusOutsideTaxiMoveInFromOcPassengers = 0;
 
             s_StatusTaxiStandsTotal = 0;
             s_StatusTaxiDepotsTotal = 0;

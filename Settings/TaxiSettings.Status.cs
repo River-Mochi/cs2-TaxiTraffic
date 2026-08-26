@@ -178,7 +178,12 @@ namespace TaxiTraffic
                     nameof(StatusOutsideControl),
                     TaxiTrafficSystem.s_StatusTaxiFromOutside,
                     TaxiTrafficSystem.s_StatusReqOutsideSupply,
-                    TaxiTrafficSystem.s_StatusOutsideSupplySuppressedTotal);
+                    TaxiTrafficSystem.s_StatusOutsideSupplySuppressedTotal,
+                    TaxiTrafficSystem.s_StatusOutsideTaxiResidentPassengers,
+                    TaxiTrafficSystem.s_StatusOutsideTaxiNotMovedInPassengers,
+                    TaxiTrafficSystem.s_StatusOutsideTaxiMoveInFromOcPassengers,
+                    TaxiTrafficSystem.s_StatusOutsideTaxiMoveInFromOcSeenTotal,
+                    TaxiTrafficSystem.s_StatusHouseholdsMovingInLocal);
             }
         }
 
@@ -291,7 +296,9 @@ namespace TaxiTraffic
 
                 return StatusValue(
                     nameof(StatusGroupSafety),
-                    TaxiTrafficSystem.s_StatusLastSkippedGroupTravelers);
+                    TaxiTrafficSystem.s_StatusResidentsGroupLinked,
+                    TaxiTrafficSystem.s_StatusResidentsGroupAllowedMarker,
+                    TaxiTrafficSystem.s_StatusGroupRepairsTotal);
             }
         }
 
@@ -325,7 +332,8 @@ namespace TaxiTraffic
                     TaxiTrafficSystem.s_StatusResidentsForcedMarker,
                     TaxiTrafficSystem.s_StatusResidentsTotal,
                     TaxiTrafficSystem.s_StatusResidentsIgnoreTaxi,
-                    TaxiTrafficSystem.s_StatusResidentsAllowedMarker);
+                    TaxiTrafficSystem.s_StatusResidentsAllowedMarker,
+                    TaxiTrafficSystem.s_StatusResidentsGroupAllowedMarker);
             }
         }
 
@@ -420,7 +428,12 @@ namespace TaxiTraffic
                 nameof(StatusOutsideControl),
                 TaxiTrafficSystem.s_StatusTaxiFromOutside,
                 TaxiTrafficSystem.s_StatusReqOutsideSupply,
-                TaxiTrafficSystem.s_StatusOutsideSupplySuppressedTotal));
+                TaxiTrafficSystem.s_StatusOutsideSupplySuppressedTotal,
+                TaxiTrafficSystem.s_StatusOutsideTaxiResidentPassengers,
+                TaxiTrafficSystem.s_StatusOutsideTaxiNotMovedInPassengers,
+                TaxiTrafficSystem.s_StatusOutsideTaxiMoveInFromOcPassengers,
+                TaxiTrafficSystem.s_StatusOutsideTaxiMoveInFromOcSeenTotal,
+                TaxiTrafficSystem.s_StatusHouseholdsMovingInLocal));
 
             sb.AppendLine("Fleet: " + StatusValue(
                 nameof(StatusTaxiFleet),
@@ -449,12 +462,16 @@ namespace TaxiTraffic
 
             sb.AppendLine("Groups: " + StatusValue(
                 nameof(StatusGroupSafety),
-                TaxiTrafficSystem.s_StatusLastSkippedGroupTravelers));
+                TaxiTrafficSystem.s_StatusResidentsGroupLinked,
+                TaxiTrafficSystem.s_StatusResidentsGroupAllowedMarker,
+                TaxiTrafficSystem.s_StatusGroupRepairsTotal));
 
             sb.AppendLine(
                 "Debug flags: " +
                 TaxiTrafficSystem.s_StatusResidentsIgnoreTaxi + "/" + TaxiTrafficSystem.s_StatusResidentsTotal +
                 " IgnoreTaxi now | " +
+                TaxiTrafficSystem.s_StatusResidentsAllowedMarker + " allowed mark | " +
+                TaxiTrafficSystem.s_StatusResidentsGroupAllowedMarker + " group exempt mark | " +
                 TaxiTrafficSystem.s_StatusReqCustomerSeekerIgnoreTaxi + "/" + TaxiTrafficSystem.s_StatusReqCustomerSeekerHasResident +
                 " city request seekers IgnoreTaxi | " +
                 TaxiTrafficSystem.s_StatusPassengerIgnoreTaxi + "/" + TaxiTrafficSystem.s_StatusPassengerHasResident +

@@ -6,7 +6,7 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-// File: Systems/Status/TaxiTrafficSystem.Debug.cs
+// File: Systems/TaxiTrafficSystem.Debug.cs
 // Optional debug logging and lightweight DEBUG-only performance sampling.
 
 namespace TaxiTraffic
@@ -178,13 +178,14 @@ namespace TaxiTraffic
                     $"depots[local={s_StatusTaxiDepotsLocal}, outside={s_StatusTaxiDepotsOutside}, total={s_StatusTaxiDepotsTotal}, dispatchCenter={s_StatusTaxiDepotsWithDispatchCenter}], " +
                     $"requests[customer={s_StatusReqCustomer}, outsideRider={s_StatusReqOutsideRider}, localSupply={s_StatusReqNone}, outsideSupply={s_StatusReqOutsideSupply}, stand={s_StatusReqStand}], " +
                     $"outsideSupplySuppressedTotal={s_StatusOutsideSupplySuppressedTotal}, " +
+                    $"outsideTaxiPax[resident={s_StatusOutsideTaxiResidentPassengers}, notMovedIn={s_StatusOutsideTaxiNotMovedInPassengers}, moveInFromOC={s_StatusOutsideTaxiMoveInFromOcPassengers}, moveInSeenTotal={s_StatusOutsideTaxiMoveInFromOcSeenTotal}, movingInHH={s_StatusHouseholdsMovingInLocal}], " +
                     $"custSeekers(blockedMark={s_StatusReqCustomerSeekerBlockedMark}, ignoreTaxi={s_StatusReqCustomerSeekerIgnoreTaxi}/{s_StatusReqCustomerSeekerHasResident}), " +
                     $"outRiderSeekers(ignoreTaxi={s_StatusReqOutsideSeekerIgnoreTaxi}/{s_StatusReqOutsideSeekerHasResident}), " +
                     $"passengers(blockedMark={s_StatusPassengerBlockedMark}/{s_StatusPassengerHasResident}, ignoreTaxi={s_StatusPassengerIgnoreTaxi}/{s_StatusPassengerHasResident}, totalPassengers={s_StatusPassengerTotal}), " +
-                    $"residents(blockedMark={s_StatusResidentsForcedMarker}/{s_StatusResidentsTotal}, ignoreTaxiNow={s_StatusResidentsIgnoreTaxi}/{s_StatusResidentsTotal}, allowedMark={s_StatusResidentsAllowedMarker}), " +
+                    $"residents(blockedMark={s_StatusResidentsForcedMarker}/{s_StatusResidentsTotal}, ignoreTaxiNow={s_StatusResidentsIgnoreTaxi}/{s_StatusResidentsTotal}, allowedMark={s_StatusResidentsAllowedMarker}, groupAllowedMark={s_StatusResidentsGroupAllowedMarker}), " +
                     $"commuters(blockedMark={s_StatusCommutersBlockedMark}/{s_StatusCommutersTotal}, ignoreTaxiNow={s_StatusCommutersIgnoreTaxi}/{s_StatusCommutersTotal}), " +
                     $"tourists(blockedMark={s_StatusTouristsBlockedMark}/{s_StatusTouristsTotal}, ignoreTaxiNow={s_StatusTouristsIgnoreTaxi}/{s_StatusTouristsTotal}), " +
-                    $"groups(skipped={s_StatusLastSkippedGroupTravelers}, cleared={s_StatusLastClearedGroupTravelers}, linkedNow={s_StatusResidentsGroupLinked}, linkedIgnoreTaxi={s_StatusResidentsGroupLinkedIgnoreTaxi}), " +
+                    $"groups(skipped={s_StatusLastSkippedGroupTravelers}, repairedLast={s_StatusLastClearedGroupTravelers}, repairedTotal={s_StatusGroupRepairsTotal}, linkedNow={s_StatusResidentsGroupLinked}, groupAllowedMark={s_StatusResidentsGroupAllowedMarker}, linkedIgnoreTaxi={s_StatusResidentsGroupLinkedIgnoreTaxi}), " +
                     $"waitingTransport(total={s_StatusWaitingTransportTotal}, taxiStand={s_StatusWaitingTaxiStandTotal}), " +
                     $"statsDailyTaxi(citizen={dailyTaxiCitizen}, tourist={dailyTaxiTourist}, approxPerMonth={30 * (dailyTaxiCitizen + dailyTaxiTourist)})");
 
@@ -218,6 +219,7 @@ namespace TaxiTraffic
                 bool ignoreTaxi = (residentFlags & ResidentFlags.IgnoreTaxi) != 0;
                 bool blockedMark = SystemAPI.HasComponent<IgnoreTaxiMark>(passengerEntity);
                 bool allowedMark = SystemAPI.HasComponent<TaxiAllowedMark>(passengerEntity);
+                bool groupAllowedMark = SystemAPI.HasComponent<GroupTaxiAllowedMark>(passengerEntity);
                 bool groupMember = SystemAPI.HasComponent<GroupMember>(passengerEntity);
                 bool groupCreature = SystemAPI.HasBuffer<GroupCreature>(passengerEntity);
 
@@ -259,7 +261,7 @@ namespace TaxiTraffic
                     () =>
                         $"{Mod.ModTag} TaxiPassengerNow: passenger={passengerEntity.Index}:{passengerEntity.Version} " +
                         $"vehicle={vehicle.Index}:{vehicle.Version} taxiFlags={taxiFlags} " +
-                        $"ignoreTaxi={ignoreTaxi} blockedMark={blockedMark} allowedMark={allowedMark} " +
+                        $"ignoreTaxi={ignoreTaxi} blockedMark={blockedMark} allowedMark={allowedMark} groupAllowedMark={groupAllowedMark} " +
                         $"groupMember={groupMember} groupCreature={groupCreature} " +
                         $"citizenFlags={citizenFlags} hhCommuter={hhCommuter} hhTourist={hhTourist} " +
                         $"purpose={purpose} resourceBuyer={hasResourceBuyer}");

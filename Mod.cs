@@ -20,7 +20,7 @@ namespace TaxiTraffic
     using Game;                      // UpdateSystem
     using Game.Modding;              // IMod
     using Game.SceneFlow;            // GameManager
-    using Game.Simulation;           // ResidentAISystem, taxi/ride systems
+    using Game.Simulation;           // resident, depot, taxi, and ride systems
 
     public sealed class Mod : IMod
     {
@@ -111,8 +111,9 @@ namespace TaxiTraffic
                     exception: ex);
             }
 
-            // Run main rider control after resident AI, then before taxi and ride-need systems can act on ride decisions.
+            // Let vanilla create depot supply first, then suppress/repair before taxi dispatch consumes it.
             updateSystem.UpdateAfter<TaxiTrafficSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
+            updateSystem.UpdateAfter<TaxiTrafficSystem, TransportDepotAISystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateBefore<TaxiTrafficSystem, TaxiDispatchSystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateBefore<TaxiTrafficSystem, RideNeederSystem>(SystemUpdatePhase.GameSimulation);
         }

@@ -183,7 +183,11 @@ namespace TaxiTraffic
                     "From OC = active taxis carrying the game's FromOutside flag.\n" +
                     "OC supply = active outside taxi-supply requests right now.\n" +
                     "Blocked = outside supply requests Taxi Traffic has suppressed since this city loaded.\n" +
-                    "With Block outside taxis ON, OC supply should stay near 0 and From OC should drain over time." },
+                    "OC taxi resident = resident passengers currently riding FromOutside taxis.\n" +
+                    "Not moved-in = those riders whose local household has not completed its first move-in.\n" +
+                    "Move-in now = strongest old-style outside-taxi signal: not-moved-in local rider whose trip started at an outside connection.\n" +
+                    "Move-in seen = cumulative count of those trips since this city loaded.\n" +
+                    "Moving-in HH = local households not yet marked MovedIn; if this is 0, a zero Move-in seen result is not a useful test." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiFleet)), "Taxi states" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiFleet)),
@@ -221,8 +225,9 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusGroupSafety)), "Cims in groups" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusGroupSafety)),
-                    "Residents traveling as part of a group are left vanilla for Phase 1 safety.\n" +
-                    "Taxi Traffic adjusts solo cims, which are the majority of active travelers." },
+                    "Group-linked residents are temporarily left vanilla for safety.\n" +
+                    "Group exempt is a temporary marker used only while the resident is linked to a group.\n" +
+                    "Repaired = group exemptions or blocks corrected since this city loaded as group membership changed." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusSnapshotMeta)), "Updated" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusSnapshotMeta)),
@@ -239,7 +244,8 @@ namespace TaxiTraffic
                     "DEV sanity check.\n" +
                     "Blocked mark = Taxi Traffic's stable block marker.\n" +
                     "IgnoreTaxi now = the actual vanilla flag at this instant.\n" +
-                    "Allowed mark = residents already checked and left taxi-eligible/vanilla." },
+                    "Allowed mark = normal residents intentionally left taxi-eligible.\n" +
+                    "Group exempt = temporary group-linked exemption marker." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)), "Taxi flags (dev)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)),
@@ -254,18 +260,18 @@ namespace TaxiTraffic
                 { KeyStatusTaxiSupplyLine, "{0} taxis ({1} from OC)\n{2} local depot | {3} OC depot | {4} total\n{5} dispatch ctr | {6} stands" },
                 { KeyStatusPassengersLine, "{0} total | {1} blocked | {2} resident" },
                 { KeyStatusRequestsLine, "{0} city rider ({1} blocked) | {2} OC rider ({3} blocked)\n{4} local supply | {5} OC supply | {6} stand" },
-                { KeyStatusOutsideControlLine, "{0} from OC | {1} OC supply | {2} blocked since load" },
+                { KeyStatusOutsideControlLine, "{0} from OC | {1} OC supply | {2} blocked since load\n{3} OC taxi resident | {4} not moved-in | {5} move-in now | {6} move-in seen\n{7} moving-in HH" },
                 { KeyStatusTaxiStandsLine, "{0} waiting" },
                 { KeyStatusTaxiFleetLine, "{0} ride | {1} standby | {2} return\n{3} dispatch | {4} en route | {5} parked" },
                 { KeyStatusCoverageLine, "{0}/{1} blocked" },
                 { KeyStatusCoverageGroupsLine, "{0}/{1} commuter | {2}/{3} tourist" },
                 { KeyStatusWorkDoneLine, "{0} applied | {1} ride need removed | {2} lane clear" },
                 { KeyStatusWorkDone2Line, "{0} queue clear | {1} skip comm | {2} skip tour" },
-                { KeyStatusGroupSafetyLine, "{0} skipped" },
+                { KeyStatusGroupSafetyLine, "{0} linked now | {1} group exempt | {2} repaired since load" },
                 { KeyStatusSnapshotLine, "Updated {0}" },
 
 #if DEBUG
-                { KeyStatusMarkedDevLine, "{0}/{1} blocked mark | {2} IgnoreTaxi now | {3} allowed mark" },
+                { KeyStatusMarkedDevLine, "{0}/{1} blocked mark | {2} IgnoreTaxi now\n{3} allowed mark | {4} group exempt" },
                 { KeyStatusTaxiFlagsDevLine, "{0} dispatch buf | {1} outside | {2} disabled" },
 #endif
 

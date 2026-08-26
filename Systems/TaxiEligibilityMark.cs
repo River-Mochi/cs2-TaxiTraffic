@@ -6,7 +6,7 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-// File: Systems/TaxiEligibilityMarks.cs
+// File: Systems/TaxiEligibilityMark.cs
 // Marker components used by TaxiTrafficSystem taxi eligibility batching.
 
 namespace TaxiTraffic
@@ -18,6 +18,17 @@ namespace TaxiTraffic
     }
 
     internal struct TaxiAllowedMark : IComponentData
+    {
+    }
+
+    // Temporary exemption while a Resident is linked to a travel group.
+    // Kept separate so leaving the group sends the Resident back through normal eligibility.
+    internal struct GroupTaxiAllowedMark : IComponentData
+    {
+    }
+
+    // DEBUG/evidence marker: this Resident has already been counted as an OC taxi move-in trip.
+    internal struct OutsideTaxiMoveInSeenMark : IComponentData
     {
     }
 }
