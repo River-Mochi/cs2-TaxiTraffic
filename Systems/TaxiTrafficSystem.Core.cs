@@ -57,7 +57,9 @@ namespace TaxiTraffic
             Enabled = false;
         }
 
-        protected override void OnGameLoadingComplete(Colossal.Serialization.Entities.Purpose purpose, GameMode mode)
+        protected override void OnGameLoadingComplete(
+            Colossal.Serialization.Entities.Purpose purpose,
+            GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
 
@@ -83,7 +85,9 @@ namespace TaxiTraffic
             Enabled = true;
 
 #if DEBUG
-            CS2Shared.RiverMochi.LogUtils.Info(Mod.s_Log, () => $"{Mod.ModTag} TaxiTrafficSystem enabled (city load complete).");
+            CS2Shared.RiverMochi.LogUtils.Info(
+                Mod.s_Log,
+                () => $"{Mod.ModTag} TaxiTrafficSystem enabled (city load complete).");
 #endif
         }
 
@@ -105,11 +109,14 @@ namespace TaxiTraffic
             int clearedTaxiStandWaiting = 0;
             int removedRideNeeders = 0;
 
-            // Keep outside control independent from the local-rider settings/reset cycle.
-            SuppressOutsideTaxiSupplyRequests(setting);
+            // Stop OC taxi attempts before vanilla creates or dispatches their taxi request.
+            UpdateOutsideTaxiBlocking(
+                setting,
+                out int outsideTaxiWaitsCleared,
+                out int outsideRideNeedersRemoved);
 
-            // Evidence for the old outside-taxi move-in issue; count each Resident trip only once.
-            ObserveOutsideTaxiMoveInEvidence();
+            clearedTaxiLaneWaiting += outsideTaxiWaitsCleared;
+            removedRideNeeders += outsideRideNeedersRemoved;
 
             // Do not sweep all marked residents every update; too expensive in large cities.
             int clearedGroupTravelers = 0;
@@ -153,8 +160,11 @@ namespace TaxiTraffic
             clearedGroupTravelers = MaintainGroupTaxiExemptionsBatch();
             s_StatusGroupRepairsTotal += clearedGroupTravelers;
 
-            bool vanillaResidents = setting.ResidentsAllowedToUseTaxis >= TaxiSettings.kTaxiAllowedPercentMax;
-            bool vanillaGroups = !setting.BlockCommuters && !setting.BlockTourists;
+            bool vanillaResidents =
+                setting.ResidentsAllowedToUseTaxis >= TaxiSettings.kTaxiAllowedPercentMax;
+
+            bool vanillaGroups =
+                !setting.BlockCommuters && !setting.BlockTourists;
 
             if (vanillaResidents && vanillaGroups)
             {
@@ -187,8 +197,13 @@ namespace TaxiTraffic
             RepairStaleIgnoreTaxiOnTripStart();
 
             // RideNeeder is already a narrow archetype, so stop invalid taxi requests every system update.
-            UnstickTaxiLaneWaiters(setting, out clearedTaxiLaneWaiting, out removedRideNeeders);
+            UnstickTaxiLaneWaiters(
+                setting,
+                out int eligibilityTaxiWaitsCleared,
+                out int eligibilityRideNeedersRemoved);
 
+            clearedTaxiLaneWaiting += eligibilityTaxiWaitsCleared;
+            removedRideNeeders += eligibilityRideNeedersRemoved;
 
             // Broad fallback scan: short burst after changes, then rare maintenance.
             double now = UnityEngine.Time.realtimeSinceStartupAsDouble;
@@ -248,6 +263,5 @@ namespace TaxiTraffic
             s_StatusLastClearedTaxiStandWaiting = clearedTaxiStandWaiting;
             s_StatusLastRemovedRideNeeder = removedRideNeeders;
         }
-
     }
 }

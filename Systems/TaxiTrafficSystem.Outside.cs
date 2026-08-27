@@ -9,122 +9,166 @@
 namespace TaxiTraffic
 {
     // File: Systems/TaxiTrafficSystem.Outside.cs
-    // Outside taxi-supply control and move-in evidence.
+    // Outside-connection taxi blocking and legacy status helper.
 
     using Game.Citizens;     // Household, HouseholdMember, household flags
-    using Game.Common;       // Deleted, Owner
-    using Game.Creatures;    // Resident
+    using Game.Common;       // Deleted
+    using Game.Creatures;    // Resident, HumanCurrentLane, RideNeeder
     using Game.Objects;      // TripSource
+    using Game.Pathfind;     // PathOwner, PathFlags
     using Game.Tools;        // Temp
-    using Game.Vehicles;     // Taxi, Passenger
     using Unity.Collections; // NativeList, Allocator
-    using Unity.Entities;    // Entity, RefRO, DynamicBuffer
+    using Unity.Entities;    // Entity, RefRO, RefRW
 
     public partial class TaxiTrafficSystem
     {
-        // -----------------------
-        // Outside taxi supply
-        // -----------------------
-        private void SuppressOutsideTaxiSupplyRequests(TaxiSettings setting)
+        // Stops OC taxi attempts before RideNeederSystem can create another OC taxi request.
+        private void UpdateOutsideTaxiBlocking(
+            TaxiSettings setting,
+            out int clearedTaxiLaneWaiting,
+            out int removedRideNeeders)
         {
+            clearedTaxiLaneWaiting = 0;
+            removedRideNeeders = 0;
+
+            MaintainOutsideTaxiBlockMarks(setting);
+
             if (!setting.BlockOutsideTaxis)
                 return;
 
-            using NativeList<Entity> toDestroy = new(Allocator.Temp);
+            using NativeList<Entity> toAddBlockMark = new(Allocator.Temp);
+            using NativeList<Entity> toAddOwnsIgnoreMark = new(Allocator.Temp);
+            using NativeList<Entity> toRemoveRideNeeder = new(Allocator.Temp);
 
-            foreach ((RefRO<Game.Simulation.TaxiRequest> requestRef,
-                      RefRO<Game.Simulation.ServiceRequest> serviceRef,
-                      Entity requestEntity) in SystemAPI
-                         .Query<RefRO<Game.Simulation.TaxiRequest>, RefRO<Game.Simulation.ServiceRequest>>()
+            foreach ((RefRW<Resident> resident,
+                      RefRW<HumanCurrentLane> lane,
+                      RefRW<PathOwner> pathOwner,
+                      Entity entity) in SystemAPI
+                         .Query<RefRW<Resident>, RefRW<HumanCurrentLane>, RefRW<PathOwner>>()
+                         .WithAll<RideNeeder>()
                          .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
             {
-                Game.Simulation.TaxiRequest request = requestRef.ValueRO;
-                if (request.m_Type != Game.Simulation.TaxiRequestType.Outside)
+                CreatureLaneFlags taxiWaitMask =
+                    CreatureLaneFlags.ParkingSpace | CreatureLaneFlags.Taxi;
+
+                if ((lane.ValueRO.m_Flags & taxiWaitMask) != taxiWaitMask)
                     continue;
 
-                // Only remove taxi supply offers; rider pickup requests are handled normally.
-                if ((serviceRef.ValueRO.m_Flags & Game.Simulation.ServiceRequestFlags.Reversed) == 0)
+                if (!IsOutsideTaxiPickupLane(lane.ValueRO.m_Lane))
                     continue;
 
-                // A local taxi can carry FromOutside after an OC pickup, so check its real owner.
-                if (!IsOcTaxiSource(request.m_Seeker))
-                    continue;
+                if (!SystemAPI.HasComponent<OutsideTaxiBlockMark>(entity))
+                    toAddBlockMark.Add(entity);
 
-                toDestroy.Add(requestEntity);
-            }
-
-            if (toDestroy.Length == 0)
-                return;
-
-            EntityManager.DestroyEntity(toDestroy.AsArray());
-            s_StatusOutsideSupplySuppressedTotal += toDestroy.Length;
-        }
-
-        private bool IsOcTaxiSource(Entity source)
-        {
-            if (source == Entity.Null || !SystemAPI.Exists(source))
-                return false;
-
-            if (SystemAPI.HasComponent<Game.Objects.OutsideConnection>(source))
-                return true;
-
-            if (!SystemAPI.HasComponent<Taxi>(source) ||
-                !SystemAPI.HasComponent<Owner>(source))
-            {
-                return false;
-            }
-
-            Entity owner = SystemAPI.GetComponentRO<Owner>(source).ValueRO.m_Owner;
-            return owner != Entity.Null &&
-                   SystemAPI.Exists(owner) &&
-                   SystemAPI.HasComponent<Game.Objects.OutsideConnection>(owner);
-        }
-
-        private void ObserveOutsideTaxiMoveInEvidence()
-        {
-            using NativeList<Entity> seen = new(Allocator.Temp);
-
-            foreach ((RefRO<Taxi> taxiRef, Entity taxiEntity) in SystemAPI
-                         .Query<RefRO<Taxi>>()
-                         .WithEntityAccess()
-                         .WithNone<Deleted, Temp>())
-            {
-                if ((taxiRef.ValueRO.m_State & Game.Vehicles.TaxiFlags.FromOutside) == 0 ||
-                    !SystemAPI.HasBuffer<Game.Vehicles.Passenger>(taxiEntity))
+                if ((resident.ValueRO.m_Flags & ResidentFlags.IgnoreTaxi) == 0)
                 {
-                    continue;
+                    resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
+
+                    if (!SystemAPI.HasComponent<OutsideTaxiOwnsIgnoreMark>(entity))
+                        toAddOwnsIgnoreMark.Add(entity);
                 }
 
-                DynamicBuffer<Passenger> passengers =
-                    SystemAPI.GetBuffer<Passenger>(taxiEntity);
+                lane.ValueRW.m_Flags &= ~taxiWaitMask;
+                lane.ValueRW.m_QueueEntity = Entity.Null;
 
-                for (int i = 0; i < passengers.Length; i++)
+                pathOwner.ValueRW.m_State &= ~PathFlags.Failed;
+                pathOwner.ValueRW.m_State |= PathFlags.Obsolete;
+
+                // No RideNeeder means vanilla cannot create or keep this OC taxi request.
+                toRemoveRideNeeder.Add(entity);
+                clearedTaxiLaneWaiting++;
+            }
+
+            if (toAddBlockMark.Length > 0)
+                EntityManager.AddComponent<OutsideTaxiBlockMark>(toAddBlockMark.AsArray());
+
+            if (toAddOwnsIgnoreMark.Length > 0)
+                EntityManager.AddComponent<OutsideTaxiOwnsIgnoreMark>(toAddOwnsIgnoreMark.AsArray());
+
+            if (toRemoveRideNeeder.Length > 0)
+            {
+                EntityManager.RemoveComponent<RideNeeder>(toRemoveRideNeeder.AsArray());
+                removedRideNeeders = toRemoveRideNeeder.Length;
+            }
+        }
+
+        // Keep the temporary block only while the cim is still physically at the OC.
+        private void MaintainOutsideTaxiBlockMarks(TaxiSettings setting)
+        {
+            using NativeList<Entity> toAddOwnsIgnoreMark = new(Allocator.Temp);
+            using NativeList<Entity> toRemoveBlockMark = new(Allocator.Temp);
+            using NativeList<Entity> toRemoveOwnsIgnoreMark = new(Allocator.Temp);
+
+            foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
+                         .Query<RefRW<Resident>>()
+                         .WithAll<OutsideTaxiBlockMark>()
+                         .WithNone<Deleted, Temp>()
+                         .WithEntityAccess())
+            {
+                bool stillAtOutsidePickup = false;
+
+                if (setting.BlockOutsideTaxis &&
+                    SystemAPI.HasComponent<HumanCurrentLane>(entity))
                 {
-                    Entity passenger = passengers[i].m_Passenger;
-                    if (passenger == Entity.Null ||
-                        !SystemAPI.Exists(passenger) ||
-                        SystemAPI.HasComponent<OutsideTaxiMoveInSeenMark>(passenger) ||
-                        !SystemAPI.HasComponent<Resident>(passenger))
+                    HumanCurrentLane lane =
+                        SystemAPI.GetComponentRO<HumanCurrentLane>(entity).ValueRO;
+
+                    stillAtOutsidePickup = IsOutsideTaxiPickupLane(lane.m_Lane);
+                }
+
+                if (stillAtOutsidePickup)
+                {
+                    if ((resident.ValueRO.m_Flags & ResidentFlags.IgnoreTaxi) == 0)
                     {
-                        continue;
+                        resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
+
+                        if (!SystemAPI.HasComponent<OutsideTaxiOwnsIgnoreMark>(entity))
+                            toAddOwnsIgnoreMark.Add(entity);
                     }
 
-                    Resident resident = SystemAPI.GetComponentRO<Resident>(passenger).ValueRO;
-                    if (!IsLocalMoveInFromOutsideConnection(passenger, resident))
-                        continue;
-
-                    seen.Add(passenger);
+                    continue;
                 }
+
+                // Clear only the temporary IgnoreTaxi flag that this OC block turned on.
+                if (SystemAPI.HasComponent<OutsideTaxiOwnsIgnoreMark>(entity) &&
+                    !SystemAPI.HasComponent<IgnoreTaxiMark>(entity))
+                {
+                    resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
+                }
+
+                toRemoveBlockMark.Add(entity);
+
+                if (SystemAPI.HasComponent<OutsideTaxiOwnsIgnoreMark>(entity))
+                    toRemoveOwnsIgnoreMark.Add(entity);
             }
 
-            if (seen.Length == 0)
-                return;
+            if (toAddOwnsIgnoreMark.Length > 0)
+                EntityManager.AddComponent<OutsideTaxiOwnsIgnoreMark>(toAddOwnsIgnoreMark.AsArray());
 
-            EntityManager.AddComponent<OutsideTaxiMoveInSeenMark>(seen.AsArray());
-            s_StatusOutsideTaxiMoveInFromOcSeenTotal += seen.Length;
+            if (toRemoveOwnsIgnoreMark.Length > 0)
+                EntityManager.RemoveComponent<OutsideTaxiOwnsIgnoreMark>(toRemoveOwnsIgnoreMark.AsArray());
+
+            if (toRemoveBlockMark.Length > 0)
+                EntityManager.RemoveComponent<OutsideTaxiBlockMark>(toRemoveBlockMark.AsArray());
         }
 
+        private bool IsOutsideTaxiPickupLane(Entity lane)
+        {
+            if (lane == Entity.Null ||
+                !SystemAPI.Exists(lane) ||
+                !SystemAPI.HasComponent<Game.Net.ConnectionLane>(lane))
+            {
+                return false;
+            }
+
+            Game.Net.ConnectionLane connection =
+                SystemAPI.GetComponentRO<Game.Net.ConnectionLane>(lane).ValueRO;
+
+            return (connection.m_Flags & Game.Net.ConnectionLaneFlags.Outside) != 0;
+        }
+
+        // Kept only for the current Status page; remove with the old move-in research rows later.
         private bool IsLocalMoveInFromOutsideConnection(Entity residentEntity, Resident resident)
         {
             Entity citizen = resident.m_Citizen;
@@ -135,7 +179,9 @@ namespace TaxiTraffic
                 return false;
             }
 
-            Entity household = SystemAPI.GetComponentRO<HouseholdMember>(citizen).ValueRO.m_Household;
+            Entity household =
+                SystemAPI.GetComponentRO<HouseholdMember>(citizen).ValueRO.m_Household;
+
             if (household == Entity.Null ||
                 !SystemAPI.Exists(household) ||
                 !SystemAPI.HasComponent<Household>(household) ||
@@ -145,14 +191,18 @@ namespace TaxiTraffic
                 return false;
             }
 
-            Household householdData = SystemAPI.GetComponentRO<Household>(household).ValueRO;
+            Household householdData =
+                SystemAPI.GetComponentRO<Household>(household).ValueRO;
+
             if ((householdData.m_Flags & HouseholdFlags.MovedIn) != 0 ||
                 !SystemAPI.HasComponent<TripSource>(residentEntity))
             {
                 return false;
             }
 
-            Entity source = SystemAPI.GetComponentRO<TripSource>(residentEntity).ValueRO.m_Source;
+            Entity source =
+                SystemAPI.GetComponentRO<TripSource>(residentEntity).ValueRO.m_Source;
+
             return source != Entity.Null &&
                    SystemAPI.Exists(source) &&
                    SystemAPI.HasComponent<Game.Objects.OutsideConnection>(source);

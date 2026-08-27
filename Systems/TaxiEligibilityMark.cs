@@ -27,8 +27,13 @@ namespace TaxiTraffic
     {
     }
 
-    // DEBUG/evidence marker: this Resident has already been counted as an OC taxi move-in trip.
-    internal struct OutsideTaxiMoveInSeenMark : IComponentData
+    // Temporary block while a cim is still at an outside-connection taxi pickup.
+    internal struct OutsideTaxiBlockMark : IComponentData
+    {
+    }
+
+    // We turned on IgnoreTaxi for the temporary OC block, so we may clear it later.
+    internal struct OutsideTaxiOwnsIgnoreMark : IComponentData
     {
     }
 }
