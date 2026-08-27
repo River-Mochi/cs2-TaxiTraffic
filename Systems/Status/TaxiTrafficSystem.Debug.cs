@@ -29,7 +29,7 @@ namespace TaxiTraffic
         private const double kDebugForceStatusRefreshMaxAgeSeconds = 30.0;
 
 #if DEBUG
-        private const double kDebugPerfLogIntervalSeconds = 30.0;
+        private const double kDebugPerfLogIntervalSeconds = 120.0;
 
         private long m_DebugUnstickSamples;
         private double m_DebugUnstickTotalMs;
@@ -122,18 +122,18 @@ namespace TaxiTraffic
                     ? m_DebugUnstickTotalMs / m_DebugUnstickSamples
                     : 0.0;
 
-            int repairsSincePerfLog = m_DebugTripSourceRepairsSincePerfLog;
             m_DebugTripSourceRepairsSincePerfLog = 0;
 
             CS2Shared.RiverMochi.LogUtils.Info(
                 Mod.s_Log,
                 () =>
-                    $"{Mod.ModTag} TaxiPerf: UnstickTaxiQueues " +
+                    $"{Mod.ModTag} TaxiPerf: queueSweep " +
                     $"lastMs={m_DebugUnstickLastMs:F3}, avgMs={averageMs:F3}, maxMs={m_DebugUnstickMaxMs:F3}, " +
-                    $"samples={m_DebugUnstickSamples}, scannedLast={m_DebugUnstickLastScanned}, scannedMax={m_DebugUnstickMaxScanned}, " +
-                    $"waitingTransportLast={m_DebugUnstickLastWaitingTransport}, taxiQueueLast={m_DebugUnstickLastTaxiQueue}, " +
+                    $"sweeps={m_DebugUnstickSamples}, scanned={m_DebugUnstickLastScanned}, " +
+                    $"waiting={m_DebugUnstickLastWaitingTransport}, taxiQueue={m_DebugUnstickLastTaxiQueue}, " +
                     $"clearedLast={m_DebugUnstickLastCleared}, clearedTotal={m_DebugUnstickClearedTotal}, " +
-                    $"tripSourceRepairsSincePerfLog={repairsSincePerfLog}, tripSourceRepairsTotal={m_DebugTripSourceRepairsTotal}");
+                    $"tripRepairsTotal={m_DebugTripSourceRepairsTotal}");
+
         }
 #endif
 
@@ -172,24 +172,49 @@ namespace TaxiTraffic
                 Mod.s_Log,
                 () =>
                     $"{Mod.ModTag} TaxiSummary: " +
-                    $"residentTaxiAllowedPercent={setting.ResidentsAllowedToUseTaxis}, blockCommuters={setting.BlockCommuters}, blockTourists={setting.BlockTourists}, blockOutsideTaxis={setting.BlockOutsideTaxis}, " +
-                    $"taxis={s_StatusTaxisTotal}, transporting={s_StatusTaxiTransporting}, boarding={s_StatusTaxiBoarding}, returning={s_StatusTaxiReturning}, dispatched={s_StatusTaxiDispatched}, enRoute={s_StatusTaxiEnRoute}, parked={s_StatusTaxiParked}, accident={s_StatusTaxiAccident}, " +
-                    $"fromOutside={s_StatusTaxiFromOutside}, disabled={s_StatusTaxiDisabled}, withServiceDispatch={s_StatusTaxiWithDispatchBuffer}, " +
-                    $"depots[local={s_StatusTaxiDepotsLocal}, outside={s_StatusTaxiDepotsOutside}, total={s_StatusTaxiDepotsTotal}, dispatchCenter={s_StatusTaxiDepotsWithDispatchCenter}], " +
-                    $"requests[customer={s_StatusReqCustomer}, outsideRider={s_StatusReqOutsideRider}, localSupply={s_StatusReqNone}, outsideSupply={s_StatusReqOutsideSupply}, stand={s_StatusReqStand}], " +
-                    $"outsideSupplySuppressedTotal={s_StatusOutsideSupplySuppressedTotal}, " +
-                    $"outsideTaxiPax[resident={s_StatusOutsideTaxiResidentPassengers}, notMovedIn={s_StatusOutsideTaxiNotMovedInPassengers}, moveInFromOC={s_StatusOutsideTaxiMoveInFromOcPassengers}, moveInSeenTotal={s_StatusOutsideTaxiMoveInFromOcSeenTotal}, movingInHH={s_StatusHouseholdsMovingInLocal}], " +
-                    $"custSeekers(blockedMark={s_StatusReqCustomerSeekerBlockedMark}, ignoreTaxi={s_StatusReqCustomerSeekerIgnoreTaxi}/{s_StatusReqCustomerSeekerHasResident}), " +
-                    $"outRiderSeekers(ignoreTaxi={s_StatusReqOutsideSeekerIgnoreTaxi}/{s_StatusReqOutsideSeekerHasResident}), " +
-                    $"passengers(blockedMark={s_StatusPassengerBlockedMark}/{s_StatusPassengerHasResident}, ignoreTaxi={s_StatusPassengerIgnoreTaxi}/{s_StatusPassengerHasResident}, totalPassengers={s_StatusPassengerTotal}), " +
-                    $"residents(blockedMark={s_StatusResidentsForcedMarker}/{s_StatusResidentsTotal}, ignoreTaxiNow={s_StatusResidentsIgnoreTaxi}/{s_StatusResidentsTotal}, allowedMark={s_StatusResidentsAllowedMarker}, groupAllowedMark={s_StatusResidentsGroupAllowedMarker}), " +
-                    $"commuters(blockedMark={s_StatusCommutersBlockedMark}/{s_StatusCommutersTotal}, ignoreTaxiNow={s_StatusCommutersIgnoreTaxi}/{s_StatusCommutersTotal}), " +
-                    $"tourists(blockedMark={s_StatusTouristsBlockedMark}/{s_StatusTouristsTotal}, ignoreTaxiNow={s_StatusTouristsIgnoreTaxi}/{s_StatusTouristsTotal}), " +
-                    $"groups(skipped={s_StatusLastSkippedGroupTravelers}, repairedLast={s_StatusLastClearedGroupTravelers}, repairedTotal={s_StatusGroupRepairsTotal}, linkedNow={s_StatusResidentsGroupLinked}, groupAllowedMark={s_StatusResidentsGroupAllowedMarker}, linkedIgnoreTaxi={s_StatusResidentsGroupLinkedIgnoreTaxi}), " +
-                    $"waitingTransport(total={s_StatusWaitingTransportTotal}, taxiStand={s_StatusWaitingTaxiStandTotal}), " +
-                    $"statsDailyTaxi(citizen={dailyTaxiCitizen}, tourist={dailyTaxiTourist}, approxPerMonth={30 * (dailyTaxiCitizen + dailyTaxiTourist)})");
 
-            LogActiveTaxiPassengers();
+                    $"settings[residents={setting.ResidentsAllowedToUseTaxis}%, " +
+                    $"commutersBlocked={setting.BlockCommuters}, " +
+                    $"touristsBlocked={setting.BlockTourists}, " +
+                    $"outsideBlocked={setting.BlockOutsideTaxis}], " +
+
+                    $"fleet[total={s_StatusTaxisTotal}, fromOC={s_StatusTaxiFromOutside}, " +
+                    $"transporting={s_StatusTaxiTransporting}, dispatched={s_StatusTaxiDispatched}, " +
+                    $"returning={s_StatusTaxiReturning}, parked={s_StatusTaxiParked}], " +
+
+                    $"sources[localDepots={s_StatusTaxiDepotsLocal}, " +
+                    $"ocSources={s_StatusTaxiDepotsOutside}, " +
+                    $"fallbackNoLocalDepot={m_OutsideBlockFallbackActive}], " +
+
+                    $"requests[customer={s_StatusReqCustomer}, " +
+                    $"outsideRider={s_StatusReqOutsideRider}, " +
+                    $"outsideSupply={s_StatusReqOutsideSupply}, " +
+                    $"stand={s_StatusReqStand}, " +
+                    $"suppressed={s_StatusOutsideSupplySuppressedTotal}], " +
+
+                    $"eligibility[blocked={s_StatusResidentsForcedMarker}/{s_StatusResidentsTotal}, " +
+                    $"ignoreTaxi={s_StatusResidentsIgnoreTaxi}/{s_StatusResidentsTotal}, " +
+                    $"normalAllowed={s_StatusResidentsAllowedMarker}, " +
+                    $"groupExempt={s_StatusResidentsGroupAllowedMarker}/{s_StatusResidentsGroupLinked}, " +
+                    $"groupIgnore={s_StatusResidentsGroupLinkedIgnoreTaxi}, " +
+                    $"groupRepairs={s_StatusGroupRepairsTotal}, " +
+                    $"commuterBlocked={s_StatusCommutersBlockedMark}/{s_StatusCommutersTotal}, " +
+                    $"touristBlocked={s_StatusTouristsBlockedMark}/{s_StatusTouristsTotal}], " +
+
+                    $"waiting[transport={s_StatusWaitingTransportTotal}, " +
+                    $"taxiStand={s_StatusWaitingTaxiStandTotal}], " +
+
+                    $"moveInViaOCTaxi[now={s_StatusOutsideTaxiMoveInFromOcPassengers}, " +
+                    $"seenTotal={s_StatusOutsideTaxiMoveInFromOcSeenTotal}, " +
+                    $"movingHH={s_StatusHouseholdsMovingInLocal}], " +
+
+                    $"dailyTaxi[citizen={dailyTaxiCitizen}, tourist={dailyTaxiTourist}]");
+
+
+            // Passenger details are only useful if the legacy move-in-via-OC-taxi pattern appears.
+            if (s_StatusOutsideTaxiMoveInFromOcSeenTotal > 0)
+                LogActiveTaxiPassengers();
+
         }
 
         private void LogActiveTaxiPassengers()

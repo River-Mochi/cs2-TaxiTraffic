@@ -488,8 +488,8 @@ namespace TaxiTraffic
 
             s_StatusOutsideTaxiNotMovedInPassengers++;
 
-            // Strong Brucey-style signal: an unmoved-in local household member whose active trip
-            // started at an outside connection while riding a FromOutside taxi.
+            // Legacy move-in signal: an unmoved-in local household member whose active trip
+            // started at OC while riding a FromOutside taxi.
             if (IsLocalMoveInFromOutsideConnection(passenger, resident))
                 s_StatusOutsideTaxiMoveInFromOcPassengers++;
         }

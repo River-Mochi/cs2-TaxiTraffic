@@ -25,11 +25,17 @@ namespace TaxiTraffic
     {
         private const int kMarkBatchPerUpdate = 2000;
         private const int kUpdateIntervalFrames = 16;
-        private const float kUnstickIntervalSeconds = 1.0f;
+
+        // Broad queue fallback: burst after setting changes, then stay cheap.
+        private const float kTaxiQueueSweepFastIntervalSeconds = 1.0f;
+        private const float kTaxiQueueSweepMaintenanceIntervalSeconds = 30.0f;
+        private const int kTaxiQueueSweepFastPasses = 3;
+
         private const float kDebugSummaryIntervalSeconds = 120.0f;
         private const uint kTaxiEligibilityHashSalt = 0x54415849u; // 'TAXI'
 
         private double m_LastUnstickRealtime;
+        private int m_TaxiQueueSweepFastPassesRemaining;
 
         private int m_LastResidentsAllowedToUseTaxis = int.MinValue;
         private bool m_LastBlockCommuters;
@@ -64,6 +70,8 @@ namespace TaxiTraffic
                 return;
 
             m_LastUnstickRealtime = UnityEngine.Time.realtimeSinceStartupAsDouble;
+            m_TaxiQueueSweepFastPassesRemaining = 0;
+            m_OutsideBlockFallbackActive = false;
 
             m_LastResidentsAllowedToUseTaxis = int.MinValue;
             m_LastBlockCommuters = false;
@@ -109,7 +117,12 @@ namespace TaxiTraffic
 
             bool changed = DetectTaxiEligibilitySettingChange(setting);
             if (changed)
+            {
                 m_TaxiEligibilityResetInProgress = true;
+
+                // Give stale taxi waits a few quick cleanup passes after a settings change.
+                m_TaxiQueueSweepFastPassesRemaining = kTaxiQueueSweepFastPasses;
+            }
 
             // Setting changes clear old buckets before applying the new stable bucket.
             if (m_TaxiEligibilityResetInProgress)
@@ -177,12 +190,30 @@ namespace TaxiTraffic
             // RideNeeder is already a narrow archetype, so stop invalid taxi requests every system update.
             UnstickTaxiLaneWaiters(setting, out clearedTaxiLaneWaiting, out removedRideNeeders);
 
-            // The broader waiting-transport scan stays throttled.
+
+            // Broad fallback scan: short burst after changes, then rare maintenance.
             double now = UnityEngine.Time.realtimeSinceStartupAsDouble;
-            if (now - m_LastUnstickRealtime >= kUnstickIntervalSeconds)
+
+            double queueSweepInterval =
+                m_TaxiQueueSweepFastPassesRemaining > 0
+                    ? kTaxiQueueSweepFastIntervalSeconds
+                    : kTaxiQueueSweepMaintenanceIntervalSeconds;
+
+            if (now - m_LastUnstickRealtime >= queueSweepInterval)
             {
                 m_LastUnstickRealtime = now;
+
                 UnstickTaxiQueues(setting, out clearedTaxiStandWaiting);
+
+                if (clearedTaxiStandWaiting > 0)
+                {
+                    // Found a real stale queue; do a few follow-up passes.
+                    m_TaxiQueueSweepFastPassesRemaining = kTaxiQueueSweepFastPasses;
+                }
+                else if (m_TaxiQueueSweepFastPassesRemaining > 0)
+                {
+                    m_TaxiQueueSweepFastPassesRemaining--;
+                }
             }
 
             RecordLastUpdateCounters(
