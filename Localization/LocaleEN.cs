@@ -80,12 +80,14 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ResidentsAllowedToUseTaxis)), "Residents allowed to use taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.ResidentsAllowedToUseTaxis)),
                     "Controls local resident taxi eligibility.\n" +
-                    "**0% = residents avoid taxis** as much as possible.\n" +
-                    "**25% = ~1 in 4** residents are eligible to use taxis.\n" +
-                    "**50% = ~half** are eligible to use taxis.\n" +
-                    "**75% = ~3 in 4** are eligible to use taxis.\n" +
-                    "**100% = vanilla taxi** levels.\n" +
-                    "Commuters and tourists are controlled separately below." },
+                    "<0% = residents avoid taxis> as much as possible.\n" +
+                    "<25% = ~1 in 4> residents are eligible to use taxis.\n" +
+                    "<50% = ~half> are eligible to use taxis.\n" +
+                    "<75% = ~3 in 4> are eligible to use taxis.\n" +
+                    "<100% = vanilla taxi> usage.\n" +
+                    "0% greatly reduces usage. A small amount may remain due to Leisure System's independent calls for taxis.\n" +
+                    "Commuters and tourists are controlled separately below."
+                },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "Commuters avoid taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockCommuters)),

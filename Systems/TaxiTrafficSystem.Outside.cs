@@ -20,27 +20,15 @@ namespace TaxiTraffic
     using Unity.Collections; // NativeList, Allocator
     using Unity.Entities;    // Entity, RefRO, DynamicBuffer
 
-
     public partial class TaxiTrafficSystem
     {
-        private bool m_OutsideBlockFallbackActive;
-
         // -----------------------
         // Outside taxi supply
         // -----------------------
-       private void SuppressOutsideTaxiSupplyRequests(TaxiSettings setting)
+        private void SuppressOutsideTaxiSupplyRequests(TaxiSettings setting)
         {
-            m_OutsideBlockFallbackActive = false;
-
             if (!setting.BlockOutsideTaxis)
                 return;
-
-            // Never leave the city with no taxi source at all.
-            if (!HasLocalTaxiDepot())
-            {
-                m_OutsideBlockFallbackActive = true;
-                return;
-            }
 
             using NativeList<Entity> toDestroy = new(Allocator.Temp);
 
@@ -55,7 +43,7 @@ namespace TaxiTraffic
                 if (request.m_Type != Game.Simulation.TaxiRequestType.Outside)
                     continue;
 
-                // Reversed Outside requests advertise taxi supply; rider requests are not reversed.
+                // Reversed OC requests advertise taxi supply; rider requests are not reversed.
                 if ((serviceRef.ValueRO.m_Flags & Game.Simulation.ServiceRequestFlags.Reversed) == 0)
                     continue;
 
@@ -68,32 +56,6 @@ namespace TaxiTraffic
             EntityManager.DestroyEntity(toDestroy.AsArray());
             s_StatusOutsideSupplySuppressedTotal += toDestroy.Length;
         }
-
-        private bool HasLocalTaxiDepot()
-        {
-            foreach (RefRO<Game.Prefabs.PrefabRef> prefabRef in SystemAPI
-                         .Query<RefRO<Game.Prefabs.PrefabRef>>()
-                         .WithAll<Game.Buildings.TransportDepot>()
-                         .WithNone<Game.Objects.OutsideConnection, Game.Buildings.ServiceUpgrade>()
-                         .WithNone<Game.Common.Deleted, Game.Tools.Temp>())
-            {
-                Entity prefab = prefabRef.ValueRO.m_Prefab;
-                if (prefab == Entity.Null ||
-                    !SystemAPI.HasComponent<Game.Prefabs.TransportDepotData>(prefab))
-                {
-                    continue;
-                }
-
-                Game.Prefabs.TransportDepotData depotData =
-                    SystemAPI.GetComponentRO<Game.Prefabs.TransportDepotData>(prefab).ValueRO;
-
-                if (depotData.m_TransportType == Game.Prefabs.TransportType.Taxi)
-                    return true;
-            }
-
-            return false;
-        }
-
 
         private void ObserveOutsideTaxiMoveInEvidence()
         {
@@ -171,6 +133,5 @@ namespace TaxiTraffic
                    SystemAPI.Exists(source) &&
                    SystemAPI.HasComponent<Game.Objects.OutsideConnection>(source);
         }
-
     }
 }
