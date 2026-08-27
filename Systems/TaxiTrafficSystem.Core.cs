@@ -12,10 +12,14 @@
 
 namespace TaxiTraffic
 {
-    using Game; // GameSystemBase, GameMode
+    using Game;             // GameSystemBase, GameMode
     using Game.Citizens;
-    using Game.Vehicles;
-    using Unity.Entities;
+    using Game.Creatures;   // prevent gs errors
+    using Game.Pathfind;    // prevent gs errors
+    using Game.Routes;      // prevent gs errors
+    using Game.Vehicles;    // prevent gs errors
+    using Unity.Collections; // prevent gs errors
+    using Unity.Entities;   // prevent gs errors
 
     public partial class TaxiTrafficSystem : GameSystemBase
     {
