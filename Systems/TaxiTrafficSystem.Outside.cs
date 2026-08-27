@@ -43,7 +43,7 @@ namespace TaxiTraffic
                 if (request.m_Type != Game.Simulation.TaxiRequestType.Outside)
                     continue;
 
-                // Reversed OC requests advertise taxi supply; rider requests are not reversed.
+                // Only remove OC taxi supply offers; leave rider pickup requests alone.
                 if ((serviceRef.ValueRO.m_Flags & Game.Simulation.ServiceRequestFlags.Reversed) == 0)
                     continue;
 
