@@ -85,7 +85,7 @@ namespace TaxiTraffic
                     "<50% = ~half> are eligible to use taxis.\n" +
                     "<75% = ~3 in 4> are eligible to use taxis.\n" +
                     "<100% = vanilla taxi> usage.\n" +
-                    "0% greatly reduces usage. A small amount may remain because separate game systems, including Leisure, can independently allow taxis for some trips.\n" +
+                    "0% greatly reduces usage. A small amount may remain because separate game systems, e.g. Leisure, can independently allow taxis for some trips.\n" +
                     "Commuters and tourists are controlled separately by the other toggles [x]."
                 },
 

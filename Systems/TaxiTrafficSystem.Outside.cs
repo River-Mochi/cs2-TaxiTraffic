@@ -12,7 +12,7 @@ namespace TaxiTraffic
     // Outside taxi-supply control and move-in evidence.
 
     using Game.Citizens;     // Household, HouseholdMember, household flags
-    using Game.Common;       // Deleted
+    using Game.Common;       // Deleted, Owner
     using Game.Creatures;    // Resident
     using Game.Objects;      // TripSource
     using Game.Tools;        // Temp
@@ -43,8 +43,12 @@ namespace TaxiTraffic
                 if (request.m_Type != Game.Simulation.TaxiRequestType.Outside)
                     continue;
 
-                // Only remove OC taxi supply offers; leave rider pickup requests alone.
+                // Only remove taxi supply offers; rider pickup requests are handled normally.
                 if ((serviceRef.ValueRO.m_Flags & Game.Simulation.ServiceRequestFlags.Reversed) == 0)
+                    continue;
+
+                // A local taxi can carry FromOutside after an OC pickup, so check its real owner.
+                if (!IsOcTaxiSource(request.m_Seeker))
                     continue;
 
                 toDestroy.Add(requestEntity);
@@ -55,6 +59,26 @@ namespace TaxiTraffic
 
             EntityManager.DestroyEntity(toDestroy.AsArray());
             s_StatusOutsideSupplySuppressedTotal += toDestroy.Length;
+        }
+
+        private bool IsOcTaxiSource(Entity source)
+        {
+            if (source == Entity.Null || !SystemAPI.Exists(source))
+                return false;
+
+            if (SystemAPI.HasComponent<Game.Objects.OutsideConnection>(source))
+                return true;
+
+            if (!SystemAPI.HasComponent<Taxi>(source) ||
+                !SystemAPI.HasComponent<Owner>(source))
+            {
+                return false;
+            }
+
+            Entity owner = SystemAPI.GetComponentRO<Owner>(source).ValueRO.m_Owner;
+            return owner != Entity.Null &&
+                   SystemAPI.Exists(owner) &&
+                   SystemAPI.HasComponent<Game.Objects.OutsideConnection>(owner);
         }
 
         private void ObserveOutsideTaxiMoveInEvidence()

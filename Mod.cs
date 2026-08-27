@@ -111,11 +111,15 @@ namespace TaxiTraffic
                     exception: ex);
             }
 
-            // Let vanilla create depot supply first, then suppress/repair before taxi dispatch consumes it.
+            // Let vanilla create supply first, block OC supply, then block any direct OC dispatch.
             updateSystem.UpdateAfter<TaxiTrafficSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateAfter<TaxiTrafficSystem, TransportDepotAISystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateBefore<TaxiTrafficSystem, TaxiDispatchSystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateBefore<TaxiTrafficSystem, RideNeederSystem>(SystemUpdatePhase.GameSimulation);
+
+            // TaxiDispatch can assign a rider directly to an OC source, bypassing its supply offer.
+            updateSystem.UpdateAfter<OutsideTaxiDispatchBlockSystem, TaxiDispatchSystem>(
+                SystemUpdatePhase.GameSimulation);
         }
 
         public void OnDispose()
