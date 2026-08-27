@@ -268,13 +268,13 @@ namespace TaxiTraffic
                          .WithNone<Deleted, Temp>())
             {
                 if ((taxiRef.ValueRO.m_State & Game.Vehicles.TaxiFlags.FromOutside) == 0 ||
-                    !SystemAPI.HasBuffer<Game.Creatures.Passenger>(taxiEntity))
+                    !SystemAPI.HasBuffer<Game.Vehicles.Passenger>(taxiEntity))
                 {
                     continue;
                 }
 
-                DynamicBuffer<Game.Creatures.Passenger> passengers =
-                    SystemAPI.GetBuffer<Game.Creatures.Passenger>(taxiEntity);
+                DynamicBuffer<Passenger> passengers =
+                    SystemAPI.GetBuffer<Passenger>(taxiEntity);
 
                 for (int i = 0; i < passengers.Length; i++)
                 {
@@ -452,7 +452,8 @@ namespace TaxiTraffic
                     foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
                                  .Query<RefRW<Resident>>()
                                  .WithAll<IgnoreTaxiMark, GroupCreature>()
-                                 .WithNone<GroupMember, GroupTaxiAllowedMark, Deleted, Temp>()
+                                 .WithNone<GroupMember, GroupTaxiAllowedMark, Deleted>()
+                                 .WithNone<Temp>()
                                  .WithEntityAccess())
                     {
                         resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
@@ -498,7 +499,8 @@ namespace TaxiTraffic
                     foreach ((RefRO<Resident> _, Entity entity) in SystemAPI
                                  .Query<RefRO<Resident>>()
                                  .WithAll<TaxiAllowedMark, GroupCreature>()
-                                 .WithNone<GroupMember, GroupTaxiAllowedMark, Deleted, Temp>()
+                                 .WithNone<GroupMember, GroupTaxiAllowedMark, Deleted>()
+                                 .WithNone<Temp>()
                                  .WithEntityAccess())
                     {
                         oldAllowedMarks.Add(entity);
@@ -527,7 +529,8 @@ namespace TaxiTraffic
             foreach ((RefRO<Resident> _, Entity entity) in SystemAPI
                          .Query<RefRO<Resident>>()
                          .WithAll<GroupTaxiAllowedMark>()
-                         .WithNone<GroupMember, GroupCreature, Deleted, Temp>()
+                         .WithNone<GroupMember, GroupCreature, Deleted>()
+                         .WithNone<Temp>()
                          .WithEntityAccess())
             {
                 staleGroupMarks.Add(entity);
@@ -630,8 +633,8 @@ namespace TaxiTraffic
             int processed = 0;
             foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<Resident>>()
-                         .WithNone<IgnoreTaxiMark, TaxiAllowedMark, GroupTaxiAllowedMark, Deleted>()
-                         .WithNone<Temp>()
+                         .WithNone<IgnoreTaxiMark, TaxiAllowedMark, GroupTaxiAllowedMark>()
+                         .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
             {
                 processed++;
