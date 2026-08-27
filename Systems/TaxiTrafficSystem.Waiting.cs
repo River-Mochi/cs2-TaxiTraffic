@@ -14,7 +14,7 @@ namespace TaxiTraffic
     using Game.Common;       // Deleted
     using Game.Creatures;    // Resident, HumanCurrentLane, RideNeeder
     using Game.Pathfind;     // PathOwner, PathFlags
-    using Game.Routes;       // TaxiStand, BoardingVehicle, Connected
+
     using Game.Tools;        // Temp
     using Game.Vehicles;     // Taxi
     using Unity.Collections; // NativeList, Allocator
@@ -184,10 +184,12 @@ namespace TaxiTraffic
             // Vanilla route waiting can point at a Connected waypoint first.
             for (int i = 0; i < 3; i++)
             {
-                if (!SystemAPI.HasComponent<Connected>(queueEntity))
+                if (!SystemAPI.HasComponent<Game.Routes.Connected>(queueEntity))
                     return false;
 
-                Entity connected = SystemAPI.GetComponentRO<Connected>(queueEntity).ValueRO.m_Connected;
+                Entity connected =
+                    SystemAPI.GetComponentRO<Game.Routes.Connected>(queueEntity).ValueRO.m_Connected;
+
                 if (connected == Entity.Null || connected == queueEntity)
                     return false;
 
@@ -202,13 +204,15 @@ namespace TaxiTraffic
 
         private bool IsDirectTaxiQueueEntity(Entity queueEntity)
         {
-            if (SystemAPI.HasComponent<TaxiStand>(queueEntity))
+           if (SystemAPI.HasComponent<Game.Routes.TaxiStand>(queueEntity))
                 return true;
 
-            if (!SystemAPI.HasComponent<BoardingVehicle>(queueEntity))
+            if (!SystemAPI.HasComponent<Game.Routes.BoardingVehicle>(queueEntity))
                 return false;
 
-            BoardingVehicle boardingVehicle = SystemAPI.GetComponentRO<BoardingVehicle>(queueEntity).ValueRO;
+            Game.Routes.BoardingVehicle boardingVehicle =
+                SystemAPI.GetComponentRO<Game.Routes.BoardingVehicle>(queueEntity).ValueRO;
+
             return boardingVehicle.m_Vehicle != Entity.Null &&
                    SystemAPI.HasComponent<Taxi>(boardingVehicle.m_Vehicle);
         }

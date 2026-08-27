@@ -318,10 +318,11 @@ namespace TaxiTraffic
                     s_StatusWaitingTransportTotal++;
             }
 
-            foreach (RefRO<WaitingPassengers> waiting in SystemAPI
-                         .Query<RefRO<WaitingPassengers>>()
-                         .WithAll<TaxiStand>()
+            foreach (RefRO<Game.Routes.WaitingPassengers> waiting in SystemAPI
+                         .Query<RefRO<Game.Routes.WaitingPassengers>>()
+                         .WithAll<Game.Routes.TaxiStand>()
                          .WithNone<Deleted, Temp>())
+
             {
                 int count = waiting.ValueRO.m_Count;
                 if (count > 0)
