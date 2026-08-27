@@ -9,9 +9,13 @@
 // File: Systems/TaxiTrafficSystem.Core.cs
 // System lifecycle and update coordinator.
 
+
 namespace TaxiTraffic
 {
     using Game; // GameSystemBase, GameMode
+    using Game.Citizens;
+    using Game.Vehicles;
+    using Unity.Entities;
 
     public partial class TaxiTrafficSystem : GameSystemBase
     {

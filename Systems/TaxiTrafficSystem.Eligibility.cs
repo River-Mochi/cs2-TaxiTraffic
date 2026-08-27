@@ -6,9 +6,6 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-// File: Systems/TaxiTrafficSystem.Eligibility.cs
-// Taxi eligibility markers, group exemptions, and trip-start repair.
-
 namespace TaxiTraffic
 {
     using Game.Citizens;     // Citizen, HouseholdMember, commuter/tourist households
@@ -19,6 +16,9 @@ namespace TaxiTraffic
     using Game.Tools;        // Temp
     using Unity.Collections; // NativeList, Allocator
     using Unity.Entities;    // Entity, RefRO, RefRW
+
+    // File: Systems/TaxiTrafficSystem.Eligibility.cs
+    // Taxi eligibility markers, group exemptions, and trip-start repair.
 
     public partial class TaxiTrafficSystem
     {

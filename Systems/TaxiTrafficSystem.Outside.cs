@@ -6,11 +6,11 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-// File: Systems/TaxiTrafficSystem.Outside.cs
-// Outside taxi-supply control and move-in evidence.
-
 namespace TaxiTraffic
 {
+    // File: Systems/TaxiTrafficSystem.Outside.cs
+    // Outside taxi-supply control and move-in evidence.
+
     using Game.Citizens;     // Household, HouseholdMember, household flags
     using Game.Common;       // Deleted
     using Game.Creatures;    // Resident
@@ -19,6 +19,7 @@ namespace TaxiTraffic
     using Game.Vehicles;     // Taxi, Passenger
     using Unity.Collections; // NativeList, Allocator
     using Unity.Entities;    // Entity, RefRO, DynamicBuffer
+
 
     public partial class TaxiTrafficSystem
     {

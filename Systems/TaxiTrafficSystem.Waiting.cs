@@ -6,11 +6,11 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-// File: Systems/TaxiTrafficSystem.Waiting.cs
-// Taxi waiting-lane and taxi-queue cleanup.
-
 namespace TaxiTraffic
 {
+    // File: Systems/TaxiTrafficSystem.Waiting.cs
+    // Taxi waiting-lane and taxi-queue cleanup.
+
     using Game.Common;       // Deleted
     using Game.Creatures;    // Resident, HumanCurrentLane, RideNeeder
     using Game.Pathfind;     // PathOwner, PathFlags
@@ -19,6 +19,7 @@ namespace TaxiTraffic
     using Game.Vehicles;     // Taxi
     using Unity.Collections; // NativeList, Allocator
     using Unity.Entities;    // Entity, RefRO, RefRW
+
 
     public partial class TaxiTrafficSystem
     {
