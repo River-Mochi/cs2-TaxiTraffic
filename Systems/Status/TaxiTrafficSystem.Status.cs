@@ -488,8 +488,7 @@ namespace TaxiTraffic
 
             s_StatusOutsideTaxiNotMovedInPassengers++;
 
-            // Legacy move-in signal: an unmoved-in local household member whose active trip
-            // started at OC while riding a FromOutside taxi.
+            // OC move-in evidence: local resident is still moving in and this trip started at an OC.
             if (IsLocalMoveInFromOutsideConnection(passenger, resident))
                 s_StatusOutsideTaxiMoveInFromOcPassengers++;
         }

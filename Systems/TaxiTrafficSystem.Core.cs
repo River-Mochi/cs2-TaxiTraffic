@@ -71,7 +71,6 @@ namespace TaxiTraffic
 
             m_LastUnstickRealtime = UnityEngine.Time.realtimeSinceStartupAsDouble;
             m_TaxiQueueSweepFastPassesRemaining = 0;
-            m_OutsideBlockFallbackActive = false;
 
             m_LastResidentsAllowedToUseTaxis = int.MinValue;
             m_LastBlockCommuters = false;

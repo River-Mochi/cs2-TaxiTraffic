@@ -101,8 +101,11 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockOutsideTaxis)),
                     "**ON** = blocks new taxi supply from outside connections.\n" +
                     "Existing outside taxis are not deleted; they can finish current work and drain naturally.\n" +
-                    "Local taxi depots and normal outside traffic are unchanged.\n" +
-                    "**OFF** = vanilla outside taxi supply." },
+                    "Local taxi depots and normal outside traffic are not changed.\n" +
+                    "With no local taxi depots, regular taxi service may become unavailable.\n" +
+                    "**OFF** = vanilla outside taxi supply is available to enter the city." +
+                    "Blocking outside taxis lets you build a city around walking, cycling, transit and personal cars."
+                },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ResetToGameDefaults)), "Game Defaults" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.ResetToGameDefaults)),

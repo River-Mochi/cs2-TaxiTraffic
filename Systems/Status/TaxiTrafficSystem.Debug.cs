@@ -183,8 +183,7 @@ namespace TaxiTraffic
                     $"returning={s_StatusTaxiReturning}, parked={s_StatusTaxiParked}], " +
 
                     $"sources[localDepots={s_StatusTaxiDepotsLocal}, " +
-                    $"ocSources={s_StatusTaxiDepotsOutside}, " +
-                    $"fallbackNoLocalDepot={m_OutsideBlockFallbackActive}], " +
+                    $"ocSources={s_StatusTaxiDepotsOutside}], " +
 
                     $"requests[customer={s_StatusReqCustomer}, " +
                     $"outsideRider={s_StatusReqOutsideRider}, " +
