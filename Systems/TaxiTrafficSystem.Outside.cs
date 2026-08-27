@@ -9,20 +9,18 @@
 namespace TaxiTraffic
 {
     // File: Systems/TaxiTrafficSystem.Outside.cs
-    // Outside-connection taxi blocking and legacy status helper.
+    // Blocks taxi pickup attempts at outside connections before vanilla creates the request.
 
-    using Game.Citizens;     // Household, HouseholdMember, household flags
     using Game.Common;       // Deleted
     using Game.Creatures;    // Resident, HumanCurrentLane, RideNeeder
-    using Game.Objects;      // TripSource
     using Game.Pathfind;     // PathOwner, PathFlags
     using Game.Tools;        // Temp
     using Unity.Collections; // NativeList, Allocator
-    using Unity.Entities;    // Entity, RefRO, RefRW
+    using Unity.Entities;    // Entity, RefRW
 
     public partial class TaxiTrafficSystem
     {
-        // Stops OC taxi attempts before RideNeederSystem can create another OC taxi request.
+        // Stop the rider before RideNeederSystem can create an OC taxi request.
         private void UpdateOutsideTaxiBlocking(
             TaxiSettings setting,
             out int clearedTaxiLaneWaiting,
@@ -75,7 +73,7 @@ namespace TaxiTraffic
                 pathOwner.ValueRW.m_State &= ~PathFlags.Failed;
                 pathOwner.ValueRW.m_State |= PathFlags.Obsolete;
 
-                // No RideNeeder means vanilla cannot create or keep this OC taxi request.
+                // No RideNeeder means vanilla cannot create this OC taxi request.
                 toRemoveRideNeeder.Add(entity);
                 clearedTaxiLaneWaiting++;
             }
@@ -90,10 +88,11 @@ namespace TaxiTraffic
             {
                 EntityManager.RemoveComponent<RideNeeder>(toRemoveRideNeeder.AsArray());
                 removedRideNeeders = toRemoveRideNeeder.Length;
+                s_StatusOutsideTaxiBlockedTotal += toRemoveRideNeeder.Length;
             }
         }
 
-        // Keep the temporary block only while the cim is still physically at the OC.
+        // Keep the temporary IgnoreTaxi only while the cim is still at the OC.
         private void MaintainOutsideTaxiBlockMarks(TaxiSettings setting)
         {
             using NativeList<Entity> toAddOwnsIgnoreMark = new(Allocator.Temp);
@@ -130,7 +129,7 @@ namespace TaxiTraffic
                     continue;
                 }
 
-                // Clear only the temporary IgnoreTaxi flag that this OC block turned on.
+                // Clear only the IgnoreTaxi flag this temporary OC block turned on.
                 if (SystemAPI.HasComponent<OutsideTaxiOwnsIgnoreMark>(entity) &&
                     !SystemAPI.HasComponent<IgnoreTaxiMark>(entity))
                 {
@@ -166,46 +165,6 @@ namespace TaxiTraffic
                 SystemAPI.GetComponentRO<Game.Net.ConnectionLane>(lane).ValueRO;
 
             return (connection.m_Flags & Game.Net.ConnectionLaneFlags.Outside) != 0;
-        }
-
-        // Kept only for the current Status page; remove with the old move-in research rows later.
-        private bool IsLocalMoveInFromOutsideConnection(Entity residentEntity, Resident resident)
-        {
-            Entity citizen = resident.m_Citizen;
-            if (citizen == Entity.Null ||
-                !SystemAPI.Exists(citizen) ||
-                !SystemAPI.HasComponent<HouseholdMember>(citizen))
-            {
-                return false;
-            }
-
-            Entity household =
-                SystemAPI.GetComponentRO<HouseholdMember>(citizen).ValueRO.m_Household;
-
-            if (household == Entity.Null ||
-                !SystemAPI.Exists(household) ||
-                !SystemAPI.HasComponent<Household>(household) ||
-                SystemAPI.HasComponent<TouristHousehold>(household) ||
-                SystemAPI.HasComponent<CommuterHousehold>(household))
-            {
-                return false;
-            }
-
-            Household householdData =
-                SystemAPI.GetComponentRO<Household>(household).ValueRO;
-
-            if ((householdData.m_Flags & HouseholdFlags.MovedIn) != 0 ||
-                !SystemAPI.HasComponent<TripSource>(residentEntity))
-            {
-                return false;
-            }
-
-            Entity source =
-                SystemAPI.GetComponentRO<TripSource>(residentEntity).ValueRO.m_Source;
-
-            return source != Entity.Null &&
-                   SystemAPI.Exists(source) &&
-                   SystemAPI.HasComponent<Game.Objects.OutsideConnection>(source);
         }
     }
 }

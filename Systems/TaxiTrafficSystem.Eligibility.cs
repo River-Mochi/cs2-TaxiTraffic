@@ -8,14 +8,14 @@
 
 namespace TaxiTraffic
 {
-    using Game.Citizens;     // Citizen, HouseholdMember, commuter/tourist households
+    using Game.Citizens;     // Citizen, HouseholdMember, HouseholdCitizen, commuter/tourist households
     using Game.Common;       // Deleted
     using Game.Creatures;    // Resident, ResidentFlags, GroupMember, GroupCreature
     using Game.Objects;      // TripSource
     using Game.Pathfind;     // PathOwner, PathFlags
     using Game.Tools;        // Temp
-    using Unity.Collections; // NativeList, Allocator
-    using Unity.Entities;    // Entity, RefRO, RefRW
+    using Unity.Collections; // NativeList, NativeHashMap, Allocator
+    using Unity.Entities;    // Entity, RefRO, RefRW, DynamicBuffer
 
     // File: Systems/TaxiTrafficSystem.Eligibility.cs
     // Taxi eligibility markers, group exemptions, and trip-start repair.
@@ -163,7 +163,7 @@ namespace TaxiTraffic
             if (changed >= kMarkBatchPerUpdate)
                 return changed;
 
-            // Migrate any old normal-allowed marker that is currently being used only because the Resident is in a group.
+            // Migrate old normal-allowed markers that are currently used only because the Resident is in a group.
             using (NativeList<Entity> oldAllowedMarks = new(Allocator.Temp))
             using (NativeList<Entity> toGroupAllow = new(Allocator.Temp))
             {
@@ -209,8 +209,7 @@ namespace TaxiTraffic
             if (changed >= kMarkBatchPerUpdate)
                 return changed;
 
-            // This is the leak fix: once group links disappear, remove only the temporary exemption.
-            // The same update can then classify the Resident normally in ApplyTaxiEligibilityBatch().
+            // Once group links disappear, remove only the temporary exemption.
             using NativeList<Entity> staleGroupMarks = new(Allocator.Temp);
 
             foreach ((RefRO<Resident> _, Entity entity) in SystemAPI
@@ -317,6 +316,10 @@ namespace TaxiTraffic
             using NativeList<Entity> toAllow = new(Allocator.Temp);
             using NativeList<Entity> toGroupAllow = new(Allocator.Temp);
 
+            // Family members reuse one roll during this batch instead of recalculating the same household.
+            using NativeHashMap<Entity, uint> householdRollCache =
+                new(kMarkBatchPerUpdate, Allocator.Temp);
+
             int processed = 0;
             foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<Resident>>()
@@ -342,6 +345,7 @@ namespace TaxiTraffic
                 bool shouldBlock = ShouldResidentIgnoreTaxiBySettings(
                     setting,
                     resident.ValueRO,
+                    ref householdRollCache,
                     out bool skippedCommuter,
                     out bool skippedTourist);
 
@@ -358,7 +362,8 @@ namespace TaxiTraffic
                     applied++;
 
                     // TripNeeded can copy a taxi-capable Citizen path before we mark the Resident.
-                    if (SystemAPI.HasComponent<TripSource>(entity) && SystemAPI.HasComponent<PathOwner>(entity))
+                    if (SystemAPI.HasComponent<TripSource>(entity) &&
+                        SystemAPI.HasComponent<PathOwner>(entity))
                     {
                         RefRW<PathOwner> pathOwner = SystemAPI.GetComponentRW<PathOwner>(entity);
                         pathOwner.ValueRW.m_State &= ~PathFlags.Failed;
@@ -418,6 +423,7 @@ namespace TaxiTraffic
         private bool ShouldResidentIgnoreTaxiBySettings(
             TaxiSettings setting,
             Resident resident,
+            ref NativeHashMap<Entity, uint> householdRollCache,
             out bool skippedCommuter,
             out bool skippedTourist)
         {
@@ -425,10 +431,12 @@ namespace TaxiTraffic
             skippedTourist = false;
 
             Entity citizenEntity = resident.m_Citizen;
+            Entity household = Entity.Null;
 
-            if (citizenEntity != Entity.Null && SystemAPI.HasComponent<HouseholdMember>(citizenEntity))
+            if (citizenEntity != Entity.Null &&
+                SystemAPI.HasComponent<HouseholdMember>(citizenEntity))
             {
-                Entity household =
+                household =
                     SystemAPI.GetComponentRO<HouseholdMember>(citizenEntity).ValueRO.m_Household;
 
                 if (household != Entity.Null)
@@ -461,21 +469,83 @@ namespace TaxiTraffic
             if (allowedPercent <= TaxiSettings.kTaxiAllowedPercentMin)
                 return true;
 
-            if (citizenEntity == Entity.Null || !SystemAPI.HasComponent<Citizen>(citizenEntity))
+            if (household != Entity.Null)
             {
-                // No Citizen component means no stable saved bucket; keep strong-block behavior.
+                if (!householdRollCache.TryGetValue(household, out uint householdRoll))
+                {
+                    householdRoll = GetStableHouseholdTaxiEligibilityRoll(household, citizenEntity);
+                    householdRollCache.TryAdd(household, householdRoll);
+                }
+
+                return householdRoll >= (uint)allowedPercent;
+            }
+
+            if (citizenEntity == Entity.Null ||
+                !SystemAPI.HasComponent<Citizen>(citizenEntity))
+            {
+                // No household or Citizen means no stable bucket; keep strong-block behavior.
                 return true;
             }
 
             Citizen citizen = SystemAPI.GetComponentRO<Citizen>(citizenEntity).ValueRO;
-            uint roll = GetStableTaxiEligibilityRoll(citizen);
-
-            return roll >= (uint)allowedPercent;
+            return GetStableCitizenTaxiEligibilityRoll(citizen) >= (uint)allowedPercent;
         }
 
-        private static uint GetStableTaxiEligibilityRoll(Citizen citizen)
+        private uint GetStableHouseholdTaxiEligibilityRoll(
+            Entity household,
+            Entity fallbackCitizen)
+        {
+            uint sum = 0u;
+            uint xor = 0u;
+            uint count = 0u;
+
+            if (SystemAPI.HasBuffer<HouseholdCitizen>(household))
+            {
+                DynamicBuffer<HouseholdCitizen> members =
+                    SystemAPI.GetBuffer<HouseholdCitizen>(household);
+
+                for (int i = 0; i < members.Length; i++)
+                {
+                    Entity member = members[i].m_Citizen;
+                    if (member == Entity.Null || !SystemAPI.HasComponent<Citizen>(member))
+                        continue;
+
+                    Citizen citizen = SystemAPI.GetComponentRO<Citizen>(member).ValueRO;
+                    uint seed = ((uint)citizen.m_PseudoRandom << 16) | citizen.m_PseudoRandom;
+                    uint mixed = MixTaxiEligibilitySeed(seed);
+
+                    // Order-independent so every family member gets the same household roll.
+                    sum += mixed;
+                    xor ^= mixed * 0x9E3779B9u;
+                    count++;
+                }
+            }
+
+            if (count == 0u &&
+                fallbackCitizen != Entity.Null &&
+                SystemAPI.HasComponent<Citizen>(fallbackCitizen))
+            {
+                Citizen citizen = SystemAPI.GetComponentRO<Citizen>(fallbackCitizen).ValueRO;
+                return GetStableCitizenTaxiEligibilityRoll(citizen);
+            }
+
+            // Household composition changes can intentionally move the family to a new bucket.
+            uint householdSeed =
+                sum ^
+                (xor + (count * 0x85EBCA6Bu)) ^
+                kTaxiEligibilityHashSalt;
+
+            return MixTaxiEligibilitySeed(householdSeed) % 100u;
+        }
+
+        private static uint GetStableCitizenTaxiEligibilityRoll(Citizen citizen)
         {
             uint seed = ((uint)citizen.m_PseudoRandom << 16) | citizen.m_PseudoRandom;
+            return MixTaxiEligibilitySeed(seed) % 100u;
+        }
+
+        private static uint MixTaxiEligibilitySeed(uint seed)
+        {
             uint hash = seed ^ kTaxiEligibilityHashSalt;
 
             hash ^= hash >> 16;
@@ -484,7 +554,7 @@ namespace TaxiTraffic
             hash *= 0x846ca68bu;
             hash ^= hash >> 16;
 
-            return hash % 100u;
+            return hash;
         }
 
         private bool IsGroupLinkedTraveler(Entity entity)
@@ -492,6 +562,5 @@ namespace TaxiTraffic
             return SystemAPI.HasComponent<GroupMember>(entity) ||
                    SystemAPI.HasBuffer<GroupCreature>(entity);
         }
-
     }
 }

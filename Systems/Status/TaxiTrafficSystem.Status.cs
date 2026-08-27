@@ -6,25 +6,22 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-// File: Systems/TaxiTrafficSystem.Status.cs
-// Status snapshots and InfoView-matching passenger statistics.
+// File: Systems/Status/TaxiTrafficSystem.Status.cs
+// Lightweight player Status plus deeper diagnostics only when requested.
 
 namespace TaxiTraffic
 {
     using System;               // DateTime, Math
     using System.Globalization; // CultureInfo
     using Game;                 // GameMode extensions
-    using Game.Citizens;        // HouseholdMember, Household
+    using Game.Citizens;        // HouseholdMember, commuter/tourist households
     using Game.Common;          // Deleted
     using Game.Creatures;       // ResidentFlags, Passenger, HumanCurrentLane
     using Game.Events;          // InvolvedInAccident
-    using Game.Prefabs;         // PrefabSystem, PrefabRef
-    using Game.Routes;          // TaxiStand, WaitingPassengers
     using Game.SceneFlow;       // GameManager
-    // Game.Simulation types stay fully qualified here because Entities source-gen can misresolve partial-system usings.
+    // Game.Simulation types stay fully qualified because Entities source-gen can misresolve partial-system usings.
     using Game.Tools;           // Temp
-    using Game.Vehicles;        // Taxi, TaxiFlags, ParkedCar
-    using Unity.Entities;       // SystemAPI, EntityQuery
+    using Unity.Entities;       // SystemAPI, EntityQuery, DynamicBuffer
 
     public partial class TaxiTrafficSystem
     {
@@ -35,6 +32,7 @@ namespace TaxiTraffic
         private static bool s_HasStatusSnapshotThisOptionsVisit;
         private static bool s_StatusSnapshotDirty = true;
         private static bool s_StatusForceRefresh;
+        private static bool s_StatusSnapshotHasDetails;
         private static bool s_WasInGame;
         private static uint s_StatusLastSnapshotSimulationFrame = uint.MaxValue;
 
@@ -61,12 +59,6 @@ namespace TaxiTraffic
         internal static int s_StatusWaitingTransportTotal;
         internal static int s_StatusWaitingTaxiStandTotal;
 
-        internal static int s_StatusHouseholdsTotal;
-        internal static int s_StatusHouseholdsCommuter;
-        internal static int s_StatusHouseholdsTourist;
-        internal static int s_StatusHouseholdsHomeless;
-        internal static int s_StatusHouseholdsMovingInLocal;
-
         // InfoView monthly passengers.
         internal static int s_InfoTaxiTourist;
         internal static int s_InfoTaxiCitizen;
@@ -87,7 +79,7 @@ namespace TaxiTraffic
         internal static int s_InfoTotalTourist;
         internal static int s_InfoTotalCitizen;
 
-        // Taxi requests.
+        // Taxi requests. Detailed report / DEBUG only.
         internal static int s_StatusReqStand;
         internal static int s_StatusReqCustomer;
         internal static int s_StatusReqOutside;
@@ -121,11 +113,8 @@ namespace TaxiTraffic
         internal static int s_StatusPassengerIgnoreTaxi;
         internal static int s_StatusPassengerBlockedMark;
 
-        // Resident passengers currently riding FromOutside taxis.
-        internal static int s_StatusOutsideTaxiResidentPassengers;
-        internal static int s_StatusOutsideTaxiNotMovedInPassengers;
-        internal static int s_StatusOutsideTaxiMoveInFromOcPassengers;
-        internal static int s_StatusOutsideTaxiMoveInFromOcSeenTotal;
+        // Cumulative behavior counters.
+        internal static int s_StatusOutsideTaxiBlockedTotal;
         internal static int s_StatusGroupRepairsTotal;
 
         // Stands and taxi supply nodes.
@@ -134,9 +123,6 @@ namespace TaxiTraffic
         internal static int s_StatusTaxiDepotsLocal;
         internal static int s_StatusTaxiDepotsOutside;
         internal static int s_StatusTaxiDepotsWithDispatchCenter;
-
-        // Cumulative outside supply requests removed since this city loaded.
-        internal static int s_StatusOutsideSupplySuppressedTotal;
 
         // Last-update counters written by Core.
         internal static int s_StatusLastAppliedIgnoreTaxi;
@@ -150,16 +136,21 @@ namespace TaxiTraffic
 
         private Game.Simulation.CityStatisticsSystem? m_CityStatisticsSystem;
         private Game.Simulation.SimulationSystem? m_SimulationSystem;
-        private PrefabSystem? m_PrefabSystem;
+        private Game.Prefabs.PrefabSystem? m_PrefabSystem;
         private EntityQuery m_TransportConfigQuery;
-        private UITransportConfigurationPrefab? m_TransportConfig;
+        private Game.Prefabs.UITransportConfigurationPrefab? m_TransportConfig;
 
         private void InitStatusSystemsOnCreate()
         {
-            m_CityStatisticsSystem = World.GetOrCreateSystemManaged<Game.Simulation.CityStatisticsSystem>();
-            m_SimulationSystem = World.GetOrCreateSystemManaged<Game.Simulation.SimulationSystem>();
-            m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            m_TransportConfigQuery = GetEntityQuery(ComponentType.ReadOnly<UITransportConfigurationData>());
+            m_CityStatisticsSystem =
+                World.GetOrCreateSystemManaged<Game.Simulation.CityStatisticsSystem>();
+
+            m_SimulationSystem =
+                World.GetOrCreateSystemManaged<Game.Simulation.SimulationSystem>();
+
+            m_PrefabSystem = World.GetOrCreateSystemManaged<Game.Prefabs.PrefabSystem>();
+            m_TransportConfigQuery =
+                GetEntityQuery(ComponentType.ReadOnly<Game.Prefabs.UITransportConfigurationData>());
         }
 
         private void ResetStatusOnCityLoaded()
@@ -171,10 +162,11 @@ namespace TaxiTraffic
             s_HasStatusSnapshotThisOptionsVisit = false;
             s_StatusSnapshotDirty = true;
             s_StatusForceRefresh = false;
+            s_StatusSnapshotHasDetails = false;
             s_WasInGame = true;
             s_StatusLastSnapshotSimulationFrame = uint.MaxValue;
-            s_StatusOutsideSupplySuppressedTotal = 0;
-            s_StatusOutsideTaxiMoveInFromOcSeenTotal = 0;
+
+            s_StatusOutsideTaxiBlockedTotal = 0;
             s_StatusGroupRepairsTotal = 0;
 
             ClearSnapshotValues();
@@ -185,7 +177,8 @@ namespace TaxiTraffic
                 if (m_PrefabSystem != null)
                 {
                     m_TransportConfig =
-                        m_PrefabSystem.GetSingletonPrefab<UITransportConfigurationPrefab>(m_TransportConfigQuery);
+                        m_PrefabSystem.GetSingletonPrefab<Game.Prefabs.UITransportConfigurationPrefab>(
+                            m_TransportConfigQuery);
                 }
             }
             catch
@@ -199,15 +192,20 @@ namespace TaxiTraffic
             return m_SimulationSystem?.frameIndex ?? uint.MaxValue;
         }
 
-        private void BuildStatusSnapshotForOptionsUi(uint simulationFrame)
+        private void BuildStatusSnapshotForOptionsUi(
+            uint simulationFrame,
+            bool detailed)
         {
             CompleteDependency();
-            UpdateStatusSnapshot();
+            UpdateStatusSnapshot(detailed);
 
-            s_StatusLastSnapshotRealtime = UnityEngine.Time.realtimeSinceStartupAsDouble;
+            s_StatusLastSnapshotRealtime =
+                UnityEngine.Time.realtimeSinceStartupAsDouble;
+
             try
             {
-                s_StatusLastSnapshotClock = DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+                s_StatusLastSnapshotClock =
+                    DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
             }
             catch
             {
@@ -217,40 +215,16 @@ namespace TaxiTraffic
             s_StatusLastSnapshotSimulationFrame = simulationFrame;
             s_StatusSnapshotDirty = false;
             s_StatusForceRefresh = false;
+            s_StatusSnapshotHasDetails = detailed;
             s_HasStatusSnapshotThisOptionsVisit = true;
         }
 
-        private void UpdateStatusSnapshot()
+        private void UpdateStatusSnapshot(bool detailed)
         {
             ClearSnapshotValues();
 
             UpdateStatusMonthlyPassengers();
             UpdateStatusTaxiDepotAndStandCounts();
-
-            foreach ((RefRO<Household> householdRef, Entity h) in SystemAPI
-                         .Query<RefRO<Household>>()
-                         .WithEntityAccess()
-                         .WithNone<Deleted, Temp>())
-            {
-                s_StatusHouseholdsTotal++;
-
-                if (SystemAPI.HasComponent<CommuterHousehold>(h))
-                    s_StatusHouseholdsCommuter++;
-
-                if (SystemAPI.HasComponent<TouristHousehold>(h))
-                    s_StatusHouseholdsTourist++;
-
-                if (SystemAPI.HasComponent<HomelessHousehold>(h))
-                    s_StatusHouseholdsHomeless++;
-
-                bool touristHousehold = SystemAPI.HasComponent<TouristHousehold>(h);
-                bool commuterHousehold = SystemAPI.HasComponent<CommuterHousehold>(h);
-                if (!touristHousehold && !commuterHousehold &&
-                    (householdRef.ValueRO.m_Flags & HouseholdFlags.MovedIn) == 0)
-                {
-                    s_StatusHouseholdsMovingInLocal++;
-                }
-            }
 
             foreach ((RefRO<Game.Creatures.Resident> residentRef, Entity e) in SystemAPI
                          .Query<RefRO<Game.Creatures.Resident>>()
@@ -259,77 +233,93 @@ namespace TaxiTraffic
             {
                 s_StatusResidentsTotal++;
 
-                ResidentFlags flags = residentRef.ValueRO.m_Flags;
-                bool ignoreTaxi = (flags & ResidentFlags.IgnoreTaxi) != 0;
+                Game.Creatures.ResidentFlags flags = residentRef.ValueRO.m_Flags;
+                bool ignoreTaxi = (flags & Game.Creatures.ResidentFlags.IgnoreTaxi) != 0;
                 bool blockedMark = SystemAPI.HasComponent<IgnoreTaxiMark>(e);
-
-                if (ignoreTaxi)
-                    s_StatusResidentsIgnoreTaxi++;
 
                 if (blockedMark)
                     s_StatusResidentsForcedMarker++;
 
-                if (SystemAPI.HasComponent<TaxiAllowedMark>(e))
-                    s_StatusResidentsAllowedMarker++;
-
-                if (SystemAPI.HasComponent<GroupTaxiAllowedMark>(e))
-                    s_StatusResidentsGroupAllowedMarker++;
-
-                bool groupLinked = IsGroupLinkedTraveler(e);
-                if (groupLinked)
+                if (detailed)
                 {
-                    s_StatusResidentsGroupLinked++;
                     if (ignoreTaxi)
-                        s_StatusResidentsGroupLinkedIgnoreTaxi++;
+                        s_StatusResidentsIgnoreTaxi++;
+
+                    if (SystemAPI.HasComponent<TaxiAllowedMark>(e))
+                        s_StatusResidentsAllowedMarker++;
+
+                    if (SystemAPI.HasComponent<GroupTaxiAllowedMark>(e))
+                        s_StatusResidentsGroupAllowedMarker++;
+
+                    bool groupLinked = IsGroupLinkedTraveler(e);
+                    if (groupLinked)
+                    {
+                        s_StatusResidentsGroupLinked++;
+
+                        if (ignoreTaxi)
+                            s_StatusResidentsGroupLinkedIgnoreTaxi++;
+                    }
                 }
 
                 Entity citizenEntity = residentRef.ValueRO.m_Citizen;
-                if (citizenEntity == Entity.Null || !SystemAPI.HasComponent<HouseholdMember>(citizenEntity))
+                if (citizenEntity == Entity.Null ||
+                    !SystemAPI.HasComponent<Game.Citizens.HouseholdMember>(citizenEntity))
+                {
                     continue;
+                }
 
-                Entity household = SystemAPI.GetComponentRO<HouseholdMember>(citizenEntity).ValueRO.m_Household;
+                Entity household =
+                    SystemAPI.GetComponentRO<Game.Citizens.HouseholdMember>(citizenEntity).ValueRO.m_Household;
+
                 if (household == Entity.Null)
                     continue;
 
-                if (SystemAPI.HasComponent<CommuterHousehold>(household))
+                if (SystemAPI.HasComponent<Game.Citizens.CommuterHousehold>(household))
                 {
                     s_StatusCommutersTotal++;
-                    if (ignoreTaxi)
-                        s_StatusCommutersIgnoreTaxi++;
+
                     if (blockedMark)
                         s_StatusCommutersBlockedMark++;
+
+                    if (detailed && ignoreTaxi)
+                        s_StatusCommutersIgnoreTaxi++;
                 }
 
-                if (SystemAPI.HasComponent<TouristHousehold>(household))
+                if (SystemAPI.HasComponent<Game.Citizens.TouristHousehold>(household))
                 {
                     s_StatusTouristsTotal++;
-                    if (ignoreTaxi)
-                        s_StatusTouristsIgnoreTaxi++;
+
                     if (blockedMark)
                         s_StatusTouristsBlockedMark++;
+
+                    if (detailed && ignoreTaxi)
+                        s_StatusTouristsIgnoreTaxi++;
                 }
             }
 
-            foreach ((RefRO<Game.Creatures.Resident> residentRef, RefRO<HumanCurrentLane> _) in SystemAPI
-                         .Query<RefRO<Game.Creatures.Resident>, RefRO<HumanCurrentLane>>()
+            // Player-facing total uses all cims waiting for public transport.
+            foreach ((RefRO<Game.Creatures.Resident> residentRef,
+                      RefRO<Game.Creatures.HumanCurrentLane> _) in SystemAPI
+                         .Query<RefRO<Game.Creatures.Resident>, RefRO<Game.Creatures.HumanCurrentLane>>()
                          .WithNone<Deleted, Temp>())
             {
                 if ((residentRef.ValueRO.m_Flags & ResidentFlags.WaitingTransport) != 0)
                     s_StatusWaitingTransportTotal++;
             }
 
-            foreach (RefRO<Game.Routes.WaitingPassengers> waiting in SystemAPI
-                         .Query<RefRO<Game.Routes.WaitingPassengers>>()
-                         .WithAll<Game.Routes.TaxiStand>()
-                         .WithNone<Deleted, Temp>())
-
+            if (detailed)
             {
-                int count = waiting.ValueRO.m_Count;
-                if (count > 0)
-                    s_StatusWaitingTaxiStandTotal += count;
+                UpdateDetailedStatusRequests();
+                UpdateDetailedTaxiStandWaiting();
             }
 
-            foreach ((RefRO<Game.Simulation.TaxiRequest> reqRef, Entity requestEntity) in SystemAPI
+            UpdateStatusTaxiFleetAndPassengers(detailed);
+        }
+
+        private void UpdateDetailedStatusRequests()
+        {
+            foreach ((RefRO<Game.Simulation.TaxiRequest> reqRef,
+                      Entity requestEntity) in SystemAPI
                          .Query<RefRO<Game.Simulation.TaxiRequest>>()
                          .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
@@ -359,13 +349,17 @@ namespace TaxiTraffic
                         if (SystemAPI.HasComponent<Game.Simulation.ServiceRequest>(requestEntity))
                         {
                             Game.Simulation.ServiceRequest service =
-                                SystemAPI.GetComponentRO<Game.Simulation.ServiceRequest>(requestEntity).ValueRO;
-                            reversed = (service.m_Flags & Game.Simulation.ServiceRequestFlags.Reversed) != 0;
+                                SystemAPI.GetComponentRO<Game.Simulation.ServiceRequest>(
+                                    requestEntity).ValueRO;
+
+                            reversed =
+                                (service.m_Flags &
+                                 Game.Simulation.ServiceRequestFlags.Reversed) != 0;
                         }
 
                         if (reversed)
                         {
-                            // Outside connections and active FromOutside taxis both advertise supply this way.
+                            // OC sources and active FromOutside taxis advertise supply this way.
                             s_StatusReqOutsideSupply++;
                         }
                         else
@@ -386,7 +380,23 @@ namespace TaxiTraffic
                         break;
                 }
             }
+        }
 
+        private void UpdateDetailedTaxiStandWaiting()
+        {
+            foreach (RefRO<Game.Routes.WaitingPassengers> waiting in SystemAPI
+                         .Query<RefRO<Game.Routes.WaitingPassengers>>()
+                         .WithAll<Game.Routes.TaxiStand>()
+                         .WithNone<Deleted, Temp>())
+            {
+                int count = waiting.ValueRO.m_Count;
+                if (count > 0)
+                    s_StatusWaitingTaxiStandTotal += count;
+            }
+        }
+
+        private void UpdateStatusTaxiFleetAndPassengers(bool detailed)
+        {
             foreach ((RefRO<Game.Vehicles.Taxi> taxiRef, Entity taxiEntity) in SystemAPI
                          .Query<RefRO<Game.Vehicles.Taxi>>()
                          .WithEntityAccess()
@@ -394,43 +404,48 @@ namespace TaxiTraffic
             {
                 s_StatusTaxisTotal++;
 
-                TaxiFlags flags = taxiRef.ValueRO.m_State;
+                Game.Vehicles.TaxiFlags flags = taxiRef.ValueRO.m_State;
+                bool fromOutsideTaxi = (flags & Game.Vehicles.TaxiFlags.FromOutside) != 0;
 
-                if (SystemAPI.HasComponent<InvolvedInAccident>(taxiEntity))
-                    s_StatusTaxiAccident++;
-                else if (SystemAPI.HasComponent<ParkedCar>(taxiEntity))
-                    s_StatusTaxiParked++;
-                else if ((flags & TaxiFlags.Returning) != 0)
-                    s_StatusTaxiReturning++;
-                else if ((flags & TaxiFlags.Dispatched) != 0)
-                    s_StatusTaxiDispatched++;
-                else if ((flags & TaxiFlags.Boarding) != 0)
-                    s_StatusTaxiBoarding++;
-                else if ((flags & TaxiFlags.Transporting) != 0)
-                    s_StatusTaxiTransporting++;
-                else
-                    s_StatusTaxiEnRoute++;
-
-                bool fromOutsideTaxi = (flags & TaxiFlags.FromOutside) != 0;
                 if (fromOutsideTaxi)
                     s_StatusTaxiFromOutside++;
 
-                if ((flags & TaxiFlags.Disabled) != 0)
-                    s_StatusTaxiDisabled++;
-
-                if (SystemAPI.HasBuffer<Game.Simulation.ServiceDispatch>(taxiEntity))
+                if (detailed)
                 {
-                    DynamicBuffer<Game.Simulation.ServiceDispatch> buf =
-                        SystemAPI.GetBuffer<Game.Simulation.ServiceDispatch>(taxiEntity);
+                    if (SystemAPI.HasComponent<InvolvedInAccident>(taxiEntity))
+                        s_StatusTaxiAccident++;
+                    else if (SystemAPI.HasComponent<Game.Vehicles.ParkedCar>(taxiEntity))
+                        s_StatusTaxiParked++;
+                    else if ((flags & Game.Vehicles.TaxiFlags.Returning) != 0)
+                        s_StatusTaxiReturning++;
+                    else if ((flags & Game.Vehicles.TaxiFlags.Dispatched) != 0)
+                        s_StatusTaxiDispatched++;
+                    else if ((flags & Game.Vehicles.TaxiFlags.Boarding) != 0)
+                        s_StatusTaxiBoarding++;
+                    else if ((flags & Game.Vehicles.TaxiFlags.Transporting) != 0)
+                        s_StatusTaxiTransporting++;
+                    else
+                        s_StatusTaxiEnRoute++;
 
-                    if (buf.IsCreated && buf.Length > 0)
-                        s_StatusTaxiWithDispatchBuffer++;
+                    if ((flags & Game.Vehicles.TaxiFlags.Disabled) != 0)
+                        s_StatusTaxiDisabled++;
+
+                    if (SystemAPI.HasBuffer<Game.Simulation.ServiceDispatch>(taxiEntity))
+                    {
+                        DynamicBuffer<Game.Simulation.ServiceDispatch> dispatches =
+                            SystemAPI.GetBuffer<Game.Simulation.ServiceDispatch>(taxiEntity);
+
+                        if (dispatches.IsCreated && dispatches.Length > 0)
+                            s_StatusTaxiWithDispatchBuffer++;
+                    }
                 }
 
-                if (!SystemAPI.HasBuffer<Passenger>(taxiEntity))
+                if (!SystemAPI.HasBuffer<Game.Creatures.Passenger>(taxiEntity))
                     continue;
 
-                DynamicBuffer<Passenger> passengers = SystemAPI.GetBuffer<Passenger>(taxiEntity);
+                DynamicBuffer<Game.Creatures.Passenger> passengers =
+                    SystemAPI.GetBuffer<Game.Creatures.Passenger>(taxiEntity);
+
                 for (int i = 0; i < passengers.Length; i++)
                 {
                     Entity passenger = passengers[i].m_Passenger;
@@ -441,56 +456,20 @@ namespace TaxiTraffic
 
                     s_StatusPassengerHasResident++;
 
-                    Game.Creatures.Resident passengerResident =
-                        SystemAPI.GetComponentRO<Game.Creatures.Resident>(passenger).ValueRO;
-                    ResidentFlags passengerFlags = passengerResident.m_Flags;
-
-                    if ((passengerFlags & ResidentFlags.IgnoreTaxi) != 0)
-                        s_StatusPassengerIgnoreTaxi++;
-
                     if (SystemAPI.HasComponent<IgnoreTaxiMark>(passenger))
                         s_StatusPassengerBlockedMark++;
 
-                    if (fromOutsideTaxi)
-                        CountOutsideTaxiResidentPassenger(passenger, passengerResident);
+                    if (!detailed)
+                        continue;
+
+                    ResidentFlags passengerFlags =
+                        SystemAPI.GetComponentRO<Game.Creatures.Resident>(
+                            passenger).ValueRO.m_Flags;
+
+                    if ((passengerFlags & Game.Creatures.ResidentFlags.IgnoreTaxi) != 0)
+                        s_StatusPassengerIgnoreTaxi++;
                 }
             }
-        }
-
-        private void CountOutsideTaxiResidentPassenger(Entity passenger, Game.Creatures.Resident resident)
-        {
-            s_StatusOutsideTaxiResidentPassengers++;
-
-            Entity citizen = resident.m_Citizen;
-            if (citizen == Entity.Null || !SystemAPI.Exists(citizen) ||
-                !SystemAPI.HasComponent<HouseholdMember>(citizen))
-            {
-                return;
-            }
-
-            Entity household = SystemAPI.GetComponentRO<HouseholdMember>(citizen).ValueRO.m_Household;
-            if (household == Entity.Null || !SystemAPI.Exists(household) ||
-                !SystemAPI.HasComponent<Household>(household))
-            {
-                return;
-            }
-
-            // Tourist and commuter households are not city move-ins.
-            if (SystemAPI.HasComponent<TouristHousehold>(household) ||
-                SystemAPI.HasComponent<CommuterHousehold>(household))
-            {
-                return;
-            }
-
-            Household householdData = SystemAPI.GetComponentRO<Household>(household).ValueRO;
-            if ((householdData.m_Flags & HouseholdFlags.MovedIn) != 0)
-                return;
-
-            s_StatusOutsideTaxiNotMovedInPassengers++;
-
-            // OC move-in evidence: local resident is still moving in and this trip started at an OC.
-            if (IsLocalMoveInFromOutsideConnection(passenger, resident))
-                s_StatusOutsideTaxiMoveInFromOcPassengers++;
         }
 
         private void CountRequestSeekerResident(
@@ -499,7 +478,8 @@ namespace TaxiTraffic
             ref int ignoreTaxi,
             ref int blockedMark)
         {
-            if (seeker == Entity.Null || !SystemAPI.Exists(seeker) ||
+            if (seeker == Entity.Null ||
+                !SystemAPI.Exists(seeker) ||
                 !SystemAPI.HasComponent<Game.Creatures.Resident>(seeker))
             {
                 return;
@@ -507,8 +487,10 @@ namespace TaxiTraffic
 
             hasResident++;
 
-            ResidentFlags flags = SystemAPI.GetComponentRO<Game.Creatures.Resident>(seeker).ValueRO.m_Flags;
-            if ((flags & ResidentFlags.IgnoreTaxi) != 0)
+            ResidentFlags flags =
+                SystemAPI.GetComponentRO<Game.Creatures.Resident>(seeker).ValueRO.m_Flags;
+
+            if ((flags & Game.Creatures.ResidentFlags.IgnoreTaxi) != 0)
                 ignoreTaxi++;
 
             if (SystemAPI.HasComponent<IgnoreTaxiMark>(seeker))
@@ -535,7 +517,8 @@ namespace TaxiTraffic
                 try
                 {
                     m_TransportConfig =
-                        m_PrefabSystem.GetSingletonPrefab<UITransportConfigurationPrefab>(m_TransportConfigQuery);
+                        m_PrefabSystem.GetSingletonPrefab<Game.Prefabs.UITransportConfigurationPrefab>(
+                            m_TransportConfigQuery);
                 }
                 catch
                 {
@@ -546,18 +529,21 @@ namespace TaxiTraffic
             if (m_TransportConfig == null)
                 return;
 
-            UITransportSummaryItem[] items = m_TransportConfig.m_PassengerSummaryItems;
+            Game.Prefabs.UITransportSummaryItem[] items = m_TransportConfig.m_PassengerSummaryItems;
             for (int i = 0; i < items.Length; i++)
             {
-                UITransportSummaryItem item = items[i];
+                Game.Prefabs.UITransportSummaryItem item = items[i];
 
                 int citizen;
                 int tourist;
 
                 try
                 {
-                    citizen = m_CityStatisticsSystem.GetStatisticValue(item.m_Statistic);
-                    tourist = m_CityStatisticsSystem.GetStatisticValue(item.m_Statistic, 1);
+                    citizen =
+                        m_CityStatisticsSystem.GetStatisticValue(item.m_Statistic);
+
+                    tourist =
+                        m_CityStatisticsSystem.GetStatisticValue(item.m_Statistic, 1);
                 }
                 catch
                 {
@@ -569,14 +555,45 @@ namespace TaxiTraffic
 
                 switch (item.m_Type)
                 {
-                    case TransportType.Taxi: s_InfoTaxiCitizen = citizen; s_InfoTaxiTourist = tourist; break;
-                    case TransportType.Bus: s_InfoBusCitizen = citizen; s_InfoBusTourist = tourist; break;
-                    case TransportType.Tram: s_InfoTramCitizen = citizen; s_InfoTramTourist = tourist; break;
-                    case TransportType.Train: s_InfoTrainCitizen = citizen; s_InfoTrainTourist = tourist; break;
-                    case TransportType.Subway: s_InfoSubwayCitizen = citizen; s_InfoSubwayTourist = tourist; break;
-                    case TransportType.Ship: s_InfoShipCitizen = citizen; s_InfoShipTourist = tourist; break;
-                    case TransportType.Ferry: s_InfoFerryCitizen = citizen; s_InfoFerryTourist = tourist; break;
-                    case TransportType.Airplane: s_InfoAirCitizen = citizen; s_InfoAirTourist = tourist; break;
+                    case Game.Prefabs.TransportType.Taxi:
+                        s_InfoTaxiCitizen = citizen;
+                        s_InfoTaxiTourist = tourist;
+                        break;
+
+                    case Game.Prefabs.TransportType.Bus:
+                        s_InfoBusCitizen = citizen;
+                        s_InfoBusTourist = tourist;
+                        break;
+
+                    case Game.Prefabs.TransportType.Tram:
+                        s_InfoTramCitizen = citizen;
+                        s_InfoTramTourist = tourist;
+                        break;
+
+                    case Game.Prefabs.TransportType.Train:
+                        s_InfoTrainCitizen = citizen;
+                        s_InfoTrainTourist = tourist;
+                        break;
+
+                    case Game.Prefabs.TransportType.Subway:
+                        s_InfoSubwayCitizen = citizen;
+                        s_InfoSubwayTourist = tourist;
+                        break;
+
+                    case Game.Prefabs.TransportType.Ship:
+                        s_InfoShipCitizen = citizen;
+                        s_InfoShipTourist = tourist;
+                        break;
+
+                    case Game.Prefabs.TransportType.Ferry:
+                        s_InfoFerryCitizen = citizen;
+                        s_InfoFerryTourist = tourist;
+                        break;
+
+                    case Game.Prefabs.TransportType.Airplane:
+                        s_InfoAirCitizen = citizen;
+                        s_InfoAirTourist = tourist;
+                        break;
                 }
             }
         }
@@ -589,23 +606,26 @@ namespace TaxiTraffic
             s_StatusTaxiDepotsOutside = 0;
             s_StatusTaxiDepotsWithDispatchCenter = 0;
 
-            foreach (RefRO<TaxiStand> _ in SystemAPI
-                         .Query<RefRO<TaxiStand>>()
+            foreach (RefRO<Game.Routes.TaxiStand> _ in SystemAPI
+                         .Query<RefRO<Game.Routes.TaxiStand>>()
                          .WithNone<Deleted, Temp>())
             {
                 s_StatusTaxiStandsTotal++;
             }
 
             foreach ((RefRO<Game.Buildings.TransportDepot> depot,
-                      RefRO<PrefabRef> prefabRef,
+                      RefRO<Game.Prefabs.PrefabRef> prefabRef,
                       Entity depotEntity) in SystemAPI
-                         .Query<RefRO<Game.Buildings.TransportDepot>, RefRO<PrefabRef>>()
+                         .Query<RefRO<Game.Buildings.TransportDepot>, RefRO<Game.Prefabs.PrefabRef>>()
                          .WithNone<Deleted, Temp, Game.Buildings.ServiceUpgrade>()
                          .WithEntityAccess())
             {
                 Entity prefab = prefabRef.ValueRO.m_Prefab;
-                if (prefab == Entity.Null || !SystemAPI.HasComponent<Game.Prefabs.TransportDepotData>(prefab))
+                if (prefab == Entity.Null ||
+                    !SystemAPI.HasComponent<Game.Prefabs.TransportDepotData>(prefab))
+                {
                     continue;
+                }
 
                 Game.Prefabs.TransportDepotData data =
                     SystemAPI.GetComponentRO<Game.Prefabs.TransportDepotData>(prefab).ValueRO;
@@ -617,26 +637,23 @@ namespace TaxiTraffic
 
                 if (SystemAPI.HasComponent<Game.Objects.OutsideConnection>(depotEntity))
                 {
-                    // Vanilla represents each taxi-capable outside connection as a transport depot supply node.
+                    // Vanilla uses a taxi-capable OC as a taxi supply source.
                     s_StatusTaxiDepotsOutside++;
                     continue;
                 }
 
                 s_StatusTaxiDepotsLocal++;
 
-                if ((depot.ValueRO.m_Flags & Game.Buildings.TransportDepotFlags.HasDispatchCenter) != 0)
+                if ((depot.ValueRO.m_Flags &
+                     Game.Buildings.TransportDepotFlags.HasDispatchCenter) != 0)
+                {
                     s_StatusTaxiDepotsWithDispatchCenter++;
+                }
             }
         }
 
         private static void ClearSnapshotValues()
         {
-            s_StatusHouseholdsTotal = 0;
-            s_StatusHouseholdsCommuter = 0;
-            s_StatusHouseholdsTourist = 0;
-            s_StatusHouseholdsHomeless = 0;
-            s_StatusHouseholdsMovingInLocal = 0;
-
             s_StatusResidentsTotal = 0;
             s_StatusResidentsIgnoreTaxi = 0;
             s_StatusResidentsForcedMarker = 0;
@@ -686,9 +703,6 @@ namespace TaxiTraffic
             s_StatusPassengerHasResident = 0;
             s_StatusPassengerIgnoreTaxi = 0;
             s_StatusPassengerBlockedMark = 0;
-            s_StatusOutsideTaxiResidentPassengers = 0;
-            s_StatusOutsideTaxiNotMovedInPassengers = 0;
-            s_StatusOutsideTaxiMoveInFromOcPassengers = 0;
 
             s_StatusTaxiStandsTotal = 0;
             s_StatusTaxiDepotsTotal = 0;
@@ -721,10 +735,32 @@ namespace TaxiTraffic
 
         internal static void AutoRequestStatusRefreshOnRead()
         {
-            RefreshStatusSnapshotForOptionsUi(force: false);
+            RefreshStatusSnapshot(force: false, detailed: false);
         }
 
         internal static void RefreshStatusSnapshotForOptionsUi(bool force)
+        {
+            RefreshStatusSnapshot(force, detailed: false);
+        }
+
+        internal static void RefreshStatusSnapshotForReport()
+        {
+            RefreshStatusSnapshot(force: true, detailed: true);
+        }
+
+#if DEBUG
+        internal static void EnsureDetailedStatusSnapshot()
+        {
+            RefreshStatusSnapshot(force: false, detailed: true);
+        }
+
+        internal static void RefreshStatusSnapshotForDebug()
+        {
+            RefreshStatusSnapshot(force: true, detailed: true);
+        }
+#endif
+
+        private static void RefreshStatusSnapshot(bool force, bool detailed)
         {
             int frame = UnityEngine.Time.frameCount;
             bool newOptionsVisit =
@@ -734,8 +770,16 @@ namespace TaxiTraffic
             s_LastStatusOptionsUiFrame = frame;
 
             bool forceRefresh = force || s_StatusForceRefresh;
-            if (!forceRefresh && !newOptionsVisit && s_HasStatusSnapshotThisOptionsVisit && !s_StatusSnapshotDirty)
+            bool needsDetails = detailed && !s_StatusSnapshotHasDetails;
+
+            if (!forceRefresh &&
+                !needsDetails &&
+                !newOptionsVisit &&
+                s_HasStatusSnapshotThisOptionsVisit &&
+                !s_StatusSnapshotDirty)
+            {
                 return;
+            }
 
             World world = World.DefaultGameObjectInjectionWorld;
             if (world == null || !world.IsCreated)
@@ -749,6 +793,7 @@ namespace TaxiTraffic
                 s_WasInGame = isGame;
                 s_HasStatusSnapshotThisOptionsVisit = false;
                 s_StatusSnapshotDirty = true;
+                s_StatusSnapshotHasDetails = false;
                 s_StatusLastSnapshotSimulationFrame = uint.MaxValue;
             }
 
@@ -760,12 +805,16 @@ namespace TaxiTraffic
 
             try
             {
-                TaxiTrafficSystem system = world.GetOrCreateSystemManaged<TaxiTrafficSystem>();
+                TaxiTrafficSystem system =
+                    world.GetOrCreateSystemManaged<TaxiTrafficSystem>();
+
                 uint simulationFrame = system.GetStatusSimulationFrame();
-                bool simulationAdvanced = simulationFrame != s_StatusLastSnapshotSimulationFrame;
+                bool simulationAdvanced =
+                    simulationFrame != s_StatusLastSnapshotSimulationFrame;
 
                 bool shouldBuild =
                     forceRefresh ||
+                    needsDetails ||
                     !HasSnapshot() ||
                     s_StatusSnapshotDirty ||
                     (newOptionsVisit && simulationAdvanced);
@@ -776,7 +825,7 @@ namespace TaxiTraffic
                     return;
                 }
 
-                system.BuildStatusSnapshotForOptionsUi(simulationFrame);
+                system.BuildStatusSnapshotForOptionsUi(simulationFrame, detailed);
             }
             catch (Exception)
             {
@@ -788,14 +837,18 @@ namespace TaxiTraffic
         internal static void RequestStatusRefresh(bool force)
         {
             s_StatusSnapshotDirty = true;
+
             if (force)
                 s_StatusForceRefresh = true;
         }
 
-        internal static bool HasSnapshot() => s_StatusLastSnapshotRealtime > 0.0;
+        internal static bool HasSnapshot() =>
+            s_StatusLastSnapshotRealtime > 0.0;
 
         internal static string GetStatusLastStampText() =>
-            string.IsNullOrEmpty(s_StatusLastSnapshotClock) ? kNotReadyValue : s_StatusLastSnapshotClock;
+            string.IsNullOrEmpty(s_StatusLastSnapshotClock)
+                ? kNotReadyValue
+                : s_StatusLastSnapshotClock;
 
         internal static bool IsStatusSnapshotStale(double maxAgeSeconds)
         {
@@ -817,15 +870,15 @@ namespace TaxiTraffic
 
         internal static bool HasActivity()
         {
-            return s_StatusLastAppliedIgnoreTaxi != 0
-                || s_StatusLastSkippedCommuters != 0
-                || s_StatusLastSkippedTourists != 0
-                || s_StatusLastSkippedGroupTravelers != 0
-                || s_StatusLastClearedGroupTravelers != 0
-                || s_StatusLastClearedTaxiLaneWaiting != 0
-                || s_StatusLastClearedTaxiStandWaiting != 0
-                || s_StatusLastRemovedRideNeeder != 0
-                || s_StatusOutsideSupplySuppressedTotal != 0;
+            return s_StatusLastAppliedIgnoreTaxi != 0 ||
+                   s_StatusLastSkippedCommuters != 0 ||
+                   s_StatusLastSkippedTourists != 0 ||
+                   s_StatusLastSkippedGroupTravelers != 0 ||
+                   s_StatusLastClearedGroupTravelers != 0 ||
+                   s_StatusLastClearedTaxiLaneWaiting != 0 ||
+                   s_StatusLastClearedTaxiStandWaiting != 0 ||
+                   s_StatusLastRemovedRideNeeder != 0 ||
+                   s_StatusOutsideTaxiBlockedTotal != 0;
         }
 
         internal static string GetActivityNotReadyText() => kNotReadyValue;

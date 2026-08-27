@@ -7,13 +7,14 @@
 // ================= </copyright> ======================
 
 // File: Settings/TaxiSettings.Status.cs
-// Status-tab Options rows. Display text is formatted from Localization/LocaleEN.cs.
+// Compact player Status; detailed diagnostics go to Write Status Report.
 
 namespace TaxiTraffic
 {
     using System.Text;
     using CS2Shared.RiverMochi; // LocaleUtils, LogUtils
     using Game.Settings;
+    using Game.UI;       // SettingsUIHidden
 
     public sealed partial class TaxiSettings
     {
@@ -52,7 +53,7 @@ namespace TaxiTraffic
             }
         }
 
-        // CITY SCAN
+        // CITY TRANSIT
 
         [SettingsUISection(StatusTab, CityScanGroup)]
         [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
@@ -108,7 +109,7 @@ namespace TaxiTraffic
             }
         }
 
-        // TAXI SCAN
+        // TAXI SCAN — only player-useful rows stay visible.
 
         [SettingsUISection(StatusTab, TaxiScanGroup)]
         [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
@@ -124,8 +125,6 @@ namespace TaxiTraffic
                     TaxiTrafficSystem.s_StatusTaxiFromOutside,
                     TaxiTrafficSystem.s_StatusTaxiDepotsLocal,
                     TaxiTrafficSystem.s_StatusTaxiDepotsOutside,
-                    TaxiTrafficSystem.s_StatusTaxiDepotsTotal,
-                    TaxiTrafficSystem.s_StatusTaxiDepotsWithDispatchCenter,
                     TaxiTrafficSystem.s_StatusTaxiStandsTotal);
             }
         }
@@ -148,26 +147,6 @@ namespace TaxiTraffic
 
         [SettingsUISection(StatusTab, TaxiScanGroup)]
         [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
-        public string StatusRequests
-        {
-            get
-            {
-                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
-
-                return StatusValue(
-                    nameof(StatusRequests),
-                    TaxiTrafficSystem.s_StatusReqCustomer,
-                    TaxiTrafficSystem.s_StatusReqCustomerSeekerBlockedMark,
-                    TaxiTrafficSystem.s_StatusReqOutsideRider,
-                    TaxiTrafficSystem.s_StatusReqOutsideSeekerBlockedMark,
-                    TaxiTrafficSystem.s_StatusReqNone,
-                    TaxiTrafficSystem.s_StatusReqOutsideSupply,
-                    TaxiTrafficSystem.s_StatusReqStand);
-            }
-        }
-
-        [SettingsUISection(StatusTab, TaxiScanGroup)]
-        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
         public string StatusOutsideControl
         {
             get
@@ -177,50 +156,11 @@ namespace TaxiTraffic
                 return StatusValue(
                     nameof(StatusOutsideControl),
                     TaxiTrafficSystem.s_StatusTaxiFromOutside,
-                    TaxiTrafficSystem.s_StatusReqOutsideSupply,
-                    TaxiTrafficSystem.s_StatusOutsideSupplySuppressedTotal,
-                    TaxiTrafficSystem.s_StatusOutsideTaxiResidentPassengers,
-                    TaxiTrafficSystem.s_StatusOutsideTaxiNotMovedInPassengers,
-                    TaxiTrafficSystem.s_StatusOutsideTaxiMoveInFromOcPassengers,
-                    TaxiTrafficSystem.s_StatusOutsideTaxiMoveInFromOcSeenTotal,
-                    TaxiTrafficSystem.s_StatusHouseholdsMovingInLocal);
+                    TaxiTrafficSystem.s_StatusOutsideTaxiBlockedTotal);
             }
         }
 
-        [SettingsUISection(StatusTab, TaxiScanGroup)]
-        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
-        public string StatusTaxiFleet
-        {
-            get
-            {
-                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
-
-                return StatusValue(
-                    nameof(StatusTaxiFleet),
-                    TaxiTrafficSystem.s_StatusTaxiTransporting,
-                    TaxiTrafficSystem.s_StatusTaxiBoarding,
-                    TaxiTrafficSystem.s_StatusTaxiReturning,
-                    TaxiTrafficSystem.s_StatusTaxiDispatched,
-                    TaxiTrafficSystem.s_StatusTaxiEnRoute,
-                    TaxiTrafficSystem.s_StatusTaxiParked);
-            }
-        }
-
-        [SettingsUISection(StatusTab, TaxiScanGroup)]
-        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
-        public string StatusTaxiStands
-        {
-            get
-            {
-                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
-
-                return StatusValue(
-                    nameof(StatusTaxiStands),
-                    TaxiTrafficSystem.s_StatusWaitingTaxiStandTotal);
-            }
-        }
-
-        // LAST UPDATE
+        // LAST UPDATE — combine related information to keep the page short.
 
         [SettingsUISection(StatusTab, LastUpdateGroup)]
         [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
@@ -233,20 +173,7 @@ namespace TaxiTraffic
                 return StatusValue(
                     nameof(StatusCoverage1),
                     TaxiTrafficSystem.s_StatusResidentsForcedMarker,
-                    TaxiTrafficSystem.s_StatusResidentsTotal);
-            }
-        }
-
-        [SettingsUISection(StatusTab, LastUpdateGroup)]
-        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
-        public string StatusCoverage2
-        {
-            get
-            {
-                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
-
-                return StatusValue(
-                    nameof(StatusCoverage2),
+                    TaxiTrafficSystem.s_StatusResidentsTotal,
                     TaxiTrafficSystem.s_StatusCommutersBlockedMark,
                     TaxiTrafficSystem.s_StatusCommutersTotal,
                     TaxiTrafficSystem.s_StatusTouristsBlockedMark,
@@ -266,39 +193,8 @@ namespace TaxiTraffic
                     nameof(StatusWorkDone1),
                     TaxiTrafficSystem.s_StatusLastAppliedIgnoreTaxi,
                     TaxiTrafficSystem.s_StatusLastRemovedRideNeeder,
-                    TaxiTrafficSystem.s_StatusLastClearedTaxiLaneWaiting);
-            }
-        }
-
-        [SettingsUISection(StatusTab, LastUpdateGroup)]
-        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
-        public string StatusWorkDone2
-        {
-            get
-            {
-                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
-
-                return StatusValue(
-                    nameof(StatusWorkDone2),
-                    TaxiTrafficSystem.s_StatusLastClearedTaxiStandWaiting,
-                    TaxiTrafficSystem.s_StatusLastSkippedCommuters,
-                    TaxiTrafficSystem.s_StatusLastSkippedTourists);
-            }
-        }
-
-        [SettingsUISection(StatusTab, LastUpdateGroup)]
-        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
-        public string StatusGroupSafety
-        {
-            get
-            {
-                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
-
-                return StatusValue(
-                    nameof(StatusGroupSafety),
-                    TaxiTrafficSystem.s_StatusResidentsGroupLinked,
-                    TaxiTrafficSystem.s_StatusResidentsGroupAllowedMarker,
-                    TaxiTrafficSystem.s_StatusGroupRepairsTotal);
+                    TaxiTrafficSystem.s_StatusLastClearedTaxiLaneWaiting,
+                    TaxiTrafficSystem.s_StatusLastClearedTaxiStandWaiting);
             }
         }
 
@@ -316,8 +212,65 @@ namespace TaxiTraffic
             }
         }
 
+        // Detailed-only rows. They remain available to BuildStatusReportText()
+        // without making the normal Status page scan or display them.
+
+        [SettingsUIHidden]
+        public string StatusRequests =>
+            StatusValue(
+                nameof(StatusRequests),
+                TaxiTrafficSystem.s_StatusReqCustomer,
+                TaxiTrafficSystem.s_StatusReqCustomerSeekerBlockedMark,
+                TaxiTrafficSystem.s_StatusReqOutsideRider,
+                TaxiTrafficSystem.s_StatusReqOutsideSeekerBlockedMark,
+                TaxiTrafficSystem.s_StatusReqNone,
+                TaxiTrafficSystem.s_StatusReqOutsideSupply,
+                TaxiTrafficSystem.s_StatusReqStand);
+
+        [SettingsUIHidden]
+        public string StatusTaxiFleet =>
+            StatusValue(
+                nameof(StatusTaxiFleet),
+                TaxiTrafficSystem.s_StatusTaxiTransporting,
+                TaxiTrafficSystem.s_StatusTaxiBoarding,
+                TaxiTrafficSystem.s_StatusTaxiReturning,
+                TaxiTrafficSystem.s_StatusTaxiDispatched,
+                TaxiTrafficSystem.s_StatusTaxiEnRoute,
+                TaxiTrafficSystem.s_StatusTaxiParked);
+
+        [SettingsUIHidden]
+        public string StatusTaxiStands =>
+            StatusValue(
+                nameof(StatusTaxiStands),
+                TaxiTrafficSystem.s_StatusWaitingTaxiStandTotal);
+
+        [SettingsUIHidden]
+        public string StatusCoverage2 =>
+            StatusValue(
+                nameof(StatusCoverage2),
+                TaxiTrafficSystem.s_StatusCommutersBlockedMark,
+                TaxiTrafficSystem.s_StatusCommutersTotal,
+                TaxiTrafficSystem.s_StatusTouristsBlockedMark,
+                TaxiTrafficSystem.s_StatusTouristsTotal);
+
+        [SettingsUIHidden]
+        public string StatusWorkDone2 =>
+            StatusValue(
+                nameof(StatusWorkDone2),
+                TaxiTrafficSystem.s_StatusLastClearedTaxiStandWaiting,
+                TaxiTrafficSystem.s_StatusLastSkippedCommuters,
+                TaxiTrafficSystem.s_StatusLastSkippedTourists);
+
+        [SettingsUIHidden]
+        public string StatusGroupSafety =>
+            StatusValue(
+                nameof(StatusGroupSafety),
+                TaxiTrafficSystem.s_StatusResidentsGroupLinked,
+                TaxiTrafficSystem.s_StatusResidentsGroupAllowedMarker,
+                TaxiTrafficSystem.s_StatusGroupRepairsTotal);
+
 #if DEBUG
-        // ---- Status → Advanced Debug (DEV builds only) ----
+        // Advanced Debug remains DEV-only.
 
         [SettingsUISection(StatusTab, AdvancedDebugGroup)]
         [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
@@ -325,7 +278,7 @@ namespace TaxiTraffic
         {
             get
             {
-                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.EnsureDetailedStatusSnapshot();
 
                 return StatusValue(
                     nameof(StatusDebugMarkedCoverage),
@@ -343,7 +296,7 @@ namespace TaxiTraffic
         {
             get
             {
-                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
+                TaxiTrafficSystem.EnsureDetailedStatusSnapshot();
 
                 return StatusValue(
                     nameof(StatusDebugTaxiFlags),
@@ -364,7 +317,7 @@ namespace TaxiTraffic
                 if (!value)
                     return;
 
-                TaxiTrafficSystem.RefreshStatusSnapshotForOptionsUi(force: true);
+                TaxiTrafficSystem.RefreshStatusSnapshotForReport();
                 LogUtils.Info(Mod.s_Log, BuildStatusReportText);
             }
         }
@@ -374,6 +327,7 @@ namespace TaxiTraffic
             StringBuilder sb = new();
 
             sb.AppendLine($"{Mod.ModTag} StatusReport:");
+
             sb.AppendLine("Citizens: " + StatusValue(
                 nameof(StatusMonthlyPassengers1),
                 TaxiTrafficSystem.s_InfoTaxiCitizen,
@@ -404,15 +358,25 @@ namespace TaxiTraffic
                 TaxiTrafficSystem.s_StatusTaxiFromOutside,
                 TaxiTrafficSystem.s_StatusTaxiDepotsLocal,
                 TaxiTrafficSystem.s_StatusTaxiDepotsOutside,
-                TaxiTrafficSystem.s_StatusTaxiDepotsTotal,
-                TaxiTrafficSystem.s_StatusTaxiDepotsWithDispatchCenter,
                 TaxiTrafficSystem.s_StatusTaxiStandsTotal));
+
+            sb.AppendLine(
+                "Taxi source detail: " +
+                $"{TaxiTrafficSystem.s_StatusTaxiDepotsLocal} local | " +
+                $"{TaxiTrafficSystem.s_StatusTaxiDepotsOutside} OC taxi source | " +
+                $"{TaxiTrafficSystem.s_StatusTaxiDepotsTotal} total | " +
+                $"{TaxiTrafficSystem.s_StatusTaxiDepotsWithDispatchCenter} dispatch center");
 
             sb.AppendLine("Passengers: " + StatusValue(
                 nameof(StatusPassengers),
                 TaxiTrafficSystem.s_StatusPassengerTotal,
                 TaxiTrafficSystem.s_StatusPassengerBlockedMark,
                 TaxiTrafficSystem.s_StatusPassengerHasResident));
+
+            sb.AppendLine("Outside control: " + StatusValue(
+                nameof(StatusOutsideControl),
+                TaxiTrafficSystem.s_StatusTaxiFromOutside,
+                TaxiTrafficSystem.s_StatusOutsideTaxiBlockedTotal));
 
             sb.AppendLine("Requests: " + StatusValue(
                 nameof(StatusRequests),
@@ -423,17 +387,6 @@ namespace TaxiTraffic
                 TaxiTrafficSystem.s_StatusReqNone,
                 TaxiTrafficSystem.s_StatusReqOutsideSupply,
                 TaxiTrafficSystem.s_StatusReqStand));
-
-            sb.AppendLine("Outside control: " + StatusValue(
-                nameof(StatusOutsideControl),
-                TaxiTrafficSystem.s_StatusTaxiFromOutside,
-                TaxiTrafficSystem.s_StatusReqOutsideSupply,
-                TaxiTrafficSystem.s_StatusOutsideSupplySuppressedTotal,
-                TaxiTrafficSystem.s_StatusOutsideTaxiResidentPassengers,
-                TaxiTrafficSystem.s_StatusOutsideTaxiNotMovedInPassengers,
-                TaxiTrafficSystem.s_StatusOutsideTaxiMoveInFromOcPassengers,
-                TaxiTrafficSystem.s_StatusOutsideTaxiMoveInFromOcSeenTotal,
-                TaxiTrafficSystem.s_StatusHouseholdsMovingInLocal));
 
             sb.AppendLine("Fleet: " + StatusValue(
                 nameof(StatusTaxiFleet),
@@ -451,10 +404,7 @@ namespace TaxiTraffic
             sb.AppendLine("Coverage: " + StatusValue(
                 nameof(StatusCoverage1),
                 TaxiTrafficSystem.s_StatusResidentsForcedMarker,
-                TaxiTrafficSystem.s_StatusResidentsTotal));
-
-            sb.AppendLine("Commuter/tourist coverage: " + StatusValue(
-                nameof(StatusCoverage2),
+                TaxiTrafficSystem.s_StatusResidentsTotal,
                 TaxiTrafficSystem.s_StatusCommutersBlockedMark,
                 TaxiTrafficSystem.s_StatusCommutersTotal,
                 TaxiTrafficSystem.s_StatusTouristsBlockedMark,
@@ -468,38 +418,51 @@ namespace TaxiTraffic
 
             sb.AppendLine(
                 "Debug flags: " +
-                TaxiTrafficSystem.s_StatusResidentsIgnoreTaxi + "/" + TaxiTrafficSystem.s_StatusResidentsTotal +
+                TaxiTrafficSystem.s_StatusResidentsIgnoreTaxi + "/" +
+                TaxiTrafficSystem.s_StatusResidentsTotal +
                 " IgnoreTaxi now | " +
-                TaxiTrafficSystem.s_StatusResidentsAllowedMarker + " allowed mark | " +
-                TaxiTrafficSystem.s_StatusResidentsGroupAllowedMarker + " group exempt mark | " +
-                TaxiTrafficSystem.s_StatusReqCustomerSeekerIgnoreTaxi + "/" + TaxiTrafficSystem.s_StatusReqCustomerSeekerHasResident +
+                TaxiTrafficSystem.s_StatusResidentsAllowedMarker +
+                " allowed mark | " +
+                TaxiTrafficSystem.s_StatusResidentsGroupAllowedMarker +
+                " group exempt mark | " +
+                TaxiTrafficSystem.s_StatusReqCustomerSeekerIgnoreTaxi + "/" +
+                TaxiTrafficSystem.s_StatusReqCustomerSeekerHasResident +
                 " city request seekers IgnoreTaxi | " +
-                TaxiTrafficSystem.s_StatusPassengerIgnoreTaxi + "/" + TaxiTrafficSystem.s_StatusPassengerHasResident +
+                TaxiTrafficSystem.s_StatusPassengerIgnoreTaxi + "/" +
+                TaxiTrafficSystem.s_StatusPassengerHasResident +
                 " resident passengers IgnoreTaxi");
 
-            sb.AppendLine("Work: " + StatusValue(
+            sb.AppendLine("Cleanup: " + StatusValue(
                 nameof(StatusWorkDone1),
                 TaxiTrafficSystem.s_StatusLastAppliedIgnoreTaxi,
                 TaxiTrafficSystem.s_StatusLastRemovedRideNeeder,
-                TaxiTrafficSystem.s_StatusLastClearedTaxiLaneWaiting));
+                TaxiTrafficSystem.s_StatusLastClearedTaxiLaneWaiting,
+                TaxiTrafficSystem.s_StatusLastClearedTaxiStandWaiting));
 
-            sb.AppendLine("Work 2: " + StatusValue(
-                nameof(StatusWorkDone2),
-                TaxiTrafficSystem.s_StatusLastClearedTaxiStandWaiting,
-                TaxiTrafficSystem.s_StatusLastSkippedCommuters,
-                TaxiTrafficSystem.s_StatusLastSkippedTourists));
+            sb.AppendLine(
+                "Skipped: " +
+                TaxiTrafficSystem.s_StatusLastSkippedCommuters +
+                " commuter | " +
+                TaxiTrafficSystem.s_StatusLastSkippedTourists +
+                " tourist | " +
+                TaxiTrafficSystem.s_StatusLastSkippedGroupTravelers +
+                " group traveler");
 
             sb.Append("Snapshot: ");
-            sb.Append(StatusValue(nameof(StatusSnapshotMeta), TaxiTrafficSystem.GetStatusLastStampText()));
+            sb.Append(StatusValue(
+                nameof(StatusSnapshotMeta),
+                TaxiTrafficSystem.GetStatusLastStampText()));
 
             return sb.ToString();
         }
 
-        private static string StatusValue(string propertyName, params object[] args)
+        private static string StatusValue(
+            string propertyName,
+            params object[] args)
         {
             string entryId = GetStatusValueEntryId(propertyName);
 
-            // Fallback key makes missing LocaleEN entries obvious during testing.
+            // Missing LocaleEN keys stay obvious during testing.
             return LocaleUtils.SafeFormat(entryId, entryId, args);
         }
 
