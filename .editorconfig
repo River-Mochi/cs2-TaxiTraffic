@@ -1,4 +1,4 @@
-# File: .editorconfig version 0.6.6
+# File: .editorconfig version 0.6.7
 # Purpose:
 #   - Consistent whitespace + LF line endings across normal repo files.
 #   - CRLF for classic Visual Studio .sln files.
@@ -69,6 +69,13 @@ dotnet_code_quality.CA1822.api_surface = private, internal
 # Sort usings without adding blank lines between namespace groups.
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
+
+# Keep usings at compilation-unit scope.
+# Unity.Entities SystemAPI source generation can require these across partial files.
+csharp_using_directive_placement = outside_namespace:suggestion
+
+# Show unused usings, but do not remove them automatically.
+dotnet_diagnostic.IDE0005.severity = suggestion
 
 # Show unused usings, but do not remove them automatically.
 dotnet_diagnostic.IDE0005.severity = suggestion

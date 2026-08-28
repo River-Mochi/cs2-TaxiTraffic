@@ -6,17 +6,13 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
+    using Game;              // GameSystemBase, GameMode
+
+
 namespace TaxiTraffic
 {
     // File: Systems/TaxiTrafficSystem.Core.cs
     // System lifecycle and update coordinator.
-    using Game;              // GameSystemBase, GameMode
-    using Game.Creatures;    // prevent gs errors partial files
-    using Game.Pathfind;     // prevent gs errors partial files
-    using Game.Vehicles;     // prevent gs errors partial files
-    using Unity.Collections; // prevent gs errors partial files
-    using Unity.Entities;    // prevent gs errors partial files
-
 
     public partial class TaxiTrafficSystem : GameSystemBase
     {
