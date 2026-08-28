@@ -16,50 +16,21 @@ namespace TaxiTraffic
 
     public sealed class LocaleEN : IDictionarySource
     {
-        public const string KeyStatusCitizensLine =
-            "TaxiTraffic.Status.CitizensLine";
-
-        public const string KeyStatusTouristsLine =
-            "TaxiTraffic.Status.TouristsLine";
-
-        public const string KeyStatusTotalsLine =
-            "TaxiTraffic.Status.TotalsLine";
-
-        public const string KeyStatusTaxiSupplyLine =
-            "TaxiTraffic.Status.TaxiSupplyLine";
-
-        public const string KeyStatusPassengersLine =
-            "TaxiTraffic.Status.PassengersLine";
-
-        public const string KeyStatusRequestsLine =
-            "TaxiTraffic.Status.RequestsLine";
-
-        public const string KeyStatusOutsideControlLine =
-            "TaxiTraffic.Status.OutsideControlLine";
-
-        public const string KeyStatusTaxiFleetLine =
-            "TaxiTraffic.Status.TaxiFleetLine";
-
-        public const string KeyStatusTaxiStandsLine =
-            "TaxiTraffic.Status.TaxiStandsLine";
-
-        public const string KeyStatusCoverageLine =
-            "TaxiTraffic.Status.CoverageLine";
-
-        public const string KeyStatusCoverageGroupsLine =
-            "TaxiTraffic.Status.CoverageGroupsLine";
-
-        public const string KeyStatusWorkDoneLine =
-            "TaxiTraffic.Status.WorkDoneLine";
-
-        public const string KeyStatusWorkDone2Line =
-            "TaxiTraffic.Status.WorkDone2Line";
-
-        public const string KeyStatusSnapshotLine =
-            "TaxiTraffic.Status.SnapshotLine";
-
-        public const string KeyStatusGroupSafetyLine =
-            "TaxiTraffic.Status.GroupSafetyLine";
+        public const string KeyStatusCitizensLine = "TaxiTraffic.Status.CitizensLine";
+        public const string KeyStatusTouristsLine = "TaxiTraffic.Status.TouristsLine";
+        public const string KeyStatusTotalsLine = "TaxiTraffic.Status.TotalsLine";
+        public const string KeyStatusTaxiSupplyLine = "TaxiTraffic.Status.TaxiSupplyLine";
+        public const string KeyStatusPassengersLine = "TaxiTraffic.Status.PassengersLine";
+        public const string KeyStatusRequestsLine = "TaxiTraffic.Status.RequestsLine";
+        public const string KeyStatusOutsideControlLine = "TaxiTraffic.Status.OutsideControlLine";
+        public const string KeyStatusTaxiFleetLine = "TaxiTraffic.Status.TaxiFleetLine";
+        public const string KeyStatusTaxiStandsLine = "TaxiTraffic.Status.TaxiStandsLine";
+        public const string KeyStatusCoverageLine = "TaxiTraffic.Status.CoverageLine";
+        public const string KeyStatusCoverageGroupsLine = "TaxiTraffic.Status.CoverageGroupsLine";
+        public const string KeyStatusWorkDoneLine = "TaxiTraffic.Status.WorkDoneLine";
+        public const string KeyStatusWorkDone2Line = "TaxiTraffic.Status.WorkDone2Line";
+        public const string KeyStatusSnapshotLine = "TaxiTraffic.Status.SnapshotLine";
+        public const string KeyStatusGroupSafetyLine = "TaxiTraffic.Status.GroupSafetyLine";
 
 #if DEBUG
         public const string KeyStatusMarkedDevLine =
@@ -121,28 +92,26 @@ namespace TaxiTraffic
                     "<100% = vanilla taxi> usage.\n" +
                     "Everyone in the same household gets the same long-term taxi setting.\n" +
                     "0% greatly reduces usage. A small amount may remain because separate game systems, e.g. Leisure, can independently allow taxis for some trips.\n" +
-                    "At 0%, make sure residents still have a non-taxi way to reach an outside connection when leaving the city.\n" +
-                    "Commuters and tourists are controlled separately by the other toggles [x]."
+                    "At 0%, make sure citizens still have a non-taxi way to reach an outside connection when leaving the city (bus, train, etc.).\n" +
+                    "Commuters and tourists are controlled separately by the other toggles [x].\n" +
+                    "**Some taxis may still remain. Taxi Traffic allows active trips and normal taxi-stand standby behavior to finish naturally for game stability.**"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)),
-                    "Commuters avoid taxis"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "Commuters avoid taxis"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockCommuters)),
                     "**ON** = commuter households are blocked from normal taxi use.\n" +
                     "**OFF** = commuters can use taxis (vanilla)."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockTourists)),
-                    "Tourists avoid taxis"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockTourists)), "Tourists avoid taxis"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockTourists)),
                     "**ON** = tourist households are blocked from normal taxi use.\n" +
                     "**OFF** = tourists can use taxis (vanilla)."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockOutsideTaxis)),
-                    "Block outside taxis"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockOutsideTaxis)), "Block outside taxis"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockOutsideTaxis)),
                     "**ON** = prevents new taxis from being called in from outside connections.\n" +
@@ -232,8 +201,7 @@ namespace TaxiTraffic
                 },
 
                 // TAXI SCAN
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)),
-                    "Taxi supply"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "Taxi supply"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiSupply)),
                     "From OC = active taxis carrying the game's FromOutside flag.\n" +
@@ -242,16 +210,13 @@ namespace TaxiTraffic
                     "Stand = taxi stand buildings."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusPassengers)),
-                    "Current passengers"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusPassengers)), "Current passengers"
                 },
-                { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
-                    "Current taxi passengers.\n" +
+                { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)), "Current taxi passengers.\n" +
                     "Blocked = resident passengers carrying Taxi Traffic's normal block marker."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusOutsideControl)),
-                    "Outside taxi control"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusOutsideControl)), "Outside taxi control"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusOutsideControl)),
                     "From OC = active taxis carrying the game's FromOutside flag.\n" +
@@ -260,8 +225,7 @@ namespace TaxiTraffic
                 },
 
                 // LAST UPDATE
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusCoverage1)),
-                    "Blocking coverage"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusCoverage1)), "Blocking coverage"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusCoverage1)),
                     "Current blocked resident creatures by rider type.\n" +
@@ -269,8 +233,7 @@ namespace TaxiTraffic
                     "Group-linked travelers (families) follow the same taxi flag as the rest of their household."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusWorkDone1)),
-                    "Recent cleanup"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusWorkDone1)), "Recent cleanup"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusWorkDone1)),
                     "What changed in the most recent Taxi Traffic update.\n" +
@@ -278,15 +241,13 @@ namespace TaxiTraffic
                     "Ride need removed / lane clear / queue clear = stale taxi waits cleaned up."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusSnapshotMeta)),
-                    "Updated"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusSnapshotMeta)), "Updated"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusSnapshotMeta)),
                     "Shows when this Status snapshot was taken."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
-                    "Write Status to Log"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Write Status to Log"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "Runs the deeper diagnostic scan and writes the full Status report to this mod's log."
@@ -294,8 +255,7 @@ namespace TaxiTraffic
 
 #if DEBUG
                 // Advanced Debug (DEV builds only)
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)),
-                    "Blocking flags (dev)"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)), "Blocking flags (dev)"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)),
                     "DEV sanity check.\n" +
@@ -305,12 +265,10 @@ namespace TaxiTraffic
                     "Group exempt = temporary group-linked exemption marker."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)),
-                    "Taxi flags (dev)"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)), "Taxi flags (dev)"
                 },
                 {
-                    m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)),
-                    "DEV sanity check.\n" +
+                    m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)),"DEV sanity check.\n" +
                     "Order: With dispatch buffer | From outside | Disabled."
                 },
 #endif
@@ -367,22 +325,18 @@ namespace TaxiTraffic
                 // About
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.NameDisplay)), "Mod"     },
                 {
-                    m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.NameDisplay)),
-                    "Display name of this mod."
+                    m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.NameDisplay)), "Display name of this mod."
                 },
 
                 {
-                    m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.VersionDisplay)),
-                    "Version"
+                    m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.VersionDisplay)), "Version"
                 },
                 {
-                    m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.VersionDisplay)),
-                    "Current mod version."
+                    m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.VersionDisplay)), "Current mod version."
                 },
 
                 {
-                    m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenParadoxMods)),
-                    "Paradox Mods"
+                    m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenParadoxMods)), "Paradox Mods"
                 },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.OpenParadoxMods)),
@@ -390,8 +344,7 @@ namespace TaxiTraffic
                 },
 
                 {
-                    m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenDiscord)),
-                    "Discord"
+                    m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenDiscord)), "Discord"
                 },
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.OpenDiscord)),
