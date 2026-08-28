@@ -6,13 +6,13 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-    using Game;              // GameSystemBase, GameMode
+// File: Systems/TaxiTrafficSystem.Core.cs
+// Purpose: system lifecycle and update coordinator.
 
+using Game;              // GameSystemBase, GameMode
 
 namespace TaxiTraffic
 {
-    // File: Systems/TaxiTrafficSystem.Core.cs
-    // System lifecycle and update coordinator.
 
     public partial class TaxiTrafficSystem : GameSystemBase
     {

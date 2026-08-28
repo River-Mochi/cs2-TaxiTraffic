@@ -6,20 +6,19 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
+// File: Systems/TaxiTrafficSystem.Eligibility.cs
+// Purpose: Household-consistent taxi eligibility with soft enforcement.
+
 using Game.Citizens;     // Citizen, HouseholdMember, commuter/tourist households
 using Game.Common;       // Deleted
 using Game.Creatures;    // Resident, ResidentFlags, CurrentVehicle, RideNeeder, GroupMember, GroupCreature
 using Game.Objects;      // TripSource
-using Game.Pathfind;     // prevent gs errors partial files
 using Game.Tools;        // Temp
 using Unity.Collections; // Allocator
 using Unity.Entities;    // Entity, EntityCommandBuffer, RefRO, RefRW
 
 namespace TaxiTraffic
 {
-    // File: Systems/TaxiTrafficSystem.Eligibility.cs
-    // Household-consistent taxi eligibility with soft enforcement.
-
     public partial class TaxiTrafficSystem
     {
         // -----------------------

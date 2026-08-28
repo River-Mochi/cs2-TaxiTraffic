@@ -6,16 +6,13 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
+// File: Systems/TaxiEligibilityMark.cs
+// Purpose: marker components used by TaxiTrafficSystem taxi eligibility batching.
+
 using Unity.Entities;
 
 namespace TaxiTraffic
 {
-    // File: Systems/TaxiEligibilityMark.cs
-    // Marker components used by TaxiTrafficSystem taxi eligibility batching.
-
-
-
-
     internal struct IgnoreTaxiMark : IComponentData
     {
     }
