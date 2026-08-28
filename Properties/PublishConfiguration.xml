@@ -1,65 +1,67 @@
 <Publish>
-	<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-	<ModId Value="" />
-	<!--Name of the mod to display to players-->
-	<DisplayName Value="TaxiTraffic" />
-	<!--Short description of the mod-->
-	<ShortDescription Value="Reduce taxi traffic and Cim use in the city." />
-	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
-	<!--LongDescription Value="This is a long description" /-->
-	<LongDescription>
-        ### Taxi Traffic
-        Helps cims make smarter travel choices by reducing taxi use.
+<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
+<ModId Value="" />
+<!--Name of the mod to display to players-->
+<DisplayName Value="TaxiTraffic" />
+<!--Short description of the mod-->
+<ShortDescription Value="Reduce taxi traffic and Cim use in the city." />
+<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
+<!--LongDescription Value="This is a long description" /-->
+<LongDescription>
+### Taxi Traffic [BETA]
+Citizens make smarter travel choices by reducing taxi use.
 
-        ### What it does
-        - ✅ Prevents cims from choosing taxis
-        - ✅ Un-sticks any cims already waiting for a taxi (taxi-lane + taxi-stand cases) so they re-route normally
-        - ✅ Cancels dispatchable taxi requests so taxi dispatch/spawn activity drops over time
-        - ✅ Optional: include/exclude **Commuters** and **Tourists**
+### What it does
+- ✅ Prevents most cims from choosing taxis
+- ✅ Optional: include/exclude **Commuters** and **Tourists**
 
-        ### What to expect
-        - Fewer taxi trips after a short settling period.
-        - Existing taxis may still be visible briefly (finishing previous behavior), then traffic should decline.
-        - Can be enabled/disabled in Options menu. Set "citizens allowed to use taxis" to 100% to reset to vanilla; stops applying ignore taxi restrictions.
+### What to expect
+- Fewer taxi trips after a short adjustment period.
+- Existing taxis may still be visible briefly (finishing previous behavior), then taxi traffic declines.
+- Can be enabled/disabled in Options menu.
+- To disable: set "Citizens allowed to use taxis" to 100% (resets to game defaults); stops applying ignore taxi restrictions.
 
-        ### Safety / compatibility
-        - Save-safe and safe to remove anytime; works with new and existing cities.
-        - Can be enabled/disabled in-game (turn off checkboxes [ ] to stop applying changes).
-        - No Harmony based patching; less likely to break on game patch day.
+### Safety / compatibility
+- Safe to remove anytime.
+- No Harmony based patching; less likely to break on game patch day.
+- Tip: If you want to verify usage, check Options menu > mod Status, see if usage is going down after a city runs a little.
 
-        Tip: If you want to verify it’s working, enable “verbose taxi logging” temporarily and check the Status section in Options.
 
-        ### Credits and Thanks
-        - RiverMochi: mod author
-        - Noel/Noel2 (of MapExt): testing, feedback
-        - Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
+### Support and Feedback
+- Easiest way to support is click the LIKE 👍 button (top right).
+- Submit feedback using the Github or Discord icon links (right side of page). PR's are welcome.
 
-        ### How it works
-        - applies the game's own vanilla IgnoreTaxi flags.
+### Credits and Thanks
+- RiverMochi: mod author
+- Noel/Noel2 (of MapExt): testing, feedback
+- Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
 
-    </LongDescription>
+### How it works
+- Applies the game's own vanilla IgnoreTaxi flags which is easier and safer. Research shows using a heavy hammered disable of the complex taxi system creates scary frozen citizen zombies (before you ask, no we don't want that).
+
+</LongDescription>
 <!--Thumbnail-->
 <Thumbnail Value="Properties/Thumbnail-TaxiTraffic01.jpg" />
-	<!--Screenshot, can be set multiple times-->
+<!--Screenshot, can be set multiple times-->
 <Screenshot Value="" />
-	<!--Tag, can be set multiple times-->
+<!--Tag, can be set multiple times-->
 <Tag Value="" />
-	<!--Link to the forum post where the mod can be discussed-->
+<!--Link to the forum post where the mod can be discussed-->
 <ForumLink Value="" />
-	<!--Version of the mod-->
-<ModVersion Value="1.0.1" />
+<!--Version of the mod-->
+<ModVersion Value="0.5.0" />
 <!--Recommended version of the base game to use the mod-->
 <GameVersion Value="1.6.*" />
-	<!--Dependency for the mod, can be set multiple times-->
-	<Dependency Id="" />
+<!--Dependency for the mod, can be set multiple times-->
+<Dependency Id="" />
 <!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
-	<RequiredDLC Value="" />
+<RequiredDLC Value="" />
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog Value="" />
 <!--<ChangeLog>
-	</ChangeLog>-->
+</ChangeLog>-->
 <!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
-	<ExternalLink Type="" Url="" />
-	<!--Supported values Public, Private, Unlisted-->
+<ExternalLink Type="" Url="" />
+<!--Supported values Public, Private, Unlisted-->
 <AccessLevel Value="Public" />
 </Publish>

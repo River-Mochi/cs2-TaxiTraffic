@@ -23,15 +23,8 @@ namespace TaxiTraffic
         private const int kMarkBatchPerUpdate = 2000;
         private const int kUpdateIntervalFrames = 16;
 
-        // Broad fallback is only a short burst after settings change.
-        private const float kTaxiQueueSweepFastIntervalSeconds = 1.0f;
-        private const int kTaxiQueueSweepFastPasses = 3;
-
         private const float kDebugSummaryIntervalSeconds = 120.0f;
         private const uint kTaxiEligibilityHashSalt = 0x54415849u; // 'TAXI'
-
-        private double m_LastUnstickRealtime;
-        private int m_TaxiQueueSweepFastPassesRemaining;
 
         private int m_LastResidentsAllowedToUseTaxis = int.MinValue;
         private bool m_LastBlockCommuters;
@@ -67,9 +60,6 @@ namespace TaxiTraffic
             if (!isRealGame)
                 return;
 
-            m_LastUnstickRealtime = UnityEngine.Time.realtimeSinceStartupAsDouble;
-            m_TaxiQueueSweepFastPassesRemaining = 0;
-
             m_LastResidentsAllowedToUseTaxis = int.MinValue;
             m_LastBlockCommuters = false;
             m_LastBlockTourists = false;
@@ -100,32 +90,18 @@ namespace TaxiTraffic
             int skippedCommuters = 0;
             int skippedTourists = 0;
             int skippedGroupTravelers = 0;
+            int clearedGroupTravelers = 0;
 
+            // Soft-enforcement diagnostic build:
+            // do not cancel taxi requests, clear taxi lanes/queues, invalidate paths,
+            // or invoke outside-connection taxi cancellation.
             int clearedTaxiLaneWaiting = 0;
             int clearedTaxiStandWaiting = 0;
             int removedRideNeeders = 0;
 
-            // Stop OC taxi attempts before vanilla creates or dispatches their taxi request.
-            UpdateOutsideTaxiBlocking(
-                setting,
-                out int outsideTaxiWaitsCleared,
-                out int outsideRideNeedersRemoved);
-
-            clearedTaxiLaneWaiting += outsideTaxiWaitsCleared;
-            removedRideNeeders += outsideRideNeedersRemoved;
-
-            // Do not sweep all marked residents every update; too expensive in large cities.
-            int clearedGroupTravelers = 0;
-
             bool changed = DetectTaxiEligibilitySettingChange(setting);
             if (changed)
-            {
                 m_TaxiEligibilityResetInProgress = true;
-
-                // A few quick fallback passes catch waits created before the setting changed.
-                m_TaxiQueueSweepFastPassesRemaining = kTaxiQueueSweepFastPasses;
-                m_LastUnstickRealtime = UnityEngine.Time.realtimeSinceStartupAsDouble;
-            }
 
             // Setting changes clear old buckets before applying the new stable bucket.
             if (m_TaxiEligibilityResetInProgress)
@@ -153,8 +129,7 @@ namespace TaxiTraffic
                 m_TaxiEligibilityResetInProgress = false;
             }
 
-            // Group membership is dynamic: entering a group gets a temporary exemption;
-            // leaving it must re-enter normal eligibility.
+            // Travel-group exemption is no longer used; keep the compatibility/status hook.
             clearedGroupTravelers = MaintainGroupTaxiExemptionsBatch();
             s_StatusGroupRepairsTotal += clearedGroupTravelers;
 
@@ -191,33 +166,6 @@ namespace TaxiTraffic
                 out skippedCommuters,
                 out skippedTourists,
                 out skippedGroupTravelers);
-
-            // Vanilla clears IgnoreTaxi at arrival; reused creatures keep our blocked marker.
-            RepairStaleIgnoreTaxiOnTripStart();
-
-            // RideNeeder is already a narrow archetype, so stop invalid taxi requests every update.
-            UnstickTaxiLaneWaiters(
-                setting,
-                out int eligibilityTaxiWaitsCleared,
-                out int eligibilityRideNeedersRemoved);
-
-            clearedTaxiLaneWaiting += eligibilityTaxiWaitsCleared;
-            removedRideNeeders += eligibilityRideNeedersRemoved;
-
-            // Broad fallback is intentionally finite; repeated tests found zero maintenance clears.
-            if (m_TaxiQueueSweepFastPassesRemaining > 0)
-            {
-                double now = UnityEngine.Time.realtimeSinceStartupAsDouble;
-
-                if (now - m_LastUnstickRealtime >=
-                    kTaxiQueueSweepFastIntervalSeconds)
-                {
-                    m_LastUnstickRealtime = now;
-
-                    UnstickTaxiQueues(setting, out clearedTaxiStandWaiting);
-                    m_TaxiQueueSweepFastPassesRemaining--;
-                }
-            }
 
             RecordLastUpdateCounters(
                 appliedIgnoreTaxi,

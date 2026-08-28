@@ -20,7 +20,7 @@ namespace TaxiTraffic
     using Game;                      // UpdateSystem
     using Game.Modding;              // IMod
     using Game.SceneFlow;            // GameManager
-    using Game.Simulation;           // resident, depot, taxi, and ride systems
+    using Game.Simulation;           // ResidentAISystem
 
     public sealed class Mod : IMod
     {
@@ -111,11 +111,10 @@ namespace TaxiTraffic
                     exception: ex);
             }
 
-            // Clear blocked taxi waits before vanilla taxi dispatch/request systems use them.
-            updateSystem.UpdateAfter<TaxiTrafficSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
-            updateSystem.UpdateAfter<TaxiTrafficSystem, TransportDepotAISystem>(SystemUpdatePhase.GameSimulation);
-            updateSystem.UpdateBefore<TaxiTrafficSystem, TaxiDispatchSystem>(SystemUpdatePhase.GameSimulation);
-            updateSystem.UpdateBefore<TaxiTrafficSystem, RideNeederSystem>(SystemUpdatePhase.GameSimulation);
+            // Register exactly once. Run before ResidentAI so vanilla sees IgnoreTaxi
+            // when it chooses travel methods for future trips.
+            updateSystem.UpdateBefore<TaxiTrafficSystem, ResidentAISystem>(
+                SystemUpdatePhase.GameSimulation);
         }
 
         public void OnDispose()

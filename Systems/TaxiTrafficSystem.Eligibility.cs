@@ -10,15 +10,15 @@ namespace TaxiTraffic
 {
     using Game.Citizens;     // Citizen, HouseholdMember, commuter/tourist households
     using Game.Common;       // Deleted
-    using Game.Creatures;    // Resident, ResidentFlags, GroupMember, GroupCreature
+    using Game.Creatures;    // Resident, ResidentFlags, CurrentVehicle, RideNeeder, GroupMember, GroupCreature
     using Game.Objects;      // TripSource
-    using Game.Pathfind;     // PathOwner, PathFlags
+    using Game.Pathfind;     // prevent gs errors partial files
     using Game.Tools;        // Temp
     using Unity.Collections; // NativeList, Allocator
     using Unity.Entities;    // Entity, RefRO, RefRW
 
     // File: Systems/TaxiTrafficSystem.Eligibility.cs
-    // Household-consistent taxi eligibility and trip-start repair.
+    // Household-consistent taxi eligibility with soft enforcement.
 
     public partial class TaxiTrafficSystem
     {
@@ -59,6 +59,8 @@ namespace TaxiTraffic
                          .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
             {
+                // This only restores TaxiTraffic's own IgnoreTaxi bit.
+                // It does not repath, alter taxi queues, or cancel an active ride.
                 resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
                 blockedMarks.Add(entity);
 
@@ -134,6 +136,7 @@ namespace TaxiTraffic
                          .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
             {
+                // Restore vanilla taxi eligibility only for residents TaxiTraffic marked.
                 resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
                 toUnmark.Add(entity);
 
@@ -208,9 +211,15 @@ namespace TaxiTraffic
             foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<Resident>>()
                          .WithNone<IgnoreTaxiMark, TaxiAllowedMark, GroupTaxiAllowedMark>()
+                         .WithNone<CurrentVehicle, RideNeeder, TripSource>()
                          .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
             {
+                // Vanilla can set InVehicle before CurrentVehicle is added at EndFrame.
+                // Do not modify a resident during that valid boarding transition.
+                if ((resident.ValueRO.m_Flags & ResidentFlags.InVehicle) != 0)
+                    continue;
+
                 processed++;
 
                 bool shouldBlock = ShouldResidentIgnoreTaxiBySettings(
@@ -227,18 +236,10 @@ namespace TaxiTraffic
 
                 if (shouldBlock)
                 {
+                    // Soft enforcement only: affect future taxi route selection.
                     resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
                     toBlock.Add(entity);
                     applied++;
-
-                    // A path may already contain Taxi before this batch reaches the cim.
-                    if (SystemAPI.HasComponent<TripSource>(entity) &&
-                        SystemAPI.HasComponent<PathOwner>(entity))
-                    {
-                        RefRW<PathOwner> pathOwner = SystemAPI.GetComponentRW<PathOwner>(entity);
-                        pathOwner.ValueRW.m_State &= ~PathFlags.Failed;
-                        pathOwner.ValueRW.m_State |= PathFlags.Obsolete;
-                    }
                 }
                 else
                 {
@@ -254,65 +255,6 @@ namespace TaxiTraffic
 
             if (toAllow.Length > 0)
                 EntityManager.AddComponent<TaxiAllowedMark>(toAllow.AsArray());
-        }
-
-        private void RepairStaleIgnoreTaxiOnTripStart()
-        {
-#if DEBUG
-            int repaired = 0;
-#endif
-
-            using NativeList<Entity> toUnblock = new(Allocator.Temp);
-            using NativeList<Entity> toAllow = new(Allocator.Temp);
-
-            foreach ((RefRW<Resident> resident,
-                      RefRW<PathOwner> pathOwner,
-                      Entity entity) in SystemAPI
-                         .Query<RefRW<Resident>, RefRW<PathOwner>>()
-                         .WithAll<IgnoreTaxiMark, TripSource>()
-                         .WithNone<Deleted, Temp>()
-                         .WithEntityAccess())
-            {
-                if ((resident.ValueRO.m_Flags & ResidentFlags.IgnoreTaxi) != 0)
-                    continue;
-
-                // Vanilla clears IgnoreTaxi during trip reset/arrival. Re-check the
-                // current household first in case this cim changed households.
-                if (Mod.Setting is TaxiSettings setting &&
-                    !ShouldResidentIgnoreTaxiBySettings(
-                        setting,
-                        resident.ValueRO,
-                        out _,
-                        out _))
-                {
-                    toUnblock.Add(entity);
-
-                    if (!SystemAPI.HasComponent<TaxiAllowedMark>(entity))
-                        toAllow.Add(entity);
-
-                    continue;
-                }
-
-                resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
-
-                // Rebuild a path that may have been created while Taxi was allowed.
-                pathOwner.ValueRW.m_State &= ~PathFlags.Failed;
-                pathOwner.ValueRW.m_State |= PathFlags.Obsolete;
-
-#if DEBUG
-                repaired++;
-#endif
-            }
-
-            if (toUnblock.Length > 0)
-                EntityManager.RemoveComponent<IgnoreTaxiMark>(toUnblock.AsArray());
-
-            if (toAllow.Length > 0)
-                EntityManager.AddComponent<TaxiAllowedMark>(toAllow.AsArray());
-
-#if DEBUG
-            DebugRecordTripSourceRepairs(repaired);
-#endif
         }
 
         private bool ShouldResidentIgnoreTaxiBySettings(
@@ -376,7 +318,9 @@ namespace TaxiTraffic
                 return true;
             }
 
-            Game.Citizens.Citizen citizen = SystemAPI.GetComponentRO<Game.Citizens.Citizen>(citizenEntity).ValueRO;
+            Game.Citizens.Citizen citizen =
+                SystemAPI.GetComponentRO<Game.Citizens.Citizen>(citizenEntity).ValueRO;
+
             return GetStableCitizenTaxiEligibilityRoll(citizen) >= (uint)allowedPercent;
         }
 
