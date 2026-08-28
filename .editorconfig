@@ -76,9 +76,6 @@ csharp_using_directive_placement = outside_namespace:suggestion
 
 # Show unused usings, but do not remove them automatically.
 dotnet_diagnostic.IDE0005.severity = suggestion
-
-# Show unused usings, but do not remove them automatically.
-dotnet_diagnostic.IDE0005.severity = suggestion
 dotnet_diagnostic.IDE0073.severity = warning
 
 # Do not use backslash for header template, this needs normal quotes.
