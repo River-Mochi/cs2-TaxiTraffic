@@ -8,37 +8,37 @@
 <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 <!--LongDescription Value="This is a long description" /-->
 <LongDescription>
-### Taxi Traffic [BETA]
-Citizens make smarter travel choices by reducing taxi use.
+    ### Taxi Traffic [BETA]
+    Citizens make smarter travel choices by reducing taxi use.
 
-### What it does
-- ✅ Prevents most cims from choosing taxis
-- ✅ Optional: include/exclude **Commuters** and **Tourists**
+    ### What it does
+    - ✅ Prevents most cims from choosing taxis
+    - ✅ Optional: include/exclude **Commuters** and **Tourists**
 
-### What to expect
-- Fewer taxi trips after a short adjustment period.
-- Existing taxis may still be visible briefly (finishing previous behavior), then taxi traffic declines.
-- Can be enabled/disabled in Options menu.
-- To disable: set "Citizens allowed to use taxis" to 100% (resets to game defaults); stops applying ignore taxi restrictions.
+    ### What to expect
+    - Fewer taxi trips after a short adjustment period.
+    - Existing taxis may still be visible briefly (finishing previous behavior), then taxi traffic declines.
+    - Can be enabled/disabled in Options menu.
+    - To disable: set "Citizens allowed to use taxis" to 100% (resets to game defaults); stops applying ignore taxi restrictions.
 
-### Safety / compatibility
-- Safe to remove anytime.
-- No Harmony based patching; less likely to break on game patch day.
-- Tip: If you want to verify usage, check Options menu > mod Status, see if usage is going down after a city runs a little.
+    ### Safety / compatibility
+    - Safe to remove anytime.
+    - No Harmony based patching; less likely to break on game patch day.
+    - Tip: If you want to verify usage, check Options menu > mod Status, see if usage is going down after a city runs a little.
 
 
-### Support and Feedback
-- Easiest way to support is click the LIKE 👍 button (top right).
-- Submit feedback using the Github or Discord icon links (right side of page). PR's are welcome.
+    ### Support and Feedback
+    - Easiest way to support is click the LIKE 👍 button (top right).
+    - Submit feedback using the Github or Discord icon links (right side of page). PR's are welcome.
 
-### Credits and Thanks
-- RiverMochi: mod author
-- Noel/Noel2 (of MapExt): testing, feedback
-- Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
+    ### Credits and Thanks
+    - RiverMochi: mod author
+    - Noel/Noel2 (of MapExt): testing, feedback
+    - Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
 
-### How it works
-- Applies the game's own vanilla IgnoreTaxi flags which is easier and safer. Research shows using a heavy hammered disable of the complex taxi system creates scary frozen citizen zombies (before you ask, no we don't want that).
-
+    ### How it works
+    - Applies the game's own vanilla IgnoreTaxi flags which is easier and safer. Research shows using a heavy hammered disable of the complex taxi system creates scary frozen citizen zombies (before you ask, no we don't want that).
+    - Some taxis may still remain in the city. Taxi Traffic allows active trips and normal taxi-stand standby behavior to finish naturally for game stability.
 </LongDescription>
 <!--Thumbnail-->
 <Thumbnail Value="Properties/Thumbnail-TaxiTraffic01.jpg" />
