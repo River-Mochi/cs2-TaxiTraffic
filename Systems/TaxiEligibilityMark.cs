@@ -6,10 +6,10 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
+using Unity.Entities;
+
 namespace TaxiTraffic
 {
-    using Unity.Entities;
-
     // File: Systems/TaxiEligibilityMark.cs
     // Marker components used by TaxiTrafficSystem taxi eligibility batching.
 

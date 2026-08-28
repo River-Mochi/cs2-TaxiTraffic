@@ -6,14 +6,16 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-namespace TaxiTraffic
-{
     using Game.Common;       // Deleted
     using Game.Creatures;    // Resident, HumanCurrentLane, RideNeeder
     using Game.Pathfind;     // PathOwner, PathFlags
     using Game.Tools;        // Temp
     using Unity.Collections; // NativeList, Allocator
     using Unity.Entities;    // Entity, RefRO, RefRW
+
+namespace TaxiTraffic
+{
+
 
     // File: Systems/TaxiTrafficSystem.Waiting.cs
     // Taxi waiting-lane and taxi-queue cleanup.
