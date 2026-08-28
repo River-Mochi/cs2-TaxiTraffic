@@ -17,6 +17,7 @@ namespace TaxiTraffic
     using Unity.Collections; // NativeList, Allocator
     using Unity.Entities;    // Entity, RefRO, RefRW
 
+
     // File: Systems/TaxiTrafficSystem.Eligibility.cs
     // Household-consistent taxi eligibility with soft enforcement.
 

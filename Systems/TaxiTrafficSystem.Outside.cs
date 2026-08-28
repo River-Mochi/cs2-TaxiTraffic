@@ -6,17 +6,17 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
+using Game.Common;       // Deleted
+using Game.Creatures;    // Resident, HumanCurrentLane, RideNeeder
+using Game.Pathfind;     // PathOwner, PathFlags
+using Game.Tools;        // Temp
+using Unity.Collections; // NativeList, Allocator
+using Unity.Entities;    // Entity, RefRW
+
 namespace TaxiTraffic
 {
     // File: Systems/TaxiTrafficSystem.Outside.cs
     // Blocks taxi pickup attempts at outside connections before vanilla creates the request.
-
-    using Game.Common;       // Deleted
-    using Game.Creatures;    // Resident, HumanCurrentLane, RideNeeder
-    using Game.Pathfind;     // PathOwner, PathFlags
-    using Game.Tools;        // Temp
-    using Unity.Collections; // NativeList, Allocator
-    using Unity.Entities;    // Entity, RefRW
 
     public partial class TaxiTrafficSystem
     {
