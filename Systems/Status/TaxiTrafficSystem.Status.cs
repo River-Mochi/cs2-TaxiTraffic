@@ -14,7 +14,7 @@ namespace TaxiTraffic
     using System;               // DateTime, Math
     using System.Globalization; // CultureInfo
     using Game;                 // GameMode extensions
-    using Game.Citizens;        // HouseholdMember, commuter/tourist households
+   // using Game.Citizens;        // HouseholdMember, commuter/tourist households
     using Game.Common;          // Deleted
     using Game.Creatures;       // ResidentFlags, HumanCurrentLane
     using Game.Events;          // InvolvedInAccident

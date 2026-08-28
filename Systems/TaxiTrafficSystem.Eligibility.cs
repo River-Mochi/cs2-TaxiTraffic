@@ -278,8 +278,7 @@ namespace TaxiTraffic
 
                 // Vanilla clears IgnoreTaxi during trip reset/arrival. Re-check the
                 // current household first in case this cim changed households.
-                TaxiSettings? setting = Mod.Setting;
-                if (setting != null &&
+                if (Mod.Setting is TaxiSettings setting &&
                     !ShouldResidentIgnoreTaxiBySettings(
                         setting,
                         resident.ValueRO,
@@ -372,12 +371,12 @@ namespace TaxiTraffic
 
             // Rare fallback for a Resident whose Citizen has no usable household link.
             if (citizenEntity == Entity.Null ||
-                !SystemAPI.HasComponent<Citizen>(citizenEntity))
+                !SystemAPI.HasComponent<Game.Citizens.Citizen>(citizenEntity))
             {
                 return true;
             }
 
-            Citizen citizen = SystemAPI.GetComponentRO<Citizen>(citizenEntity).ValueRO;
+            Game.Citizens.Citizen citizen = SystemAPI.GetComponentRO<Game.Citizens.Citizen>(citizenEntity).ValueRO;
             return GetStableCitizenTaxiEligibilityRoll(citizen) >= (uint)allowedPercent;
         }
 
@@ -392,7 +391,7 @@ namespace TaxiTraffic
             return MixTaxiEligibilitySeed(seed) % 100u;
         }
 
-        private static uint GetStableCitizenTaxiEligibilityRoll(Citizen citizen)
+        private static uint GetStableCitizenTaxiEligibilityRoll(Game.Citizens.Citizen citizen)
         {
             uint seed = ((uint)citizen.m_PseudoRandom << 16) | citizen.m_PseudoRandom;
             return MixTaxiEligibilitySeed(seed) % 100u;

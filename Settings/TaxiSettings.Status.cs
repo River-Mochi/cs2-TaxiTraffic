@@ -14,7 +14,6 @@ namespace TaxiTraffic
     using System.Text;
     using CS2Shared.RiverMochi; // LocaleUtils, LogUtils
     using Game.Settings;
-    using Game.UI;       // SettingsUIHidden
 
     public sealed partial class TaxiSettings
     {
