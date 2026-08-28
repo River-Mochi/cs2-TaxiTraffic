@@ -8,10 +8,12 @@
 
 namespace TaxiTraffic
 {
+    using Unity.Entities;
+
     // File: Systems/TaxiEligibilityMark.cs
     // Marker components used by TaxiTrafficSystem taxi eligibility batching.
 
-    using Unity.Entities;
+
 
 
     internal struct IgnoreTaxiMark : IComponentData

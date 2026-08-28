@@ -14,9 +14,8 @@ namespace TaxiTraffic
     using Game.Objects;      // TripSource
     using Game.Pathfind;     // prevent gs errors partial files
     using Game.Tools;        // Temp
-    using Unity.Collections; // NativeList, Allocator
-    using Unity.Entities;    // Entity, RefRO, RefRW
-
+    using Unity.Collections; // Allocator
+    using Unity.Entities;    // Entity, EntityCommandBuffer, RefRO, RefRW
 
     // File: Systems/TaxiTrafficSystem.Eligibility.cs
     // Household-consistent taxi eligibility with soft enforcement.
@@ -50,9 +49,9 @@ namespace TaxiTraffic
         {
             int resetCount = 0;
 
-            using NativeList<Entity> blockedMarks = new(Allocator.Temp);
-            using NativeList<Entity> allowedMarks = new(Allocator.Temp);
-            using NativeList<Entity> groupAllowedMarks = new(Allocator.Temp);
+            // Record structural marker removals while SystemAPI is enumerating,
+            // then apply them after the queries have finished.
+            EntityCommandBuffer buffer = new EntityCommandBuffer(Allocator.Temp);
 
             foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<Resident>>()
@@ -63,7 +62,7 @@ namespace TaxiTraffic
                 // This only restores TaxiTraffic's own IgnoreTaxi bit.
                 // It does not repath, alter taxi queues, or cancel an active ride.
                 resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
-                blockedMarks.Add(entity);
+                buffer.RemoveComponent<IgnoreTaxiMark>(entity);
 
                 resetCount++;
                 if (resetCount >= kMarkBatchPerUpdate)
@@ -78,7 +77,7 @@ namespace TaxiTraffic
                              .WithNone<Deleted, Temp>()
                              .WithEntityAccess())
                 {
-                    allowedMarks.Add(entity);
+                    buffer.RemoveComponent<TaxiAllowedMark>(entity);
 
                     resetCount++;
                     if (resetCount >= kMarkBatchPerUpdate)
@@ -95,7 +94,7 @@ namespace TaxiTraffic
                              .WithNone<Deleted, Temp>()
                              .WithEntityAccess())
                 {
-                    groupAllowedMarks.Add(entity);
+                    buffer.RemoveComponent<GroupTaxiAllowedMark>(entity);
 
                     resetCount++;
                     if (resetCount >= kMarkBatchPerUpdate)
@@ -103,14 +102,8 @@ namespace TaxiTraffic
                 }
             }
 
-            if (blockedMarks.Length > 0)
-                EntityManager.RemoveComponent<IgnoreTaxiMark>(blockedMarks.AsArray());
-
-            if (allowedMarks.Length > 0)
-                EntityManager.RemoveComponent<TaxiAllowedMark>(allowedMarks.AsArray());
-
-            if (groupAllowedMarks.Length > 0)
-                EntityManager.RemoveComponent<GroupTaxiAllowedMark>(groupAllowedMarks.AsArray());
+            buffer.Playback(EntityManager);
+            buffer.Dispose();
 
             return resetCount;
         }
@@ -126,9 +119,8 @@ namespace TaxiTraffic
         {
             unmarkedCount = 0;
 
-            using NativeList<Entity> toUnmark = new(Allocator.Temp);
-            using NativeList<Entity> allowedMarks = new(Allocator.Temp);
-            using NativeList<Entity> groupAllowedMarks = new(Allocator.Temp);
+            // Use one temporary ECB instead of several temporary entity lists.
+            EntityCommandBuffer buffer = new EntityCommandBuffer(Allocator.Temp);
 
             int processed = 0;
             foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
@@ -139,8 +131,9 @@ namespace TaxiTraffic
             {
                 // Restore vanilla taxi eligibility only for residents TaxiTraffic marked.
                 resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
-                toUnmark.Add(entity);
+                buffer.RemoveComponent<IgnoreTaxiMark>(entity);
 
+                unmarkedCount++;
                 processed++;
                 if (processed >= kMarkBatchPerUpdate)
                     break;
@@ -154,7 +147,7 @@ namespace TaxiTraffic
                              .WithNone<Deleted, Temp>()
                              .WithEntityAccess())
                 {
-                    allowedMarks.Add(entity);
+                    buffer.RemoveComponent<TaxiAllowedMark>(entity);
 
                     processed++;
                     if (processed >= kMarkBatchPerUpdate)
@@ -170,7 +163,7 @@ namespace TaxiTraffic
                              .WithNone<Deleted, Temp>()
                              .WithEntityAccess())
                 {
-                    groupAllowedMarks.Add(entity);
+                    buffer.RemoveComponent<GroupTaxiAllowedMark>(entity);
 
                     processed++;
                     if (processed >= kMarkBatchPerUpdate)
@@ -178,17 +171,8 @@ namespace TaxiTraffic
                 }
             }
 
-            if (toUnmark.Length > 0)
-            {
-                EntityManager.RemoveComponent<IgnoreTaxiMark>(toUnmark.AsArray());
-                unmarkedCount = toUnmark.Length;
-            }
-
-            if (allowedMarks.Length > 0)
-                EntityManager.RemoveComponent<TaxiAllowedMark>(allowedMarks.AsArray());
-
-            if (groupAllowedMarks.Length > 0)
-                EntityManager.RemoveComponent<GroupTaxiAllowedMark>(groupAllowedMarks.AsArray());
+            buffer.Playback(EntityManager);
+            buffer.Dispose();
         }
 
         private void ApplyTaxiEligibilityBatch(
@@ -205,8 +189,10 @@ namespace TaxiTraffic
             // Kept for existing status/report plumbing; travel groups are no longer exempt.
             skippedGroupTravelers = 0;
 
-            using NativeList<Entity> toBlock = new(Allocator.Temp);
-            using NativeList<Entity> toAllow = new(Allocator.Temp);
+            // ResidentFlags.IgnoreTaxi is written immediately so vanilla ResidentAI
+            // sees the setting this frame. Only TaxiTraffic's structural marker
+            // components are deferred until after the SystemAPI query finishes.
+            EntityCommandBuffer buffer = new EntityCommandBuffer(Allocator.Temp);
 
             int processed = 0;
             foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
@@ -239,23 +225,20 @@ namespace TaxiTraffic
                 {
                     // Soft enforcement only: affect future taxi route selection.
                     resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
-                    toBlock.Add(entity);
+                    buffer.AddComponent<IgnoreTaxiMark>(entity);
                     applied++;
                 }
                 else
                 {
-                    toAllow.Add(entity);
+                    buffer.AddComponent<TaxiAllowedMark>(entity);
                 }
 
                 if (processed >= kMarkBatchPerUpdate)
                     break;
             }
 
-            if (toBlock.Length > 0)
-                EntityManager.AddComponent<IgnoreTaxiMark>(toBlock.AsArray());
-
-            if (toAllow.Length > 0)
-                EntityManager.AddComponent<TaxiAllowedMark>(toAllow.AsArray());
+            buffer.Playback(EntityManager);
+            buffer.Dispose();
         }
 
         private bool ShouldResidentIgnoreTaxiBySettings(
