@@ -84,8 +84,8 @@ namespace TaxiTraffic
                     "Resident households allowed to use taxis"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.ResidentsAllowedToUseTaxis)),
-                    "Controls taxi eligibility for local resident households.\n" +
-                    "<0% = households avoid taxis> as much as possible.\n" +
+                    "Controls taxi eligibility for local citizens.\n" +
+                    "<0% = maximum reduced usage.\n" +
                     "<25% = ~1 in 4> households can use taxis.\n" +
                     "<50% = ~half> can use taxis.\n" +
                     "<75% = ~3 in 4> can use taxis.\n" +
