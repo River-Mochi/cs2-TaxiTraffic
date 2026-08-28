@@ -89,7 +89,7 @@ namespace TaxiTraffic
                     "<25% = ~1 in 4> households can use taxis.\n" +
                     "<50% = ~half> can use taxis.\n" +
                     "<75% = ~3 in 4> can use taxis.\n" +
-                    "<100% = vanilla taxi> usage.\n" +
+                    "<100% = default game taxi> normal usage.\n" +
                     "Everyone in the same household gets the same long-term taxi setting.\n" +
                     "0% greatly reduces usage. A small amount may remain because separate game systems, e.g. Leisure, can independently allow taxis for some trips.\n" +
                     "At 0%, make sure citizens still have a non-taxi way to reach an outside connection when leaving the city (bus, train, etc.).\n" +
