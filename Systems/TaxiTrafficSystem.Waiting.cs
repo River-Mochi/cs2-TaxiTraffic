@@ -14,12 +14,9 @@ namespace TaxiTraffic
     using Game.Common;       // Deleted
     using Game.Creatures;    // Resident, HumanCurrentLane, RideNeeder
     using Game.Pathfind;     // PathOwner, PathFlags
-
     using Game.Tools;        // Temp
-    using Game.Vehicles;     // Taxi
     using Unity.Collections; // NativeList, Allocator
     using Unity.Entities;    // Entity, RefRO, RefRW
-
 
     public partial class TaxiTrafficSystem
     {
@@ -45,17 +42,23 @@ namespace TaxiTraffic
                       Entity entity) in SystemAPI
                          .Query<RefRW<Resident>, RefRW<HumanCurrentLane>, RefRW<PathOwner>>()
                          .WithAll<RideNeeder>()
-                         .WithNone<GroupMember, Deleted, Temp>()
-                         .WithNone<GroupCreature>()
+                         .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
             {
-                CreatureLaneFlags taxiWaitMask = CreatureLaneFlags.ParkingSpace | CreatureLaneFlags.Taxi;
+                CreatureLaneFlags taxiWaitMask =
+                    CreatureLaneFlags.ParkingSpace | CreatureLaneFlags.Taxi;
 
                 if ((lane.ValueRO.m_Flags & taxiWaitMask) != taxiWaitMask)
                     continue;
 
-                if (!ShouldResidentIgnoreTaxiBySettings(setting, resident.ValueRO, out _, out _))
+                if (!ShouldResidentIgnoreTaxiBySettings(
+                    setting,
+                    resident.ValueRO,
+                    out _,
+                    out _))
+                {
                     continue;
+                }
 
                 if ((resident.ValueRO.m_Flags & ResidentFlags.IgnoreTaxi) == 0)
                     resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
@@ -72,7 +75,7 @@ namespace TaxiTraffic
                 pathOwner.ValueRW.m_State &= ~PathFlags.Failed;
                 pathOwner.ValueRW.m_State |= PathFlags.Obsolete;
 
-                // Removing RideNeeder makes TaxiDispatch invalidate the old request instead of relinking it.
+                // Let vanilla invalidate the old request and repath without Taxi.
                 toRemoveRideNeeder.Add(entity);
                 clearedTaxiLaneWaiting++;
             }
@@ -90,7 +93,9 @@ namespace TaxiTraffic
             }
         }
 
-        private void UnstickTaxiQueues(TaxiSettings setting, out int clearedTaxiStandWaiting)
+        private void UnstickTaxiQueues(
+            TaxiSettings setting,
+            out int clearedTaxiStandWaiting)
         {
 #if DEBUG
             long debugStartTicks = DebugGetTimestamp();
@@ -109,8 +114,7 @@ namespace TaxiTraffic
                       RefRW<PathOwner> pathOwner,
                       Entity entity) in SystemAPI
                          .Query<RefRW<Resident>, RefRW<HumanCurrentLane>, RefRW<PathOwner>>()
-                         .WithNone<GroupMember, Deleted, Temp>()
-                         .WithNone<GroupCreature>()
+                         .WithNone<Deleted, Temp>()
                          .WithEntityAccess())
             {
 #if DEBUG
@@ -135,8 +139,14 @@ namespace TaxiTraffic
                 debugTaxiQueue++;
 #endif
 
-                if (!ShouldResidentIgnoreTaxiBySettings(setting, resident.ValueRO, out _, out _))
+                if (!ShouldResidentIgnoreTaxiBySettings(
+                    setting,
+                    resident.ValueRO,
+                    out _,
+                    out _))
+                {
                     continue;
+                }
 
                 if ((resident.ValueRO.m_Flags & ResidentFlags.IgnoreTaxi) == 0)
                     resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
@@ -149,7 +159,8 @@ namespace TaxiTraffic
 
                 resident.ValueRW.m_Flags &= ~ResidentFlags.WaitingTransport;
                 lane.ValueRW.m_QueueEntity = Entity.Null;
-                lane.ValueRW.m_Flags &= ~(CreatureLaneFlags.ParkingSpace | CreatureLaneFlags.Taxi);
+                lane.ValueRW.m_Flags &=
+                    ~(CreatureLaneFlags.ParkingSpace | CreatureLaneFlags.Taxi);
 
                 pathOwner.ValueRW.m_State &= ~PathFlags.Failed;
                 pathOwner.ValueRW.m_State |= PathFlags.Obsolete;
@@ -188,7 +199,8 @@ namespace TaxiTraffic
                     return false;
 
                 Entity connected =
-                    SystemAPI.GetComponentRO<Game.Routes.Connected>(queueEntity).ValueRO.m_Connected;
+                    SystemAPI.GetComponentRO<Game.Routes.Connected>(
+                        queueEntity).ValueRO.m_Connected;
 
                 if (connected == Entity.Null || connected == queueEntity)
                     return false;
@@ -204,17 +216,19 @@ namespace TaxiTraffic
 
         private bool IsDirectTaxiQueueEntity(Entity queueEntity)
         {
-           if (SystemAPI.HasComponent<Game.Routes.TaxiStand>(queueEntity))
+            if (SystemAPI.HasComponent<Game.Routes.TaxiStand>(queueEntity))
                 return true;
 
             if (!SystemAPI.HasComponent<Game.Routes.BoardingVehicle>(queueEntity))
                 return false;
 
             Game.Routes.BoardingVehicle boardingVehicle =
-                SystemAPI.GetComponentRO<Game.Routes.BoardingVehicle>(queueEntity).ValueRO;
+                SystemAPI.GetComponentRO<Game.Routes.BoardingVehicle>(
+                    queueEntity).ValueRO;
 
             return boardingVehicle.m_Vehicle != Entity.Null &&
-                   SystemAPI.HasComponent<Taxi>(boardingVehicle.m_Vehicle);
+                   SystemAPI.HasComponent<Game.Vehicles.Taxi>(
+                       boardingVehicle.m_Vehicle);
         }
     }
 }

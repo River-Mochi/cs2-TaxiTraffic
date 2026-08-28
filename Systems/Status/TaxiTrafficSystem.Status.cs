@@ -16,7 +16,7 @@ namespace TaxiTraffic
     using Game;                 // GameMode extensions
     using Game.Citizens;        // HouseholdMember, commuter/tourist households
     using Game.Common;          // Deleted
-    using Game.Creatures;       // ResidentFlags, Passenger, HumanCurrentLane
+    using Game.Creatures;       // ResidentFlags, HumanCurrentLane
     using Game.Events;          // InvolvedInAccident
     using Game.SceneFlow;       // GameManager
     // Game.Simulation types stay fully qualified because Entities source-gen can misresolve partial-system usings.
@@ -440,11 +440,11 @@ namespace TaxiTraffic
                     }
                 }
 
-                if (!SystemAPI.HasBuffer<Game.Creatures.Passenger>(taxiEntity))
+                if (!SystemAPI.HasBuffer<Game.Vehicles.Passenger>(taxiEntity))
                     continue;
 
-                DynamicBuffer<Game.Creatures.Passenger> passengers =
-                    SystemAPI.GetBuffer<Game.Creatures.Passenger>(taxiEntity);
+                DynamicBuffer<Game.Vehicles.Passenger> passengers =
+                    SystemAPI.GetBuffer<Game.Vehicles.Passenger>(taxiEntity);
 
                 for (int i = 0; i < passengers.Length; i++)
                 {
