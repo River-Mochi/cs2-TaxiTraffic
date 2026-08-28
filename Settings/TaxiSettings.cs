@@ -156,6 +156,20 @@ namespace TaxiTraffic
         [SettingsUIButtonGroup(DebugGroup)]
         [SettingsUIButton]
         [SettingsUISection(AboutTab, DebugGroup)]
+        public bool WriteStatusReportAbout
+        {
+            set
+            {
+                if (!value)
+                    return;
+
+                WriteStatusReportToLog = true;
+            }
+        }
+
+        [SettingsUIButtonGroup(DebugGroup)]
+        [SettingsUIButton]
+        [SettingsUISection(AboutTab, DebugGroup)]
         public bool OpenLogFile
         {
             set
