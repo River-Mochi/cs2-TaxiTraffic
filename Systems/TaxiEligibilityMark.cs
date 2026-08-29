@@ -7,32 +7,34 @@
 // ================= </copyright> ======================
 
 // File: Systems/TaxiEligibilityMark.cs
-// Purpose: marker components used by TaxiTrafficSystem taxi eligibility batching.
+// Purpose: Taxi Traffic ownership markers.
 
 using Unity.Entities;
 
 namespace TaxiTraffic
 {
+    // Active marker: Taxi Traffic turned on ResidentFlags.IgnoreTaxi.
+    // This lets us clear only our own flag when settings later allow taxis.
     internal struct IgnoreTaxiMark : IComponentData
     {
     }
 
+    // Legacy inert marker types kept temporarily so test saves/builds that knew
+    // these component types remain compatible. New code never adds or queries them.
     internal struct TaxiAllowedMark : IComponentData
     {
     }
 
-    // Temporary exemption while a Resident is linked to a travel group.
-    // Kept separate so leaving the group sends the Resident back through normal eligibility.
     internal struct GroupTaxiAllowedMark : IComponentData
     {
     }
 
-    // Temporary block while a cim is still at an outside-connection taxi pickup.
+    // Outside-connection feature markers. This feature is isolated from normal
+    // resident eligibility and only runs when Block outside taxis is enabled.
     internal struct OutsideTaxiBlockMark : IComponentData
     {
     }
 
-    // We turned on IgnoreTaxi for the temporary OC block, so we may clear it later.
     internal struct OutsideTaxiOwnsIgnoreMark : IComponentData
     {
     }

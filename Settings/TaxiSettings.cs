@@ -31,8 +31,8 @@ namespace TaxiTraffic
 #endif
         StatusActionsGroup,
         AboutInfoGroup,
-        DebugGroup,
-        AboutLinksGroup
+        AboutLinksGroup,
+        DebugGroup
     )]
     [SettingsUIShowGroupName(
         BehaviorGroup,
@@ -44,8 +44,8 @@ namespace TaxiTraffic
 #endif
         StatusActionsGroup,
         AboutInfoGroup,
-        DebugGroup,
-        AboutLinksGroup
+        AboutLinksGroup,
+        DebugGroup
     )]
     public sealed partial class TaxiSettings : ModSetting
     {
@@ -67,17 +67,19 @@ namespace TaxiTraffic
         public const string AboutInfoGroup = "Info";
         public const string AboutLinksGroup = "Support Links";
 
-        internal const int kTaxiAllowedPercentMin = 0;
-        internal const int kTaxiAllowedPercentMax = 100;
-        internal const int kTaxiAllowedPercentStep = 25;
-        internal const int kTaxiAllowedPercentDefault = 0;
+        internal const int kTaxiAvoidPercentMin = 0;
+        internal const int kTaxiAvoidPercentMax = 100;
+        internal const int kTaxiAvoidPercentStep = 25;
+
+        // Preserve the original mod's first-install intent: local residents avoid taxis.
+        internal const int kTaxiAvoidPercentDefault = 100;
 
         private const string kUrlParadox =
             "https://mods.paradoxplaza.com/authors/River-mochi/cities_skylines_2?games=cities_skylines_2&orderBy=desc&sortBy=best&time=alltime";
 
         private const string kUrlDiscord = "https://discord.gg/gwXgvtyhjc";
 
-        private int m_ResidentsAllowedToUseTaxis = kTaxiAllowedPercentDefault;
+        private int m_ResidentsAvoidTaxis = kTaxiAvoidPercentDefault;
 
         public TaxiSettings(IMod mod) : base(mod)
         {
@@ -87,17 +89,17 @@ namespace TaxiTraffic
         // ---- Actions ----
 
         [SettingsUISlider(
-            min = kTaxiAllowedPercentMin,
-            max = kTaxiAllowedPercentMax,
-            step = kTaxiAllowedPercentStep,
+            min = kTaxiAvoidPercentMin,
+            max = kTaxiAvoidPercentMax,
+            step = kTaxiAvoidPercentStep,
             scalarMultiplier = 1,
             unit = Unit.kPercentage)]
         [SettingsUISection(ActionsTab, BehaviorGroup)]
         [SettingsUISetter(typeof(TaxiSettings), nameof(OnTaxiEligibilitySliderChanged))]
-        public int ResidentsAllowedToUseTaxis
+        public int ResidentsAvoidTaxis
         {
-            get => m_ResidentsAllowedToUseTaxis;
-            set => m_ResidentsAllowedToUseTaxis = SnapTaxiAllowedPercent(value);
+            get => m_ResidentsAvoidTaxis;
+            set => m_ResidentsAvoidTaxis = SnapTaxiAvoidPercent(value);
         }
 
         [SettingsUISection(ActionsTab, BehaviorGroup)]
@@ -138,7 +140,16 @@ namespace TaxiTraffic
             }
         }
 
-        // Release always reads false, even if a DEBUG run saved verbose logging as enabled.
+        // ---- Status display options ----
+
+        [SettingsUISection(StatusTab, LastUpdateGroup)]
+        public bool ShowLastUpdateInfo
+        {
+            get; set;
+        }
+
+        // ---- Debug / logging ----
+
 #if DEBUG
         [SettingsUISection(AboutTab, DebugGroup)]
         public bool EnableDebugLogging
@@ -232,17 +243,17 @@ namespace TaxiTraffic
 
         public override void SetDefaults()
         {
-            // First install: local residents avoid taxis; other groups and outside supply stay vanilla.
-            ResidentsAllowedToUseTaxis = kTaxiAllowedPercentDefault;
+            ResidentsAvoidTaxis = kTaxiAvoidPercentDefault;
             BlockCommuters = false;
             BlockTourists = false;
             BlockOutsideTaxis = false;
+            ShowLastUpdateInfo = false;
             EnableDebugLogging = false;
         }
 
         private void ApplyGameDefaults()
         {
-            ResidentsAllowedToUseTaxis = kTaxiAllowedPercentMax;
+            ResidentsAvoidTaxis = kTaxiAvoidPercentMin;
             BlockCommuters = false;
             BlockTourists = false;
             BlockOutsideTaxis = false;
@@ -271,12 +282,18 @@ namespace TaxiTraffic
             TaxiTrafficSystem.RequestStatusRefresh(force: true);
         }
 
-        private static int SnapTaxiAllowedPercent(int value)
+        private static int SnapTaxiAvoidPercent(int value)
         {
-            int clamped = Math.Max(kTaxiAllowedPercentMin, Math.Min(kTaxiAllowedPercentMax, value));
-            int snapped = ((clamped + (kTaxiAllowedPercentStep / 2)) / kTaxiAllowedPercentStep) * kTaxiAllowedPercentStep;
+            int clamped =
+                Math.Max(kTaxiAvoidPercentMin, Math.Min(kTaxiAvoidPercentMax, value));
 
-            return Math.Max(kTaxiAllowedPercentMin, Math.Min(kTaxiAllowedPercentMax, snapped));
+            int snapped =
+                ((clamped + (kTaxiAvoidPercentStep / 2)) / kTaxiAvoidPercentStep) *
+                kTaxiAvoidPercentStep;
+
+            return Math.Max(
+                kTaxiAvoidPercentMin,
+                Math.Min(kTaxiAvoidPercentMax, snapped));
         }
     }
 }

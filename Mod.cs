@@ -44,7 +44,6 @@ namespace TaxiTraffic
 
         public void OnLoad(UpdateSystem updateSystem)
         {
-            // Shared helpers need the mod ID so fallback logs still use TaxiTraffic.log.
             LogUtils.Configure(ModId);
             ShellOpen.Configure(s_Log, ModId, ModTag);
 
@@ -59,7 +58,6 @@ namespace TaxiTraffic
 
             try
             {
-                // Add locale text before Options UI registration; the UI looks up these keys when it builds the page.
                 LocalizationManager? lm = GameManager.instance?.localizationManager;
                 if (lm != null)
                 {
@@ -84,7 +82,6 @@ namespace TaxiTraffic
 
             try
             {
-                // Saved user settings replace defaults after locale keys exist.
                 TaxiSettings defaults = new(this);
                 AssetDatabase.global.LoadSettings(ModId, setting, defaults, userSetting: true);
             }
@@ -99,7 +96,6 @@ namespace TaxiTraffic
 
             try
             {
-                // Locale setup before register so that Options UI can use localized text.
                 setting.RegisterInOptionsUI();
             }
             catch (Exception ex)
@@ -111,8 +107,9 @@ namespace TaxiTraffic
                     exception: ex);
             }
 
-            // Register exactly once. Match the previously stable ordering:
-            // let vanilla ResidentAI finish this tick before TaxiTraffic changes future taxi eligibility.
+            // Register exactly once. Keep the ordering used by the previously stable mod:
+            // vanilla ResidentAI finishes its work first, then Taxi Traffic changes
+            // eligibility for future travel decisions.
             updateSystem.UpdateAfter<TaxiTrafficSystem, ResidentAISystem>(
                 SystemUpdatePhase.GameSimulation);
         }
