@@ -6,14 +6,13 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
+// File: Systems/TaxiMarkEligible.cs
+// Purpose: Taxi Traffic ownership markers.
+
+using Unity.Entities;
+
 namespace TaxiTraffic
 {
-    // File: Systems/TaxiMarkEligible.cs
-    // Purpose: Taxi Traffic ownership markers.
-
-    using Unity.Entities;
-
-
     // Active marker: Taxi Traffic turned on ResidentFlags.IgnoreTaxi.
     // This lets us clear only our own flag when settings later allow taxis.
     internal struct IgnoreTaxiMark : IComponentData
