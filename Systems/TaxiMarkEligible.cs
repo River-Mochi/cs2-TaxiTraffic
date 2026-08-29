@@ -1,4 +1,4 @@
-// <copyright file="TaxiEligibilityMark.cs" company="River-Mochi">
+﻿// <copyright file="TaxiMarkEligible.cs" company="River-Mochi">
 // Copyright (c) 2026 River-Mochi. All rights reserved.
 // Licensed under the GNU General Public License v3.0 or later,
 // with the Cities: Skylines II Linking Exception.
@@ -6,13 +6,14 @@
 // This notice MUST be kept with copies or substantial portions of this code.
 // ================= </copyright> ======================
 
-// File: Systems/TaxiEligibilityMark.cs
-// Purpose: Taxi Traffic ownership markers.
-
-using Unity.Entities;
-
 namespace TaxiTraffic
 {
+    // File: Systems/TaxiMarkEligible.cs
+    // Purpose: Taxi Traffic ownership markers.
+
+    using Unity.Entities;
+
+
     // Active marker: Taxi Traffic turned on ResidentFlags.IgnoreTaxi.
     // This lets us clear only our own flag when settings later allow taxis.
     internal struct IgnoreTaxiMark : IComponentData
