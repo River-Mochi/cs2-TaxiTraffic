@@ -111,9 +111,9 @@ namespace TaxiTraffic
                     exception: ex);
             }
 
-            // Register exactly once. Run before ResidentAI so vanilla sees IgnoreTaxi
-            // when it chooses travel methods for future trips.
-            updateSystem.UpdateBefore<TaxiTrafficSystem, ResidentAISystem>(
+            // Register exactly once. Match the previously stable ordering:
+            // let vanilla ResidentAI finish this tick before TaxiTraffic changes future taxi eligibility.
+            updateSystem.UpdateAfter<TaxiTrafficSystem, ResidentAISystem>(
                 SystemUpdatePhase.GameSimulation);
         }
 

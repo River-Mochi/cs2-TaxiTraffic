@@ -9,11 +9,10 @@
 // File: Systems/TaxiTrafficSystem.Core.cs
 // Purpose: system lifecycle and update coordinator.
 
-using Game;              // GameSystemBase, GameMode
+using Game; // GameSystemBase, GameMode
 
 namespace TaxiTraffic
 {
-
     public partial class TaxiTrafficSystem : GameSystemBase
     {
         private const int kMarkBatchPerUpdate = 2000;
@@ -21,6 +20,8 @@ namespace TaxiTraffic
 
         private const float kDebugSummaryIntervalSeconds = 120.0f;
         private const uint kTaxiEligibilityHashSalt = 0x54415849u; // 'TAXI'
+
+        private static TaxiTrafficSystem? s_Instance;
 
         private int m_LastResidentsAllowedToUseTaxis = int.MinValue;
         private bool m_LastBlockCommuters;
@@ -36,10 +37,20 @@ namespace TaxiTraffic
         {
             base.OnCreate();
 
+            s_Instance = this;
+
             InitStatusSystemsOnCreate();
 
             // Only run after a real city is loaded.
             Enabled = false;
+        }
+
+        protected override void OnDestroy()
+        {
+            if (ReferenceEquals(s_Instance, this))
+                s_Instance = null;
+
+            base.OnDestroy();
         }
 
         protected override void OnGameLoadingComplete(
@@ -64,6 +75,8 @@ namespace TaxiTraffic
             ResetDebugOnCityLoaded();
             ResetStatusOnCityLoaded();
 
+            // Wake once on city load. If all settings are vanilla, OnUpdate removes
+            // any old TaxiTraffic markers and then disables this system completely.
             Enabled = true;
 
 #if DEBUG
@@ -71,6 +84,12 @@ namespace TaxiTraffic
                 Mod.s_Log,
                 () => $"{Mod.ModTag} TaxiTrafficSystem enabled (city load complete).");
 #endif
+        }
+
+        internal static void WakeForSettingsChange()
+        {
+            if (s_Instance != null)
+                s_Instance.Enabled = true;
         }
 
         protected override void OnUpdate()
@@ -95,12 +114,19 @@ namespace TaxiTraffic
             int clearedTaxiStandWaiting = 0;
             int removedRideNeeders = 0;
 
+            bool vanillaMode =
+                setting.ResidentsAllowedToUseTaxis >= TaxiSettings.kTaxiAllowedPercentMax &&
+                !setting.BlockCommuters &&
+                !setting.BlockTourists &&
+                !setting.BlockOutsideTaxis;
+
             bool changed = DetectTaxiEligibilitySettingChange(setting);
             if (changed)
                 m_TaxiEligibilityResetInProgress = true;
 
             // Setting changes clear old buckets before applying the new stable bucket.
-            if (m_TaxiEligibilityResetInProgress)
+            // Vanilla mode also runs this cleanup until every TaxiTraffic marker is gone.
+            if (m_TaxiEligibilityResetInProgress || vanillaMode)
             {
                 int resetCount = ResetTaxiEligibilityMarkersBatch();
 
@@ -123,23 +149,29 @@ namespace TaxiTraffic
                 }
 
                 m_TaxiEligibilityResetInProgress = false;
+
+                if (vanillaMode)
+                {
+                    // True vanilla/no-op state: after our markers are gone, stop scheduling
+                    // TaxiTraffic entirely. A settings UI change wakes the system again.
+                    Enabled = false;
+                    return;
+                }
             }
 
             // Travel-group exemption is no longer used; keep the compatibility/status hook.
             clearedGroupTravelers = MaintainGroupTaxiExemptionsBatch();
             s_StatusGroupRepairsTotal += clearedGroupTravelers;
 
-            bool vanillaResidents =
-                setting.ResidentsAllowedToUseTaxis >=
-                TaxiSettings.kTaxiAllowedPercentMax;
+            bool residentControlActive =
+                setting.ResidentsAllowedToUseTaxis < TaxiSettings.kTaxiAllowedPercentMax ||
+                setting.BlockCommuters ||
+                setting.BlockTourists;
 
-            bool vanillaGroups =
-                !setting.BlockCommuters && !setting.BlockTourists;
-
-            if (vanillaResidents && vanillaGroups)
+            if (!residentControlActive)
             {
-                UnmarkIgnoreTaxiBatch(out _);
-
+                // Outside-connection blocking remains disabled in this soft diagnostic build.
+                // Do not create resident eligibility markers when only that option is enabled.
                 RecordLastUpdateCounters(
                     appliedIgnoreTaxi,
                     skippedCommuters,

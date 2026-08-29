@@ -132,6 +132,7 @@ namespace TaxiTraffic
                     return;
 
                 ApplyGameDefaults();
+                TaxiTrafficSystem.WakeForSettingsChange();
                 TaxiTrafficSystem.RequestStatusRefresh(force: true);
                 LogUtils.Info(Mod.s_Log, () => $"{Mod.ModTag} Reset to game defaults.");
             }
@@ -260,11 +261,13 @@ namespace TaxiTraffic
 
         private void OnTaxiEligibilitySliderChanged(int _)
         {
+            TaxiTrafficSystem.WakeForSettingsChange();
             TaxiTrafficSystem.RequestStatusRefresh(force: true);
         }
 
         private void OnTaxiEligibilityToggleChanged(bool _)
         {
+            TaxiTrafficSystem.WakeForSettingsChange();
             TaxiTrafficSystem.RequestStatusRefresh(force: true);
         }
 
