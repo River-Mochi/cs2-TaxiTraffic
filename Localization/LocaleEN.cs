@@ -1,4 +1,4 @@
-// <copyright file="LocaleEN.cs" company="River-Mochi">
+﻿// <copyright file="LocaleEN.cs" company="River-Mochi">
 // Copyright (c) 2026 River-Mochi. All rights reserved.
 // Licensed under the GNU General Public License v3.0 or later,
 // with the Cities: Skylines II Linking Exception.
@@ -91,23 +91,24 @@ namespace TaxiTraffic
                 // Actions
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ResidentsAvoidTaxis)), "Residents avoid taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.ResidentsAvoidTaxis)),
-                    "<0% = vanilla taxi use>.\n" +
-                    "25–75% = about that share of local households avoid taxis.\n" +
-                    "<100% = all local households avoid taxis>.\n" +
-                    "Everyone in the same household gets the same setting.\n" +
+                    "<0%> = normal taxi use.\n" +
+                    "<25–75%> = percentage of local households avoid taxis.\n" +
+                    "<100%> = maximum residents avoid taxis.\n" +
                     "**Some taxis may still remain. Taxi Traffic allows active trips and normal taxi-stand standby behavior to finish naturally for game stability.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "Commuters avoid taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockCommuters)),
                     "**ON** = commuters avoid taxis.\n" +
-                    "**OFF** = vanilla commuter taxi use."
+                    "**OFF** = vanilla commuter taxi use.\n"+
+                    "Give it a little time to adjust."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockTourists)), "Tourists avoid taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockTourists)),
                     "**ON** = tourists avoid taxis.\n" +
-                    "**OFF** = vanilla tourist taxi use."
+                    "**OFF** = vanilla tourist taxi use.\n" +
+                    "Give it a little time to adjust."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ResetToGameDefaults)), "Game Defaults"
@@ -199,8 +200,8 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)),
                     "<From OC> = taxis coming in from outside connections.\n" +
                     "<OC sources> = Outside Connections that can send taxis.\n" +
-                    "**No local taxi depots? Then the game can send in OC taxis for local requests.**\n" +
-                    "**In testing, setting sliders and toggles [x] to maximum taxi-avoid meant few or no OC taxis came into the city.**"
+                    "In testing, setting sliders and toggles [x] to maximum taxi-avoid meant few or no OC taxis came to the city.\n" +
+                    "**No local taxi depots? Then the game normally sends in OC taxis for local requests.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "Taxi purpose" },
@@ -213,7 +214,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusCoverage1)), "Blocked now" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusCoverage1)),
                     "<Local> | <Commuter> | <Tourist>\n" +
-                    "**These are active cims blocked by Taxi Traffic, not your whole city population.**"
+                    "**These are current active (traveling) cims flagged to ignore taxis, not the whole city population.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusWorkDone1)), "Recent changes" },
@@ -317,7 +318,7 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenParadoxMods)), "Paradox Mods" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.OpenParadoxMods)),
-                    "Opens Paradox Mods for the author's mods."
+                    "Opens this author's page in Paradox mods website."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenDiscord)), "Discord" },
