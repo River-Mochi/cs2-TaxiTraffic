@@ -51,7 +51,7 @@ Now citizens can make smarter travel choices by reducing taxi use.
 <!--Thumbnail-->
 <Thumbnail Value="Properties/Thumbnail-Taxi01.jpg" />
 <!--Screenshot, can be set multiple times-->
-<Screenshot Value="" />
+<Screenshot Value="Properties/image10-Options.jpg" />
 <!--Tag, can be set multiple times-->
 <Tag Value="" />
 <!--Link to the forum post where the mod can be discussed-->
