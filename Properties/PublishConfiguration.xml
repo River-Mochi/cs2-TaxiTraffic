@@ -1,59 +1,72 @@
-﻿<Publish>
-	<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-	<ModId Value="" />
-	<!--Name of the mod to display to players-->
-	<DisplayName Value="SmartTraveler" />
-	<!--Short description of the mod-->
-	<ShortDescription Value="Taxi use can be disabled for the city." />
-	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
-	<!--LongDescription Value="This is a long description" /-->
-	<LongDescription>
-### Smart Traveler
-Helps reduce Taxi traffic by blocking taxi usage on the *rider (demand)* side.
- 
-### What it does
-- ✅ Prevents cims from choosing taxis by applying `IgnoreTaxi`
-- ✅ Un-sticks any cims already waiting for a taxi (taxi-lane + taxi-stand cases) so they re-route normally
-- ✅ Cancels dispatchable taxi requests so taxi dispatch/spawn activity drops over time
-- ✅ Optional: include/exclude **Commuters** and **Tourists**
- 
-### What to expect
-- Fewer taxi trips after a short settling period.
-- Existing taxis may still be visible briefly (finishing previous behavior), then traffic should decline.
- 
-### Safety / compatibility
-- Safe to remove anytime; works with new and existing cities.
-- Can be enabled/disabled in-game (turn off checkboxes [ ] to stop applying changes).
-- No Harmony or reflection-based patching; less likely to break on game patch day.
- 
-Tip: If you want to verify it’s working, enable “verbose taxi logging” temporarily and check the Status section in Options.
+<Publish>
+<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
+<ModId Value="" />
+<!--Name of the mod to display to players-->
+<DisplayName Value="Taxi Traffic" />
+<!--Short description of the mod-->
+<ShortDescription Value="Reduce taxi traffic usage in the city for Citizens, Tourists, Commuters." />
+<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
+<!--LongDescription Value="This is a long description" /-->
+<LongDescription>
+    ### Taxi Traffic [BETA]
+    Citizens make smarter travel choices by reducing taxi use.
 
-### Credits
-- RiverMochi: mod author
+    ### What it does
+    - ✅ **Residents avoid taxis**, set the range for locals;  0% = vanilla behavior | 100% = maximum avoid taxis
+    - ✅ Features: **Commuters avoid taxis** and **Tourists avoid taxis** [x] toggles let you reduce taxi use for those groups too.
 
+    ### What to expect
+    - Taxi traffic drops after the city runs for a few minutes.
+    - Existing taxis may still be visible briefly while active trips finish naturally.
+    - Use **Game Defaults** to restore vanilla taxi choices (toggles off and Resident slider at 0%).
+
+    ### Safety / compatibility
+    - Safe to remove anytime. No Harmony based patching; less likely to break on game patch day.
+    - Tip: to verify usage, check Options menu > mod Status, see if usage is going down after a city runs a little.
+
+    ### Support and Feedback
+    - Easiest way to support is click the LIKE 👍 button (top right).
+    - For Feedback use Github or Discord links (icons on right side of page). PR's are welcome.
+
+    ### Credits and Thanks
+    - RiverMochi: mod author
+    - Noel/Noel2 (of MapExt): testing, feedback
+    - Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
+
+    ### How it works
+
+    - Taxi Traffic (TT) uses the game's own ignore taxis methods instead of shutting down the whole taxi system (easier + safer).
+    - Some taxis may still remain. Active trips are allowed to finish naturally for game stability. Some systems may independently call taxis.
+    - Removing taxi stands prevents taxis from parking there.
+    - Fun Fact: if local taxi supply can't meet demand, the game uses outside connection (OC) taxis to fill local requests.
+    - Recommended: have some local taxi depots if you prefer slider and toggles are at anything but full ON [x]. This prevents more inbound OC taxis.
+    - Alternately, in testing, we discovered making the slider full 100% + Commuter ON + Tourist ON, also prevented OC taxi traffic because there was almost no taxi demand left.
+    - Fun Fact: game update 1.5.7 changed moving-in cims to reach the destination with no taxi trip; it even moves their pet target with teleport: true.
+
+    tags: taxi service disable taxi use, reduce taxis.
 </LongDescription>
 <!--Thumbnail-->
-<Thumbnail Value="Properties/Thumbnail.png" />
-	<!--Screenshot, can be set multiple times-->
+<Thumbnail Value="Properties/Thumbnail-Taxi01.jpg" />
+<!--Screenshot, can be set multiple times-->
 <Screenshot Value="" />
-	<!--Tag, can be set multiple times-->
+<!--Tag, can be set multiple times-->
 <Tag Value="" />
-	<!--Link to the forum post where the mod can be discussed-->
+<!--Link to the forum post where the mod can be discussed-->
 <ForumLink Value="" />
-	<!--Version of the mod-->
-<ModVersion Value="1.0.0" />
+<!--Version of the mod-->
+<ModVersion Value="0.5.0" />
 <!--Recommended version of the base game to use the mod-->
-<GameVersion Value="1.5.*" />
-	<!--Dependency for the mod, can be set multiple times-->
-	<Dependency Id="" />
+<GameVersion Value="1.6.*" />
+<!--Dependency for the mod, can be set multiple times-->
+<Dependency Id="" />
 <!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
-	<RequiredDLC Value="" />
+<RequiredDLC Value="" />
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog Value="" />
 <!--<ChangeLog>
-	</ChangeLog>-->
+</ChangeLog>-->
 <!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
-	<ExternalLink Type="" Url="" />
-	<!--Supported values Public, Private, Unlisted-->
-<AccessLevel Value="Public" />
+<ExternalLink Type="" Url="" />
+<!--Supported values Public, Private, Unlisted-->
+<AccessLevel Value="Unlisted" />
 </Publish>

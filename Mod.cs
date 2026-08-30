@@ -1,24 +1,33 @@
-// Mod.cs
-// Entry point for "Smart Traveler".
+// <copyright file="Mod.cs" company="River-Mochi">
+// Copyright (c) 2026 River-Mochi. All rights reserved.
+// Licensed under the GNU General Public License v3.0 or later,
+// with the Cities: Skylines II Linking Exception.
+// See LICENSE and LICENSE-EXCEPTION in the project root.
+// This notice MUST be kept with copies or substantial portions of this code.
+// ================= </copyright> ======================
 
-namespace RiderControl
+// File: Mod.cs
+// Entry point for "Taxi Traffic".
+
+namespace TaxiTraffic
 {
-    using System.IO;
-    using System.Reflection;
-    using Colossal.IO.AssetDatabase;
-    using Colossal.Localization;
-    using Colossal.Logging;
-    using Game;
-    using Game.Modding;
-    using Game.SceneFlow;
-    using Game.Simulation;
+    using System;                    // Exception
+    using System.Reflection;         // Assembly version number
+    using Colossal.IO.AssetDatabase; // AssetDatabase
+    using Colossal.Localization;     // LocalizationManager
+    using Colossal.Logging;          // ILog, LogManager
+    using CS2Shared.RiverMochi;      // LogUtils, ShellOpen
+    using Game;                      // UpdateSystem
+    using Game.Modding;              // IMod
+    using Game.SceneFlow;            // GameManager
+    using Game.Simulation;           // ResidentAISystem
 
     public sealed class Mod : IMod
     {
-        public const string ModName = "Smart Traveler";
-        public const string ModId = "SmartTraveler";
-        public const string ModTag = "[ST]";
-        public const string ShortName = "Smart Traveler";
+        public const string ModName = "Taxi Traffic";
+        public const string ModId = "TaxiTraffic";
+        public const string ModTag = "[TAXI]";
+        public const string ShortName = "Taxi Traffic";
 
         private static bool s_BannerLogged;
 
@@ -28,72 +37,103 @@ namespace RiderControl
         public static readonly ILog s_Log =
             LogManager.GetLogger(ModId).SetShowsErrorsInUI(false);
 
-        public static Setting? Setting
+        public static TaxiSettings? Setting
         {
             get; private set;
         }
 
         public void OnLoad(UpdateSystem updateSystem)
         {
+            LogUtils.Configure(ModId);
+            ShellOpen.Configure(s_Log, ModId, ModTag);
+
             if (!s_BannerLogged)
             {
                 s_BannerLogged = true;
-                s_Log.Info($"{ModId} {ModTag} v{ModVersion} OnLoad");
+                LogUtils.Info(s_Log, () => $"{ModId} {ModTag} v{ModVersion} OnLoad");
             }
 
-            // Stabilize file logging: keep the stream open (still Colossal.Logging, not UnityEngine.Debug).
-            if (s_Log is UnityLogger unityLogger)
-            {
-                unityLogger.keepStreamOpen = true;
-
-                // Ensure log directory exists (prevents Open() failing on missing folder).
-                try
-                {
-                    string? dir = Path.GetDirectoryName(unityLogger.logPath);
-                    if (!string.IsNullOrEmpty(dir))
-                    {
-                        Directory.CreateDirectory(dir);
-                    }
-                }
-                catch
-                {
-                    // Do not crash OnLoad for logging setup.
-                }
-            }
-
-            Setting setting = new Setting(this);
+            TaxiSettings setting = new(this);
             Setting = setting;
 
-            // Locales: EN only for now.
-            LocalizationManager? lm = GameManager.instance?.localizationManager;
-            if (lm != null)
+            try
             {
-                lm.AddSource("en-US", new LocaleEN(setting));
+                LocalizationManager? lm = GameManager.instance?.localizationManager;
+                if (lm != null)
+                {
+                    lm.AddSource("en-US", new LocaleEN(setting));
+                }
+                else
+                {
+                    LogUtils.WarnOnce(
+                        s_Log,
+                        key: "LocalizationManagerNull",
+                        messageFactory: () => $"{ModTag} LocalizationManager is null; skipping locale registration.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                s_Log.Warn($"{ModTag} LocalizationManager is null; skipping locale registration.");
+                LogUtils.WarnOnce(
+                    s_Log,
+                    key: "LocaleRegistrationFailed",
+                    messageFactory: () => $"{ModTag} Locale registration failed; Options UI text may be missing.",
+                    exception: ex);
             }
 
-            // Load saved settings (if any). Defaults are defined in Setting.SetDefaults().
-            Setting defaults = new Setting(this);
-            AssetDatabase.global.LoadSettings(ModId, setting, defaults, userSetting: true);
+            try
+            {
+                TaxiSettings defaults = new(this);
+                AssetDatabase.global.LoadSettings(ModId, setting, defaults, userSetting: true);
+            }
+            catch (Exception ex)
+            {
+                LogUtils.WarnOnce(
+                    s_Log,
+                    key: "LoadSettingsFailed",
+                    messageFactory: () => $"{ModTag} LoadSettings failed; using defaults.",
+                    exception: ex);
+            }
 
-            // Register in Options UI last.
-            setting.RegisterInOptionsUI();
+            try
+            {
+                setting.RegisterInOptionsUI();
+            }
+            catch (Exception ex)
+            {
+                LogUtils.WarnOnce(
+                    s_Log,
+                    key: "RegisterOptionsFailed",
+                    messageFactory: () => $"{ModTag} RegisterInOptionsUI failed; mod options may be missing.",
+                    exception: ex);
+            }
 
-            // RiderControl run after ResidentAISystem (so it “sticks”) and before TaxiDispatchSystem
-            // (so it can cancel requests before dispatch happens).
-            updateSystem.UpdateAfter<RiderControlSystem, ResidentAISystem>(SystemUpdatePhase.GameSimulation);
-            updateSystem.UpdateBefore<RiderControlSystem, TaxiDispatchSystem>(SystemUpdatePhase.GameSimulation);
-            updateSystem.UpdateBefore<RiderControlSystem, RideNeederSystem>(SystemUpdatePhase.GameSimulation);
+
+
+            // IMPORTANT ORDERING: Register this only ONE time. Keep TaxiTraffic AFTER ResidentAISystem. Do Not Move.
+            // Running it before ResidentAI caused repeatable native CTDs in testing.
+            // Preserve this order, it's stable and still updates taxi choices for future trips.
+
+            updateSystem.UpdateAfter<TaxiTrafficSystem, ResidentAISystem>(
+                SystemUpdatePhase.GameSimulation);
         }
 
         public void OnDispose()
         {
-            s_Log.Info(nameof(OnDispose));
+            LogUtils.Info(s_Log, () => $"{ModTag} OnDispose");
 
-            Setting?.UnregisterInOptionsUI();
+            try
+            {
+                Setting?.UnregisterInOptionsUI();
+            }
+            catch (Exception ex)
+            {
+                LogUtils.WarnOnce(
+                    s_Log,
+                    key: "UnregisterOptionsFailed",
+                    messageFactory: () => $"{ModTag} UnregisterInOptionsUI failed.",
+                    exception: ex);
+            }
+
             Setting = null;
         }
     }
