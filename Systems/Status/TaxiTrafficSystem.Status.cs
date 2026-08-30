@@ -7,7 +7,7 @@
 // ================= </copyright> ======================
 
 // File: Systems/Status/TaxiTrafficSystem.Status.cs
-// Cached player Status. Detailed request diagnostics run only when requested.
+// Cached player Status. Heavy request diagnostics run only when requested.
 
 using System;
 using System.Globalization;
@@ -85,7 +85,7 @@ namespace TaxiTraffic
         internal static int s_StatusReqOutsideSeekerIgnoreTaxi;
         internal static int s_StatusReqOutsideSeekerBlockedMark;
 
-        // Current city-rider request purpose. Detailed report only.
+        // Current city-rider request purpose. Kept lightweight for the player Status row.
         internal static int s_StatusReqPurposeLeisure;
         internal static int s_StatusReqPurposeHome;
         internal static int s_StatusReqPurposeWork;
@@ -95,6 +95,8 @@ namespace TaxiTraffic
 
         // Taxi fleet.
         internal static int s_StatusTaxisTotal;
+        internal static int s_StatusTaxiParkedNow;
+        internal static int s_StatusTaxiActiveNow;
         internal static int s_StatusTaxiTransporting;
         internal static int s_StatusTaxiBoarding;
         internal static int s_StatusTaxiReturning;
@@ -293,6 +295,7 @@ namespace TaxiTraffic
             }
 
             UpdateStatusTaxiFleetAndPassengers(detailed);
+            UpdateStatusTaxiRequestPurposes();
 
             if (detailed)
             {
@@ -333,6 +336,22 @@ namespace TaxiTraffic
             }
         }
 
+        private void UpdateStatusTaxiRequestPurposes()
+        {
+            foreach (RefRO<Game.Simulation.TaxiRequest> request in SystemAPI
+                         .Query<RefRO<Game.Simulation.TaxiRequest>>()
+                         .WithNone<Deleted, Temp>())
+            {
+                if (request.ValueRO.m_Type !=
+                    Game.Simulation.TaxiRequestType.Customer)
+                {
+                    continue;
+                }
+
+                CountRequestPurpose(request.ValueRO.m_Seeker);
+            }
+        }
+
         private void UpdateDetailedStatusRequests()
         {
             foreach ((RefRO<Game.Simulation.TaxiRequest> reqRef,
@@ -358,7 +377,6 @@ namespace TaxiTraffic
                             ref s_StatusReqCustomerSeekerIgnoreTaxi,
                             ref s_StatusReqCustomerSeekerBlockedMark);
 
-                        CountRequestPurpose(req.m_Seeker);
                         break;
 
                     case Game.Simulation.TaxiRequestType.Outside:
@@ -482,6 +500,11 @@ namespace TaxiTraffic
                          .WithEntityAccess())
             {
                 s_StatusTaxisTotal++;
+
+                if (SystemAPI.HasComponent<Game.Vehicles.ParkedCar>(taxiEntity))
+                    s_StatusTaxiParkedNow++;
+                else
+                    s_StatusTaxiActiveNow++;
 
                 Game.Vehicles.TaxiFlags flags =
                     taxiRef.ValueRO.m_State;
@@ -807,6 +830,8 @@ namespace TaxiTraffic
             s_StatusReqPurposeOther = 0;
 
             s_StatusTaxisTotal = 0;
+            s_StatusTaxiParkedNow = 0;
+            s_StatusTaxiActiveNow = 0;
             s_StatusTaxiTransporting = 0;
             s_StatusTaxiBoarding = 0;
             s_StatusTaxiReturning = 0;

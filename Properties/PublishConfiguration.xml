@@ -8,38 +8,41 @@
 <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 <!--LongDescription Value="This is a long description" /-->
 <LongDescription>
-### Taxi Traffic [BETA]
-Citizens make smarter travel choices by reducing taxi use.
+    ### Taxi Traffic [BETA]
+    Citizens make smarter travel choices by reducing taxi use.
 
-### What it does
-- ✅ Prevents most cims from choosing taxis
-- ✅ Optional: include/exclude **Commuters** and **Tourists** if you want less taxi use, then also check these.
+    ### What it does
+    - ✅ **Residents avoid taxis**, you choose how strongly local households avoid taxis: 0% = vanilla behavior | 100% = maximum avoidance.
+    - ✅ Optional **Commuters avoid taxis** and **Tourists avoid taxis** [x] toggles let you reduce taxi use for those groups too.
 
-### What to expect
-- Fewer taxi trips after a short adjust period.
-- Existing taxis may still be visible briefly (finishing previous behavior), then taxi traffic declines.
-- Can be enabled/disabled in Options menu.
-- To disable: set "Citizens allowed to use taxis" to 100% (resets to game defaults); stops applying ignore taxi restrictions.
+    ### What to expect
+    - Fewer taxi trips after a short adjustment period.
+    - Existing taxis may still be visible briefly while active trips and normal taxi-stand standby behavior finish naturally.
+    - In testing, at maximum taxi avoidance settings, it also had the side benefit of stopping outside-connection (OC) taxis from flooding highways; there was little/no taxi demand to serve.
+    - Use **Game Defaults** to restore vanilla taxi choices (everything off and Resident sliders at 0%).
 
-### Safety / compatibility
-- Safe to remove anytime.
-- No Harmony based patching; less likely to break on game patch day.
-- Tip: If you want to verify usage, check Options menu > mod Status, see if usage is going down after a city runs a little.
+    ### Safety / compatibility
+    - Safe to remove anytime.
+    - No Harmony based patching; less likely to break on game patch day.
+    - Tip: If you want to verify usage, check Options menu > mod Status, see if usage is going down after a city runs a little.
 
 
-### Support and Feedback
-- Easiest way to support is click the LIKE 👍 button (top right).
-- For Feedback click on the Github or Discord icon links (right side of page). PR's are welcome.
+    ### Support and Feedback
+    - Easiest way to support is click the LIKE 👍 button (top right).
+    - For Feedback click on the Github or Discord icon links (right side of page). PR's are welcome.
 
-### Credits and Thanks
-- RiverMochi: mod author
-- Noel/Noel2 (of MapExt): testing, feedback
-- Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
+    ### Credits and Thanks
+    - RiverMochi: mod author
+    - Noel/Noel2 (of MapExt): testing, feedback
+    - Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
 
-### How it works
-- Applies the game's own vanilla taxi flags which is easier + safer. Research showed using "heavy hammer" methods to disable the complex taxi system creates scary frozen citizen zombies (before you ask, no we don't want that).
-- Some taxis may still remain in the city. Taxi Traffic allows active trips and normal taxi-stand standby behavior to finish naturally for game stability.
-- If you don't want to see the 3 normal standby taxis at taxi stands, then delete the stands.
+    ### How it works
+    - Applies the game's own vanilla taxi flags which is easier + safer. Research showed using "heavy hammer" methods to disable the complex taxi system creates scary frozen citizen zombies (before you ask, no we don't want that).
+    - Some taxis may still remain in the city. Taxi Traffic allows active trips and normal taxi-stand standby behavior to finish naturally for game stability.
+    - If you don't want normal standby taxis at taxi stands, then delete the stands.
+    - Note: if you have no local taxi depots, the game uses outside connection (OC) sources to bring taxis to fill local requests. If you keep the Taxi slider at less than 100% avoidance, the OC taxis come in to fill any void.
+    Outside connections can supply taxis when city taxi demand is not being satisfied by local supply.
+    Recommended: have some local taxis if the slider and toggles  are at anything but full ON [x] and 100%.
 </LongDescription>
 <!--Thumbnail-->
 <Thumbnail Value="Properties/Thumbnail-TaxiTraffic01.jpg" />

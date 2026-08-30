@@ -1,4 +1,4 @@
-// <copyright file="LocaleEN.cs" company="River-Mochi">
+﻿// <copyright file="LocaleEN.cs" company="River-Mochi">
 // Copyright (c) 2026 River-Mochi. All rights reserved.
 // Licensed under the GNU General Public License v3.0 or later,
 // with the Cities: Skylines II Linking Exception.
@@ -33,6 +33,9 @@ namespace TaxiTraffic
 
         public const string KeyStatusOutsideTaxisLine =
             "TaxiTraffic.Status.OutsideTaxisLine";
+
+        public const string KeyStatusTaxiPurposeLine =
+            "TaxiTraffic.Status.TaxiPurposeLine";
 
         public const string KeyStatusRequestsLine =
             "TaxiTraffic.Status.RequestsLine";
@@ -230,17 +233,25 @@ namespace TaxiTraffic
                     "Taxi supply"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiSupply)),
-                    "Taxi count seen right now.\n" +
-                    "OC = taxis carrying the game's FromOutside flag.\n" +
-                    "Sources = outside connections that can supply taxis.\n" +
-                    "Stands = taxi stand buildings."
+                    "Parked = taxis currently parked.\n" +
+                    "Active = taxis not parked, including rides, dispatch, return, en route, and normal taxi-stand standby.\n" +
+                    "Local depots = player-built local taxi depots.\n" +
+                    "Stands = designated taxi pickup/waiting areas."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)),
                     "Outside taxis"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)),
-                    "From OC = active taxis carrying the game's FromOutside flag."
+                    "From OC = taxis carrying the game's FromOutside flag.\n" +
+                    "OC sources = outside connections that can supply taxis."
+                },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)),
+                    "Taxi purpose"
+                },
+                { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)),
+                    "Purpose of current taxi requests."
                 },
 
                 // LAST UPDATE
@@ -308,10 +319,14 @@ namespace TaxiTraffic
                     "{0} total | {1} blocked | {2} local"
                 },
                 { KeyStatusTaxiSupplyLine,
-                    "{0} taxis ({1} OC) | {2} local depots | {3} OC sources | {4} stands"
+                    "{0} parked, {1} active | {2} local depots | {3} stands"
                 },
                 { KeyStatusOutsideTaxisLine,
-                    "{0} from OC"
+                    "{0} from OC | {1} OC sources"
+                },
+                { KeyStatusTaxiPurposeLine,
+                    "{0} leisure | {1} home | {2} work\n" +
+                    "{3} school | {4} shopping | {5} other"
                 },
                 { KeyStatusRequestsLine,
                     "{0} city rider ({1} blocked) | {2} OC rider ({3} blocked)\n" +

@@ -109,7 +109,7 @@ namespace TaxiTraffic
         }
 
         // TAXI SCAN
-        // Keep the short player-facing order: passengers, supply, outside taxis.
+        // Keep the short player-facing order: passengers, supply, outside taxis, purpose.
 
         [SettingsUISection(StatusTab, TaxiScanGroup)]
         [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
@@ -137,10 +137,9 @@ namespace TaxiTraffic
 
                 return StatusValue(
                     nameof(StatusTaxiSupply),
-                    TaxiTrafficSystem.s_StatusTaxisTotal,
-                    TaxiTrafficSystem.s_StatusTaxiFromOutside,
+                    TaxiTrafficSystem.s_StatusTaxiParkedNow,
+                    TaxiTrafficSystem.s_StatusTaxiActiveNow,
                     TaxiTrafficSystem.s_StatusTaxiDepotsLocal,
-                    TaxiTrafficSystem.s_StatusTaxiDepotsOutside,
                     TaxiTrafficSystem.s_StatusTaxiStandsTotal);
             }
         }
@@ -155,7 +154,27 @@ namespace TaxiTraffic
 
                 return StatusValue(
                     nameof(StatusOutsideTaxis),
-                    TaxiTrafficSystem.s_StatusTaxiFromOutside);
+                    TaxiTrafficSystem.s_StatusTaxiFromOutside,
+                    TaxiTrafficSystem.s_StatusTaxiDepotsOutside);
+            }
+        }
+
+        [SettingsUISection(StatusTab, TaxiScanGroup)]
+        [SettingsUIHideByCondition(typeof(TaxiSettings), nameof(IsStatusNotReady))]
+        public string StatusTaxiPurpose
+        {
+            get
+            {
+                TaxiTrafficSystem.AutoRequestStatusRefreshOnRead();
+
+                return StatusValue(
+                    nameof(StatusTaxiPurpose),
+                    TaxiTrafficSystem.s_StatusReqPurposeLeisure,
+                    TaxiTrafficSystem.s_StatusReqPurposeHome,
+                    TaxiTrafficSystem.s_StatusReqPurposeWork,
+                    TaxiTrafficSystem.s_StatusReqPurposeSchool,
+                    TaxiTrafficSystem.s_StatusReqPurposeShopping,
+                    TaxiTrafficSystem.s_StatusReqPurposeOther);
             }
         }
 
@@ -346,15 +365,15 @@ namespace TaxiTraffic
 
             sb.AppendLine("Taxi supply: " + StatusValue(
                 nameof(StatusTaxiSupply),
-                TaxiTrafficSystem.s_StatusTaxisTotal,
-                TaxiTrafficSystem.s_StatusTaxiFromOutside,
+                TaxiTrafficSystem.s_StatusTaxiParkedNow,
+                TaxiTrafficSystem.s_StatusTaxiActiveNow,
                 TaxiTrafficSystem.s_StatusTaxiDepotsLocal,
-                TaxiTrafficSystem.s_StatusTaxiDepotsOutside,
                 TaxiTrafficSystem.s_StatusTaxiStandsTotal));
 
             sb.AppendLine("Outside taxis: " + StatusValue(
                 nameof(StatusOutsideTaxis),
-                TaxiTrafficSystem.s_StatusTaxiFromOutside));
+                TaxiTrafficSystem.s_StatusTaxiFromOutside,
+                TaxiTrafficSystem.s_StatusTaxiDepotsOutside));
 
             sb.AppendLine("Requests: " + StatusValue(
                 nameof(StatusRequests),
@@ -366,13 +385,14 @@ namespace TaxiTraffic
                 TaxiTrafficSystem.s_StatusReqOutsideSupply,
                 TaxiTrafficSystem.s_StatusReqStand));
 
-            sb.AppendLine("City request purpose: " +
-                $"{TaxiTrafficSystem.s_StatusReqPurposeLeisure} leisure | " +
-                $"{TaxiTrafficSystem.s_StatusReqPurposeHome} home | " +
-                $"{TaxiTrafficSystem.s_StatusReqPurposeWork} work | " +
-                $"{TaxiTrafficSystem.s_StatusReqPurposeSchool} school | " +
-                $"{TaxiTrafficSystem.s_StatusReqPurposeShopping} shopping | " +
-                $"{TaxiTrafficSystem.s_StatusReqPurposeOther} other");
+            sb.AppendLine("City request purpose: " + StatusValue(
+                nameof(StatusTaxiPurpose),
+                TaxiTrafficSystem.s_StatusReqPurposeLeisure,
+                TaxiTrafficSystem.s_StatusReqPurposeHome,
+                TaxiTrafficSystem.s_StatusReqPurposeWork,
+                TaxiTrafficSystem.s_StatusReqPurposeSchool,
+                TaxiTrafficSystem.s_StatusReqPurposeShopping,
+                TaxiTrafficSystem.s_StatusReqPurposeOther));
 
             sb.AppendLine("Fleet: " + StatusValue(
                 nameof(StatusTaxiFleet),
@@ -452,6 +472,7 @@ namespace TaxiTraffic
                 nameof(StatusPassengers) => LocaleEN.KeyStatusPassengersLine,
                 nameof(StatusTaxiSupply) => LocaleEN.KeyStatusTaxiSupplyLine,
                 nameof(StatusOutsideTaxis) => LocaleEN.KeyStatusOutsideTaxisLine,
+                nameof(StatusTaxiPurpose) => LocaleEN.KeyStatusTaxiPurposeLine,
                 nameof(StatusRequests) => LocaleEN.KeyStatusRequestsLine,
                 nameof(StatusTaxiFleet) => LocaleEN.KeyStatusTaxiFleetLine,
                 nameof(StatusTaxiStands) => LocaleEN.KeyStatusTaxiStandsLine,
