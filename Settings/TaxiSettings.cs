@@ -70,8 +70,6 @@ namespace TaxiTraffic
         internal const int kTaxiAvoidPercentMin = 0;
         internal const int kTaxiAvoidPercentMax = 100;
         internal const int kTaxiAvoidPercentStep = 25;
-
-        // Preserve the original mod's first-install intent: local residents avoid taxis.
         internal const int kTaxiAvoidPercentDefault = 100;
 
         private const string kUrlParadox =
@@ -112,13 +110,6 @@ namespace TaxiTraffic
         [SettingsUISection(ActionsTab, BehaviorGroup)]
         [SettingsUISetter(typeof(TaxiSettings), nameof(OnTaxiEligibilityToggleChanged))]
         public bool BlockTourists
-        {
-            get; set;
-        }
-
-        [SettingsUISection(ActionsTab, BehaviorGroup)]
-        [SettingsUISetter(typeof(TaxiSettings), nameof(OnTaxiEligibilityToggleChanged))]
-        public bool BlockOutsideTaxis
         {
             get; set;
         }
@@ -246,7 +237,6 @@ namespace TaxiTraffic
             ResidentsAvoidTaxis = kTaxiAvoidPercentDefault;
             BlockCommuters = false;
             BlockTourists = false;
-            BlockOutsideTaxis = false;
             ShowLastUpdateInfo = false;
             EnableDebugLogging = false;
         }
@@ -256,7 +246,6 @@ namespace TaxiTraffic
             ResidentsAvoidTaxis = kTaxiAvoidPercentMin;
             BlockCommuters = false;
             BlockTourists = false;
-            BlockOutsideTaxis = false;
             EnableDebugLogging = false;
         }
 

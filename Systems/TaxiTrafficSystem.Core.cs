@@ -9,40 +9,43 @@
 // File: Systems/TaxiTrafficSystem.Core.cs
 // Purpose: system lifecycle and update coordinator.
 
-using Game;            // GameSystemBase, GameMode
-using Game.Simulation; // EndFrameBarrier
+using Game;
+using Game.Common;
+using Game.Tools;
+using Unity.Entities;
 
 namespace TaxiTraffic
 {
     public partial class TaxiTrafficSystem : GameSystemBase
     {
-        // Taxi eligibility is not time-critical. A slower interval keeps the
-        // resident scan lightweight, especially at high simulation speed.
-        private const int kUpdateIntervalFrames = 64;
+        // Full household eligibility does not need to run every simulation tick.
+        // The small "keep IgnoreTaxi applied" and RideNeeder protection passes do.
+        private const uint kEligibilityScanMask = 15u; // every 16 simulation frames
 
         private const float kDebugSummaryIntervalSeconds = 120.0f;
         private const uint kTaxiEligibilityHashSalt = 0x54415849u; // 'TAXI'
 
         private static TaxiTrafficSystem? s_Instance;
 
-        private EndFrameBarrier m_EndFrameBarrier = null!;
+        private Game.Simulation.SimulationSystem m_ControlSimulationSystem = null!;
+        private EntityQuery m_OwnedBlockQuery;
 
-        // These only track whether one final cleanup pass may still be needed.
-        // Normal setting changes do NOT reset or rebuild every resident.
         private bool m_ResidentCleanupPending;
-        private bool m_OutsideCleanupPending;
-
-        public override int GetUpdateInterval(SystemUpdatePhase phase)
-        {
-            return kUpdateIntervalFrames;
-        }
+        private bool m_EligibilityRefreshRequested;
 
         protected override void OnCreate()
         {
             base.OnCreate();
 
             s_Instance = this;
-            m_EndFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
+            m_ControlSimulationSystem =
+                World.GetOrCreateSystemManaged<Game.Simulation.SimulationSystem>();
+
+            m_OwnedBlockQuery =
+                GetEntityQuery(
+                    ComponentType.ReadOnly<IgnoreTaxiMark>(),
+                    ComponentType.Exclude<Deleted>(),
+                    ComponentType.Exclude<Temp>());
 
             InitStatusSystemsOnCreate();
 
@@ -72,10 +75,8 @@ namespace TaxiTraffic
             if (!isRealGame)
                 return;
 
-            // Check once for an owned resident marker from an earlier session/build.
-            // If none exists and all settings are vanilla, the system goes dormant.
             m_ResidentCleanupPending = true;
-            m_OutsideCleanupPending = false;
+            m_EligibilityRefreshRequested = true;
 
             ResetDebugOnCityLoaded();
             ResetStatusOnCityLoaded();
@@ -91,8 +92,11 @@ namespace TaxiTraffic
 
         internal static void WakeForSettingsChange()
         {
-            if (s_Instance != null)
-                s_Instance.Enabled = true;
+            if (s_Instance == null)
+                return;
+
+            s_Instance.m_EligibilityRefreshRequested = true;
+            s_Instance.Enabled = true;
         }
 
         protected override void OnUpdate()
@@ -106,79 +110,94 @@ namespace TaxiTraffic
 
             int appliedIgnoreTaxi = 0;
             int removedIgnoreTaxi = 0;
+            int reappliedIgnoreTaxi = 0;
+            int stoppedRideNeeders = 0;
+            int existingTaxiRequestsStopped = 0;
+            int repathedTaxiWaiters = 0;
 
             bool residentControlActive =
                 setting.ResidentsAvoidTaxis > TaxiSettings.kTaxiAvoidPercentMin ||
                 setting.BlockCommuters ||
                 setting.BlockTourists;
 
-            bool outsideControlActive = setting.BlockOutsideTaxis;
-
             if (residentControlActive)
             {
                 m_ResidentCleanupPending = true;
 
-                UpdateResidentTaxiEligibility(
+                uint simulationFrame = m_ControlSimulationSystem.frameIndex;
+                bool runFullEligibility =
+                    m_EligibilityRefreshRequested ||
+                    (simulationFrame & kEligibilityScanMask) == 0u;
+
+                if (runFullEligibility)
+                {
+                    UpdateResidentTaxiEligibility(
+                        setting,
+                        out appliedIgnoreTaxi,
+                        out removedIgnoreTaxi);
+
+                    m_EligibilityRefreshRequested = false;
+                }
+
+                // Vanilla clears IgnoreTaxi during normal trip resets.
+                // Keep our owned flag applied without repeating the household work.
+                ReapplyOwnedTaxiBlocks(out reappliedIgnoreTaxi);
+
+                // Catch blocked cims that already reached the on-demand taxi path.
+                // This is targeted to RideNeeder only; taxi stands are left alone.
+                StopBlockedRideNeeders(
                     setting,
-                    out appliedIgnoreTaxi,
-                    out removedIgnoreTaxi);
+                    out int lateAppliedIgnoreTaxi,
+                    out stoppedRideNeeders,
+                    out existingTaxiRequestsStopped,
+                    out repathedTaxiWaiters);
+
+                appliedIgnoreTaxi += lateAppliedIgnoreTaxi;
             }
             else if (m_ResidentCleanupPending)
             {
-                // Game-default resident behavior: clear only IgnoreTaxi flags owned
-                // by Taxi Traffic. Once none remain, no resident scan is needed.
+                // Game-default mode clears only IgnoreTaxi flags owned by Taxi Traffic.
+                // In-vehicle residents are left alone until their current trip finishes.
                 removedIgnoreTaxi = ClearOwnedResidentTaxiBlocks();
 
-                if (removedIgnoreTaxi == 0)
-                    m_ResidentCleanupPending = false;
-            }
-
-            // Outside-connection control remains isolated from normal resident
-            // eligibility. With the option OFF, this code path does not run.
-            if (outsideControlActive)
-            {
-                m_OutsideCleanupPending = true;
-
-                UpdateOutsideTaxiBlocking(
-                    setting,
-                    out _,
-                    out _);
-            }
-            else if (m_OutsideCleanupPending)
-            {
-                // One cleanup pass after the option is turned OFF.
-                UpdateOutsideTaxiBlocking(
-                    setting,
-                    out _,
-                    out _);
-
-                m_OutsideCleanupPending = false;
+                m_ResidentCleanupPending =
+                    !m_OwnedBlockQuery.IsEmptyIgnoreFilter;
             }
 
             RecordLastUpdateCounters(
                 appliedIgnoreTaxi,
-                removedIgnoreTaxi);
+                removedIgnoreTaxi,
+                reappliedIgnoreTaxi,
+                stoppedRideNeeders,
+                existingTaxiRequestsStopped,
+                repathedTaxiWaiters);
+
+            s_StatusRideNeedersStoppedTotal += stoppedRideNeeders;
+            s_StatusTaxiRequestsStoppedTotal += existingTaxiRequestsStopped;
+            s_StatusTaxiWaitersRepathedTotal += repathedTaxiWaiters;
 
             if (setting.EnableDebugLogging)
                 TickDebugLogging(setting, kDebugSummaryIntervalSeconds);
 
-            // True vanilla/no-op state. After Taxi Traffic's own resident markers
-            // are gone and outside control is OFF, stop scheduling this system.
-            if (!residentControlActive &&
-                !outsideControlActive &&
-                !m_ResidentCleanupPending &&
-                !m_OutsideCleanupPending)
-            {
+            // True vanilla/no-op state: once our marker is gone, stop running.
+            if (!residentControlActive && !m_ResidentCleanupPending)
                 Enabled = false;
-            }
         }
 
         private static void RecordLastUpdateCounters(
             int appliedIgnoreTaxi,
-            int removedIgnoreTaxi)
+            int removedIgnoreTaxi,
+            int reappliedIgnoreTaxi,
+            int stoppedRideNeeders,
+            int existingTaxiRequestsStopped,
+            int repathedTaxiWaiters)
         {
             s_StatusLastAppliedIgnoreTaxi = appliedIgnoreTaxi;
             s_StatusLastRemovedIgnoreTaxi = removedIgnoreTaxi;
+            s_StatusLastReappliedIgnoreTaxi = reappliedIgnoreTaxi;
+            s_StatusLastRideNeedersStopped = stoppedRideNeeders;
+            s_StatusLastTaxiRequestsStopped = existingTaxiRequestsStopped;
+            s_StatusLastTaxiWaitersRepathed = repathedTaxiWaiters;
         }
     }
 }

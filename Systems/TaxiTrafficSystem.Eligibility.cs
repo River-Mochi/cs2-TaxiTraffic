@@ -7,14 +7,14 @@
 // ================= </copyright> ======================
 
 // File: Systems/TaxiTrafficSystem.Eligibility.cs
-// Purpose: simple household-consistent taxi eligibility with soft enforcement.
+// Purpose: household-consistent taxi eligibility and IgnoreTaxi ownership.
 
-using Game.Citizens;  // HouseholdMember, CommuterHousehold, TouristHousehold, Citizen
-using Game.Common;    // Deleted
-using Game.Creatures; // Resident, ResidentFlags, CurrentVehicle, RideNeeder
-using Game.Objects;   // TripSource
-using Game.Tools;     // Temp
-using Unity.Entities; // Entity, EntityCommandBuffer, RefRW
+using Game.Citizens;
+using Game.Common;
+using Game.Creatures;
+using Game.Tools;
+using Unity.Collections;
+using Unity.Entities;
 
 namespace TaxiTraffic
 {
@@ -28,26 +28,23 @@ namespace TaxiTraffic
             applied = 0;
             removed = 0;
 
-            // Structural marker changes play back at the normal game end-frame
-            // barrier. ResidentFlags itself is not structural and is written now.
-            EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
+            EntityCommandBuffer buffer = default;
+            bool hasBuffer = false;
 
             foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<Resident>>()
-                         .WithNone<CurrentVehicle, RideNeeder, TripSource>()
-                         .WithNone<Deleted, Temp>()
+                         .WithNone<CurrentVehicle, Deleted, Temp>()
                          .WithEntityAccess())
             {
                 ResidentFlags flags = resident.ValueRO.m_Flags;
 
-                // Do not touch residents during active vehicle/transport transitions.
-                // Existing taxi trips and waits are allowed to finish naturally.
-                if ((flags & (ResidentFlags.InVehicle | ResidentFlags.WaitingTransport)) != 0)
+                // Do not change a cim that is already inside a vehicle.
+                // Existing taxi trips finish naturally.
+                if ((flags & ResidentFlags.InVehicle) != 0)
                     continue;
 
-                bool shouldAvoid = ShouldResidentAvoidTaxi(
-                    setting,
-                    resident.ValueRO);
+                bool shouldAvoid =
+                    ShouldResidentAvoidTaxi(setting, resident.ValueRO);
 
                 bool ownsIgnoreTaxi =
                     SystemAPI.HasComponent<IgnoreTaxiMark>(entity);
@@ -57,31 +54,73 @@ namespace TaxiTraffic
 
                 if (shouldAvoid)
                 {
-                    if (!ignoreTaxiNow)
+                    if (ownsIgnoreTaxi)
                     {
-                        resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
-
-                        // Only claim ownership when Taxi Traffic actually turns
-                        // IgnoreTaxi on. Never claim a flag vanilla already owned.
-                        if (!ownsIgnoreTaxi)
-                            buffer.AddComponent<IgnoreTaxiMark>(entity);
-
-                        applied++;
+                        // The fast re-apply pass handles vanilla clearing our flag.
+                        continue;
                     }
 
+                    // If vanilla already owns IgnoreTaxi, do not claim it.
+                    if (ignoreTaxiNow)
+                        continue;
+
+                    resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
+
+                    if (!hasBuffer)
+                    {
+                        buffer = new EntityCommandBuffer(Allocator.Temp);
+                        hasBuffer = true;
+                    }
+
+                    buffer.AddComponent<IgnoreTaxiMark>(entity);
+                    applied++;
                     continue;
                 }
 
                 if (!ownsIgnoreTaxi)
                     continue;
 
-                // Taxi Traffic owns this IgnoreTaxi flag and the resident is now
-                // allowed again. Do not repath, clear queues, or cancel a ride.
                 if (ignoreTaxiNow)
                     resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
 
+                if (!hasBuffer)
+                {
+                    buffer = new EntityCommandBuffer(Allocator.Temp);
+                    hasBuffer = true;
+                }
+
                 buffer.RemoveComponent<IgnoreTaxiMark>(entity);
                 removed++;
+            }
+
+            if (hasBuffer)
+            {
+                buffer.Playback(EntityManager);
+                buffer.Dispose();
+            }
+        }
+
+        private void ReapplyOwnedTaxiBlocks(out int reapplied)
+        {
+            reapplied = 0;
+
+            foreach (RefRW<Resident> resident in SystemAPI
+                         .Query<RefRW<Resident>>()
+                         .WithAll<IgnoreTaxiMark>()
+                         .WithNone<CurrentVehicle, Deleted, Temp>())
+            {
+                ResidentFlags flags = resident.ValueRO.m_Flags;
+
+                if ((flags & ResidentFlags.InVehicle) != 0)
+                    continue;
+
+                // ResidentAI can clear IgnoreTaxi during normal trip resets.
+                // Keep it on for residents Taxi Traffic still owns.
+                if ((flags & ResidentFlags.IgnoreTaxi) == 0)
+                {
+                    resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
+                    reapplied++;
+                }
             }
         }
 
@@ -89,19 +128,36 @@ namespace TaxiTraffic
         {
             int removed = 0;
 
-            EntityCommandBuffer buffer = m_EndFrameBarrier.CreateCommandBuffer();
+            EntityCommandBuffer buffer = default;
+            bool hasBuffer = false;
 
             foreach ((RefRW<Resident> resident, Entity entity) in SystemAPI
                          .Query<RefRW<Resident>>()
                          .WithAll<IgnoreTaxiMark>()
-                         .WithNone<Deleted, Temp>()
+                         .WithNone<CurrentVehicle, Deleted, Temp>()
                          .WithEntityAccess())
             {
-                // Game-default mode clears only the flag Taxi Traffic owns.
-                // No path invalidation or trip cancellation is performed.
+                ResidentFlags flags = resident.ValueRO.m_Flags;
+
+                if ((flags & ResidentFlags.InVehicle) != 0)
+                    continue;
+
                 resident.ValueRW.m_Flags &= ~ResidentFlags.IgnoreTaxi;
+
+                if (!hasBuffer)
+                {
+                    buffer = new EntityCommandBuffer(Allocator.Temp);
+                    hasBuffer = true;
+                }
+
                 buffer.RemoveComponent<IgnoreTaxiMark>(entity);
                 removed++;
+            }
+
+            if (hasBuffer)
+            {
+                buffer.Playback(EntityManager);
+                buffer.Dispose();
             }
 
             return removed;
@@ -118,13 +174,13 @@ namespace TaxiTraffic
                 SystemAPI.HasComponent<HouseholdMember>(citizenEntity))
             {
                 household =
-                    SystemAPI.GetComponentRO<HouseholdMember>(citizenEntity).ValueRO.m_Household;
+                    SystemAPI.GetComponentRO<HouseholdMember>(
+                        citizenEntity).ValueRO.m_Household;
 
                 if (household != Entity.Null)
                 {
-                    // Commuters and tourists are separate controls. When their
-                    // toggle is OFF, they remain vanilla regardless of the local
-                    // resident percentage.
+                    // Commuters and tourists use their own controls instead of
+                    // the local-resident percentage.
                     if (SystemAPI.HasComponent<CommuterHousehold>(household))
                         return setting.BlockCommuters;
 
@@ -143,12 +199,13 @@ namespace TaxiTraffic
 
             if (household != Entity.Null)
             {
-                uint householdRoll = GetHouseholdTaxiEligibilityRoll(household);
+                uint householdRoll =
+                    GetHouseholdTaxiEligibilityRoll(household);
+
                 return householdRoll < (uint)avoidPercent;
             }
 
-            // Rare fallback when a Resident has a Citizen but no usable household
-            // link. If even the Citizen link is invalid, leave vanilla behavior.
+            // Rare fallback when there is no usable household link.
             if (citizenEntity == Entity.Null ||
                 !SystemAPI.HasComponent<Citizen>(citizenEntity))
             {
@@ -164,8 +221,7 @@ namespace TaxiTraffic
 
         private static uint GetHouseholdTaxiEligibilityRoll(Entity household)
         {
-            // Every member points to the same household Entity, so all members
-            // naturally receive the same long-term percentage bucket.
+            // Everyone in a household gets the same stable percentage bucket.
             uint index = unchecked((uint)household.Index);
             uint version = unchecked((uint)household.Version);
             uint seed = index ^ (version * 0x9E3779B9u);

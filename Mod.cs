@@ -107,9 +107,10 @@ namespace TaxiTraffic
                     exception: ex);
             }
 
-            // Register exactly once. Keep the ordering used by the previously stable mod:
-            // vanilla ResidentAI finishes its work first, then Taxi Traffic changes
-            // eligibility for future travel decisions.
+            // Register exactly once.
+            // IMPORTANT: Keep TaxiTraffic AFTER ResidentAISystem.
+            // Running it before ResidentAI caused repeatable native CTDs in testing.
+            // This ordering was stable and still updates taxi choices for future trips.
             updateSystem.UpdateAfter<TaxiTrafficSystem, ResidentAISystem>(
                 SystemUpdatePhase.GameSimulation);
         }

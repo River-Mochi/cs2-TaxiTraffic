@@ -11,8 +11,8 @@
 
 namespace TaxiTraffic
 {
-    using System;    // Math
-    using Game.City; // StatisticType, PassengerType
+    using System;
+    using Game.City;
 
     public partial class TaxiTrafficSystem
     {
@@ -31,20 +31,24 @@ namespace TaxiTraffic
             float intervalSeconds)
         {
             float effectiveIntervalSeconds =
-                Math.Max(intervalSeconds, kDebugMinSummaryIntervalSeconds);
+                Math.Max(
+                    intervalSeconds,
+                    kDebugMinSummaryIntervalSeconds);
 
-            m_DebugTimerSeconds += UnityEngine.Time.unscaledDeltaTime;
+            m_DebugTimerSeconds +=
+                UnityEngine.Time.unscaledDeltaTime;
+
             if (m_DebugTimerSeconds < effectiveIntervalSeconds)
                 return;
 
             m_DebugTimerSeconds = 0f;
 
 #if DEBUG
-            if (IsStatusSnapshotStale(kDebugForceStatusRefreshMaxAgeSeconds))
+            if (IsStatusSnapshotStale(
+                    kDebugForceStatusRefreshMaxAgeSeconds))
+            {
                 RefreshStatusSnapshotForDebug();
-#else
-            if (IsStatusSnapshotStale(kDebugForceStatusRefreshMaxAgeSeconds))
-                RefreshStatusSnapshotForOptionsUi(force: true);
+            }
 #endif
 
             int dailyTaxiCitizen = 0;
@@ -76,25 +80,21 @@ namespace TaxiTraffic
 
                     $"settings[residentsAvoid={setting.ResidentsAvoidTaxis}%, " +
                     $"commutersAvoid={setting.BlockCommuters}, " +
-                    $"touristsAvoid={setting.BlockTourists}, " +
-                    $"outsideBlocked={setting.BlockOutsideTaxis}], " +
+                    $"touristsAvoid={setting.BlockTourists}], " +
 
                     $"fleet[total={s_StatusTaxisTotal}, " +
                     $"fromOC={s_StatusTaxiFromOutside}, " +
                     $"transporting={s_StatusTaxiTransporting}, " +
                     $"dispatched={s_StatusTaxiDispatched}, " +
-                    $"returning={s_StatusTaxiReturning}, " +
-                    $"parked={s_StatusTaxiParked}], " +
+                    $"returning={s_StatusTaxiReturning}], " +
 
-                    $"eligibility[ownedBlocked={s_StatusResidentsForcedMarker}/{s_StatusResidentsTotal}, " +
-                    $"ignoreTaxi={s_StatusResidentsIgnoreTaxi}/{s_StatusResidentsTotal}, " +
-                    $"commuterBlocked={s_StatusCommutersBlockedMark}/{s_StatusCommutersTotal}, " +
-                    $"touristBlocked={s_StatusTouristsBlockedMark}/{s_StatusTouristsTotal}], " +
+                    $"blocking[activeCims={s_StatusActiveCimsTotal}, " +
+                    $"owned={s_StatusOwnedBlocksTotal}, " +
+                    $"ignoreTaxi={s_StatusResidentsIgnoreTaxi}], " +
 
-                    $"outside[blockedSinceLoad={s_StatusOutsideTaxiBlockedTotal}], " +
-
-                    $"waiting[transport={s_StatusWaitingTransportTotal}, " +
-                    $"taxiStand={s_StatusWaitingTaxiStandTotal}], " +
+                    $"control[rideNeedersStopped={s_StatusRideNeedersStoppedTotal}, " +
+                    $"requestsIntercepted={s_StatusTaxiRequestsStoppedTotal}, " +
+                    $"repathed={s_StatusTaxiWaitersRepathedTotal}], " +
 
                     $"dailyTaxi[citizen={dailyTaxiCitizen}, " +
                     $"tourist={dailyTaxiTourist}]");
