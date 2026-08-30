@@ -115,32 +115,26 @@ namespace TaxiTraffic
                     "**Some taxis may still remain. Taxi Traffic allows active trips and normal taxi-stand standby behavior to finish naturally for game stability.**"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)),
-                    "Commuters avoid taxis"
-                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "Commuters avoid taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockCommuters)),
                     "**ON** = commuters avoid taxis.\n" +
                     "**OFF** = vanilla commuter taxi use."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockTourists)),
-                    "Tourists avoid taxis"
-                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockTourists)), "Tourists avoid taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockTourists)),
                     "**ON** = tourists avoid taxis.\n" +
                     "**OFF** = vanilla tourist taxi use."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ResetToGameDefaults)),
-                    "Game Defaults"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ResetToGameDefaults)), "Game Defaults"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.ResetToGameDefaults)),
                     "Sets Residents avoid taxis to 0% and turns commuter and tourist avoidance OFF."
                 },
 
                 // Status display
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ShowLastUpdateInfo)),
-                    "Show last update info"
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ShowLastUpdateInfo)), "Show last update info"
                 },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.ShowLastUpdateInfo)),
                     "Shows current blocking, recent changes, and the Status snapshot time."
@@ -157,16 +151,12 @@ namespace TaxiTraffic
                 },
 #endif
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "Write Report"
-                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Write Report" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
                     "Runs the deeper diagnostic scan and writes the full Status report to this mod's log."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)),
-                    "Open Log"
-                },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "Open Log" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.OpenLogFile)),
                     "Opens this mod's log file. If unavailable, opens the Logs folder."
                 },
@@ -194,95 +184,69 @@ namespace TaxiTraffic
                     "Last-update details appear after the Status snapshot is ready."
                 },
 
+
                 // CITY TRANSIT
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyPassengers1)),
-                    "Citizens"
-                },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusMonthlyPassengers1)),
-                    "Transportation InfoView passengers per month.\n" +
-                    "Order: Taxi | Bus | Tram | Train | Subway | Air."
+                    "<Taxi> | <Bus> | <Tram> | <Train> | <Subway> | <Air>\n" +
+                    "**Citizen passengers per month from the game's Transportation InfoView.**"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyTourists)),
-                    "Tourists"
-                },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusMonthlyTourists)),
-                    "Transportation InfoView tourist passengers per month.\n" +
-                    "Order: Taxi | Bus | Tram | Train | Subway | Air."
+                    "<Taxi> | <Bus> | <Tram> | <Train> | <Subway> | <Air>\n" +
+                    "**Tourist passengers per month from the game's Transportation InfoView.**"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyTotal)),
-                    "Totals"
-                },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusMonthlyTotal)),
-                    "Waiting = cims currently waiting for public transport.\n" +
-                    "Tourists/mo and Citizens/mo are Transportation InfoView totals."
+                    "<Waiting> = cims currently waiting for public transport.\n" +
+                    "<Tourists/mo> and <Citizens/mo> = total public transport passengers per month."
                 },
 
                 // TAXI SCAN
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusPassengers)),
-                    "Current passengers"
-                },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "Current taxi passengers.\n" +
-                    "Blocked = passengers flagged by Taxi Traffic to ignore taxis.\n" +
-                    "Local = passengers who are local city cims."
+                    "<Blocked> = passengers flagged by Taxi Traffic to ignore taxis.\n" +
+                    "<Local> = passengers who are local city cims."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)),
-                    "Taxi supply"
-                },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiSupply)),
-                    "Parked = taxis currently parked.\n" +
-                    "Active = taxis not parked, including rides, dispatch, return, en route, and normal taxi-stand standby.\n" +
-                    "Local depots = player-built local taxi depots.\n" +
-                    "Stands = designated taxi pickup/waiting areas."
+                    "<Parked> = taxis currently parked.\n" +
+                    "<Active> = taxis moving, working, returning, or waiting on standby.\n" +
+                    "<Local depots> = player-built taxi depots.\n" +
+                    "<Stands> = designated taxi pickup/waiting areas."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)),
-                    "Outside taxis"
-                },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)),
-                    "From OC = taxis carrying the game's FromOutside flag.\n" +
-                    "OC sources = outside connections that can supply taxis."
+                    "<From OC> = taxis carrying the game's FromOutside flag.\n" +
+                    "<OC sources> = outside connections that can supply taxis.\n" +
+                    "**If you have no local taxi depots, the game can use OC sources to bring taxis in for local requests.**\n" +
+                    "**In testing, maximum taxi avoidance resulted in minimal to no OC taxis entering the city.**"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)),
-                    "Taxi purpose"
-                },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)),
-                    "Purpose of current taxi requests."
+                    "Purpose of current taxi requests.\n" +
+                    "<Leisure> | <Home> | <Work> | <School> | <Shopping> | <Other>"
                 },
 
                 // LAST UPDATE
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusCoverage1)),
-                    "Blocked now"
-                },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusCoverage1)),
-                    "Active cims currently flagged by Taxi Traffic.\n" +
-                    "This is not the city's total population."
+                    "<Local> | <Commuter> | <Tourist>\n" +
+                    "**Active cims currently blocked by Taxi Traffic — not the city's total population.**"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusWorkDone1)),
-                    "Recent changes"
-                },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusWorkDone1)),
-                    "Most recent Taxi Traffic control pass."
+                    "<Blocked> = newly set to avoid taxis.\n" +
+                    "<Unblocked> = returned to normal taxi choice.\n" +
+                    "<Taxi requests stopped> = new taxi requests intercepted by Taxi Traffic."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusSnapshotMeta)),
-                    "Updated"
-                },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusSnapshotMeta)),
-                    "Shows when this cached Status snapshot was taken."
+                    "<Updated> = time this Status information was collected."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
-                    "Write Status to Log"
-                },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
-                    "Runs the deeper diagnostic scan and writes the full Status report to this mod's log."
-                },
+                    "**Runs a deeper diagnostic scan and writes the full Status report to the Taxi Traffic log.**"
+                },        
+
 
 #if DEBUG
                 // Advanced Debug (DEV builds only)

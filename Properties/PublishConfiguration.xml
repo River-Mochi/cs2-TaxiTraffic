@@ -37,12 +37,15 @@
     - Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
 
     ### How it works
-    - Applies the game's own vanilla taxi flags which is easier + safer. Research showed using "heavy hammer" methods to disable the complex taxi system creates scary frozen citizen zombies (before you ask, no we don't want that).
-    - Some taxis may still remain in the city. Taxi Traffic allows active trips and normal taxi-stand standby behavior to finish naturally for game stability.
-    - If you don't want normal standby taxis at taxi stands, then delete the stands.
-    - Note: if you have no local taxi depots, the game uses outside connection (OC) sources to bring taxis to fill local requests. If you keep the Taxi slider at less than 100% avoidance, the OC taxis come in to fill any void.
-    Outside connections can supply taxis when city taxi demand is not being satisfied by local supply.
-    Recommended: have some local taxis if the slider and toggles  are at anything but full ON [x] and 100%.
+
+    - Taxi Traffic (TT) uses the game's own ignore taxis methods instead of shutting down the whole taxi system (easier + safer).
+    - Some taxis may still remain. We allow active trips to finish naturally for game stability.
+    - If you don't want standby taxis at taxi stands, then remove the taxi stands.
+    - Note: If local taxi supply can't meet demand, the game uses outside connection (OC) sources to bring taxis to fill local requests.
+    - Recommended: have some local taxi depots if you prefer slider and toggles are at anything but full ON [x]. This prevents more inbound OC taxis.
+    - In testing, making the slider max 100% + taxi avoid toggles On, also prevented OC taxi traffic because there was almost no taxi demand left.
+
+    tags: taxi service disable taxi use, reduce taxis.
 </LongDescription>
 <!--Thumbnail-->
 <Thumbnail Value="Properties/Thumbnail-Taxi01.jpg" />
