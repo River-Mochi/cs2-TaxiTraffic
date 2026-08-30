@@ -107,13 +107,12 @@ namespace TaxiTraffic
                     exception: ex);
             }
 
-            // CRITICAL ECS ORDERING — DO NOT MOVE OR DUPLICATE THIS REGISTRATION.
-            // TaxiTrafficSystem must have exactly ONE GameSimulation registration,
-            // and it must run AFTER ResidentAISystem.
-            // Test builds that ran before ResidentAI, or registered this system more
-            // than once, produced repeatable native 0xC0000005 CTDs.
-            // Preserve this exact ordering during future refactors. Do not add another
-            // TaxiTrafficSystem UpdateSystem registration anywhere else.
+
+
+            // IMPORTANT ORDERING: Register this only ONE time. Keep TaxiTraffic AFTER ResidentAISystem. Do Not Move.
+            // Running it before ResidentAI caused repeatable native CTDs in testing.
+            // Preserve this order, it's stable and still updates taxi choices for future trips.
+
             updateSystem.UpdateAfter<TaxiTrafficSystem, ResidentAISystem>(
                 SystemUpdatePhase.GameSimulation);
         }
