@@ -9,7 +9,9 @@
 <!--LongDescription Value="This is a long description" /-->
 <LongDescription>
     ### Taxi Traffic [BETA]
-    Citizens make smarter travel choices by reducing taxi use.
+Do you want more control of the many taxis creating traffic gridlock?
+
+Now citizens can make smarter travel choices by reducing taxi use.
 
     ### What it does
     - ✅ **Residents avoid taxis**, set the range for locals;  0% = vanilla behavior | 100% = maximum avoid taxis
@@ -41,7 +43,8 @@
     - Fun Fact: if local taxi supply can't meet demand, the game uses outside connection (OC) taxis to fill local requests.
     - Recommended: have some local taxi depots if you prefer slider and toggles are at anything but full ON [x]. This prevents more inbound OC taxis.
     - Alternately, in testing, we discovered making the slider full 100% + Commuter ON + Tourist ON, also prevented OC taxi traffic because there was almost no taxi demand left.
-    - Fun Fact: game update 1.5.7 changed moving-in cims to reach the destination with no taxi trip; it even moves their pet target with teleport: true.
+    - Fun Fact: since game update 1.5.7, moving-in/out cims no longer use taxis to get to the destination; it even teleports their pet. Even so, there are still a lot of taxis to manage.
+
 
     tags: taxi service disable taxi use, reduce taxis.
 </LongDescription>
