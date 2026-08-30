@@ -108,9 +108,9 @@ namespace TaxiTraffic
             }
 
             // Register exactly once.
-            // IMPORTANT: Keep TaxiTraffic AFTER ResidentAISystem.
-            // Running it before ResidentAI caused repeatable native CTDs in testing.
-            // This ordering was stable and still updates taxi choices for future trips.
+            // IMPORTANT: keep TaxiTraffic AFTER ResidentAISystem.
+            // Running it before ResidentAI causes repeated native CTDs in testing.
+            // current ordering is stable and still updates taxi choices for future trips.
             updateSystem.UpdateAfter<TaxiTrafficSystem, ResidentAISystem>(
                 SystemUpdatePhase.GameSimulation);
         }
