@@ -41,6 +41,7 @@
     - Fun Fact: if local taxi supply can't meet demand, the game uses outside connection (OC) taxis to fill local requests.
     - Recommended: have some local taxi depots if you prefer slider and toggles are at anything but full ON [x]. This prevents more inbound OC taxis.
     - Alternately, in testing, we discovered making the slider full 100% + Commuter ON + Tourist ON, also prevented OC taxi traffic because there was almost no taxi demand left.
+    - Fun Fact: game update 1.5.7 changed moving-in cims to reach the destination with no taxi trip; it even moves their pet target with teleport: true.
 
     tags: taxi service disable taxi use, reduce taxis.
 </LongDescription>
