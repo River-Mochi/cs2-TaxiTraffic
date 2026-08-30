@@ -1,25 +1,23 @@
 # Taxi Traffic (Cities: Skylines II)
 
-**Taxi Traffic** cuts down the number of taxis clogging your streets.
+**Taxi Traffic** cuts down the taxis clogging your streets.
 
-A taxi only carries 1–4 passengers, so a city full of them creates a lot of traffic for very few people actually moved. This mod encourages your citizens to travel another way instead — walking, cycling, driving, or public transport if you've built it.
-
-You stay in control: a simple slider decides how many of your residents are still allowed to take a taxi.
+A taxi only carries a few people, so a city full of them can mean a lot of traffic for not many passengers. This mod nudges cims to use another travel option instead.
 
 ---
 
 ## How it works
 
-Taxi Traffic uses a switch the game already has built in, called **`IgnoreTaxi`**.
+Taxi Traffic uses the game's own **IgnoreTaxi** behavior.
 
-The base game already puts this flag on certain citizens during normal play, and when a citizen carries it the game simply leaves taxis out of their travel options. All this mod does is apply that same flag to more citizens, based on your settings.
+- Cims you block are told to avoid taxis.
+- Cims still waiting for an unassigned taxi can leave the pickup spot and find another way to travel.
+- If a taxi is already dispatched, boarding, or carrying someone, that trip is left alone to finish.
+- Taxi stands still work normally, including their usual standby taxis.
+- If local taxi supply can't keep up, outside connections (OC) can send taxis into the city.
+- At max taxi-avoid settings, testing showed few or no OC taxis coming into the city.
 
-That's the whole trick. Nothing is hacked and nothing is forced — the game keeps making its own travel decisions, it just stops offering taxis to the citizens you've chosen.
-
-The mod also ties off two loose ends so nobody gets stranded:
-
-- Citizens who were **already standing around waiting for a taxi** get released, so they set off another way instead of freezing in place.
-- Taxi **call-outs still pending are cancelled**, so fewer taxis get sent out and spawned over time.
+No Harmony patching and no attempt to shut down the whole taxi system.
 
 ---
 
@@ -29,42 +27,51 @@ Found in **Options → Taxi Traffic → Actions**.
 
 | Setting | What it does |
 |---|---|
-| **Residents allowed to use taxis** | The main slider — how many of your residents may still take a taxi. |
-| **Commuters avoid taxis** | Also stop people travelling in from outside for work. Off by default. |
-| **Tourists avoid taxis** | Also stop visiting tourists. Off by default. |
-| **Game Defaults** | One click to put everything back to normal, vanilla behaviour. |
+| **Residents avoid taxis** | 0% = vanilla taxi choice. 100% = all local households avoid taxis. |
+| **Commuters avoid taxis** | ON = commuters avoid taxis. |
+| **Tourists avoid taxis** | ON = tourists avoid taxis. |
+| **Game Defaults** | Returns to vanilla taxi choices: 0%, commuters OFF, tourists OFF. |
 
-### The slider
+### Fresh install
 
-| Setting | Meaning |
-|---:|---|
-| **0%** *(default)* | No residents use taxis |
-| 25% | About 1 in 4 residents may use taxis |
-| 50% | About half of residents may use taxis |
-| 75% | About 3 in 4 residents may use taxis |
-| 100% | Residents use taxis exactly like vanilla |
+Taxi Traffic starts strong so you can actually see the difference:
 
-On a fresh install the slider starts at **0%** — the strongest setting — while commuters and tourists are left alone. Slide it up if you'd rather keep some taxi traffic around, or press **Game Defaults** to go back to 100% and fully vanilla behaviour.
+- **Residents avoid taxis: 100%**
+- **Commuters avoid taxis: ON**
+- **Tourists avoid taxis: ON**
+
+Want some taxi traffic back? Lower the slider or turn either group off.
 
 ---
 
 ## What to expect
 
-- Taxi traffic **drops noticeably** once the simulation has run for a few minutes.
-- Taxis already on the road will **finish what they're doing first**, so you'll still see a few for a short while. They thin out as they go.
-- Citizens should **never get stuck** waiting for a taxi that isn't coming.
+- Taxi traffic drops after the city runs for a few minutes.
+- The Transportation InfoView monthly numbers take longer to catch up.
+- A few taxis can still remain while active trips finish or taxis wait at stands.
+- Taxi stands are left alone. Don't want standby taxis there? Remove the stands.
 
-### Taxi stands
+---
 
-Taxi stands are left completely alone. If you've built them, taxis may still drive over and park there as usual — but with this mod switched on, very few citizens will actually hail one. Turn the slider up if you'd like your stands busy again.
+## Status
+
+The Status tab gives a quick look at things like:
+
+- current taxi passengers
+- parked vs active taxis
+- outside-connection taxis
+- taxi trip purpose
+- current Taxi Traffic blocking
+
+Status is bonus info; the mod's main job is reducing taxi traffic.
 
 ---
 
 ## Safety
 
-- **Save-safe.** Add or remove the mod at any time, on new or existing cities.
-- **Fully reversible.** Set the slider to 100% (or press **Game Defaults**) and the game goes straight back to vanilla behaviour.
-- **No Harmony patching**, so it's less likely to break when the game updates.
+- **Game Defaults** returns Taxi Traffic's own changes back to vanilla behavior.
+- Taxi Traffic tracks the cims it changed so it does not wipe vanilla's own IgnoreTaxi flags.
+- No Harmony patching.
 
 ---
 

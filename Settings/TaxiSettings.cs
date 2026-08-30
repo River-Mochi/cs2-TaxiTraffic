@@ -22,17 +22,11 @@ namespace TaxiTraffic
     [FileLocation("ModsSettings/TaxiTraffic/TaxiTraffic")]
     [SettingsUITabOrder(ActionsTab, StatusTab, AboutTab)]
     [SettingsUIGroupOrder(
-        BehaviorGroup,
-        CityScanGroup,
-        TaxiScanGroup,
-        LastUpdateGroup,
+        BehaviorGroup, CityScanGroup, TaxiScanGroup, LastUpdateGroup,
 #if DEBUG
         AdvancedDebugGroup,
 #endif
-        StatusActionsGroup,
-        AboutInfoGroup,
-        AboutLinksGroup,
-        DebugGroup
+        StatusActionsGroup, AboutInfoGroup, AboutLinksGroup, DebugGroup
     )]
     [SettingsUIShowGroupName(
         BehaviorGroup,
@@ -232,23 +226,6 @@ namespace TaxiTraffic
             }
         }
 
-        public override void SetDefaults()
-        {
-            ResidentsAvoidTaxis = kTaxiAvoidPercentDefault;
-            BlockCommuters = false;
-            BlockTourists = false;
-            ShowLastUpdateInfo = false;
-            EnableDebugLogging = false;
-        }
-
-        private void ApplyGameDefaults()
-        {
-            ResidentsAvoidTaxis = kTaxiAvoidPercentMin;
-            BlockCommuters = false;
-            BlockTourists = false;
-            EnableDebugLogging = false;
-        }
-
         public bool IsStatusReady()
         {
             return TaxiTrafficSystem.s_StatusLastSnapshotRealtime > 0.0;
@@ -283,6 +260,25 @@ namespace TaxiTraffic
             return Math.Max(
                 kTaxiAvoidPercentMin,
                 Math.Min(kTaxiAvoidPercentMax, snapped));
+        }
+
+       // New installs start with max cims avoid taxis.
+        public override void SetDefaults()
+        {
+            ResidentsAvoidTaxis = kTaxiAvoidPercentDefault;
+            BlockCommuters = true;
+            BlockTourists = true;
+            ShowLastUpdateInfo = false;
+            EnableDebugLogging = false;
+        }
+
+        // Game Defaults button returs to vanilla
+        private void ApplyGameDefaults()
+        {
+            ResidentsAvoidTaxis = kTaxiAvoidPercentMin;
+            BlockCommuters = false;
+            BlockTourists = false;
+            EnableDebugLogging = false;
         }
     }
 }
