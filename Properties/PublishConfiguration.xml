@@ -13,7 +13,7 @@
 Do you want more control of the many taxis creating traffic gridlock?
 Citizens can make smarter travel choices by reducing taxi use.
 
-Background: I started this mod in 2025 but only shared with a few players. It's a bit of effort between what's good enough for personal use versus adding all the extras for public release (tooltips/languages/images/etc.).
+Background: I started this mod in 2025 but only gave it to a few players I know. It's a bit of effort between what's good enough for personal use versus adding all the extras for public release (tooltips/languages/images/etc.).
 As more started asking, I finally dotted all the "i's." And if it's not a bother, please click the Like 👍 button top right to help people know about the mod.
 
 ### Adjustable Settings
@@ -61,7 +61,7 @@ tags: taxi service disable taxi use, reduce taxis.
 <!--Tag, can be set multiple times-->
 <Tag Value="" />
 <!--Link to the forum post where the mod can be discussed-->
-<ForumLink Value="" />
+<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/taxi-traffic.1939962/" />
 <!--Version of the mod-->
 <ModVersion Value="0.5.0" />
 <!--Recommended version of the base game to use the mod-->
