@@ -1,4 +1,4 @@
-// <copyright file="LocaleEN.cs" company="River-Mochi">
+﻿// <copyright file="LocaleEN.cs" company="River-Mochi">
 // Copyright (c) 2026 River-Mochi. All rights reserved.
 // Licensed under the GNU General Public License v3.0 or later,
 // with the Cities: Skylines II Linking Exception.
@@ -238,23 +238,23 @@ namespace TaxiTraffic
 #endif
 
                 // Status row format strings
-                { KeyStatusCitizensLine, "{0} taxi | {1} bus | {2} tram\n{3} train | {4} subway | {5} air" },
-                { KeyStatusTouristsLine, "{0} taxi | {1} bus | {2} tram\n{3} train | {4} subway | {5} air" },
+                { KeyStatusCitizensLine, "{0} taxi | {1} bus | {2} tram |\n{3} train | {4} subway | {5} air" },
+                { KeyStatusTouristsLine, "{0} taxi | {1} bus | {2} tram |\n{3} train | {4} subway | {5} air" },
                 { KeyStatusTotalsLine, "{0} waiting | {1} tourists/mo | {2} citizens/mo" },
                 { KeyStatusPassengersLine, "{0} total | {1} blocked | {2} local" },
                 { KeyStatusTaxiSupplyLine, "{0} parked, {1} active | {2} local depots | {3} stands" },
                 { KeyStatusOutsideTaxisLine, "{0} from OC | {1} OC sources" },
                 { KeyStatusTaxiPurposeLine,
-                    "{0} leisure | {1} home | {2} work\n" +
+                    "{0} leisure | {1} home | {2} work |\n" +
                     "{3} school | {4} shopping | {5} other"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} city rider ({1} blocked) | {2} OC rider ({3} blocked)\n" +
+                    "{0} city rider ({1} blocked) | {2} OC rider ({3} blocked) |\n" +
                     "{4} local supply | {5} OC supply | {6} stand"
                 },
                 { KeyStatusTaxiStandsLine, "{0} waiting" },
                 { KeyStatusTaxiFleetLine,
-                    "{0} ride | {1} standby | {2} return\n" +
+                    "{0} ride | {1} standby | {2} return |\n" +
                     "{3} dispatch | {4} en route | {5} parked"
                 },
                 { KeyStatusCoverageLine, "{0} local | {1} commuter | {2} tourist" },
