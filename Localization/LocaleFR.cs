@@ -238,23 +238,23 @@ namespace TaxiTraffic
 #endif
 
                 // Status row format strings
-                { KeyStatusCitizensLine, "{0} taxi | {1} bus | {2} tram\n{3} train | {4} métro | {5} avion" },
-                { KeyStatusTouristsLine, "{0} taxi | {1} bus | {2} tram\n{3} train | {4} métro | {5} avion" },
+                { KeyStatusCitizensLine, "{0} taxi | {1} bus | {2} tram |\n{3} train | {4} métro | {5} avion" },
+                { KeyStatusTouristsLine, "{0} taxi | {1} bus | {2} tram |\n{3} train | {4} métro | {5} avion" },
                 { KeyStatusTotalsLine, "{0} en attente | {1} touristes/mois | {2} citoyens/mois" },
                 { KeyStatusPassengersLine, "{0} total | {1} bloqués | {2} locaux" },
                 { KeyStatusTaxiSupplyLine, "{0} garés, {1} actifs | {2} dépôts locaux | {3} stations" },
                 { KeyStatusOutsideTaxisLine, "{0} depuis OC | {1} sources OC" },
                 { KeyStatusTaxiPurposeLine,
-                    "{0} loisirs | {1} domicile | {2} travail\n" +
+                    "{0} loisirs | {1} domicile | {2} travail |\n" +
                     "{3} école | {4} achats | {5} autre"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} client ville ({1} bloqué) | {2} client OC ({3} bloqué)\n" +
+                    "{0} client ville ({1} bloqué) | {2} client OC ({3} bloqué) |\n" +
                     "{4} offre locale | {5} offre OC | {6} station"
                 },
                 { KeyStatusTaxiStandsLine, "{0} en attente" },
                 { KeyStatusTaxiFleetLine,
-                    "{0} course | {1} attente | {2} retour\n" +
+                    "{0} course | {1} attente | {2} retour |\n" +
                     "{3} dispatch | {4} en route | {5} garés"
                 },
                 { KeyStatusCoverageLine, "{0} local | {1} navetteur | {2} touriste" },

@@ -238,23 +238,23 @@ namespace TaxiTraffic
 #endif
 
                 // Status row format strings
-                { KeyStatusCitizensLine, "{0} 出租车 | {1} 公交 | {2} 电车\n{3} 火车 | {4} 地铁 | {5} 飞机" },
-                { KeyStatusTouristsLine, "{0} 出租车 | {1} 公交 | {2} 电车\n{3} 火车 | {4} 地铁 | {5} 飞机" },
+                { KeyStatusCitizensLine, "{0} 出租车 | {1} 公交 | {2} 电车 |\n{3} 火车 | {4} 地铁 | {5} 飞机" },
+                { KeyStatusTouristsLine, "{0} 出租车 | {1} 公交 | {2} 电车 |\n{3} 火车 | {4} 地铁 | {5} 飞机" },
                 { KeyStatusTotalsLine, "{0} 等待中 | {1} 游客/月 | {2} 市民/月" },
                 { KeyStatusPassengersLine, "{0} 总计 | {1} 已屏蔽 | {2} 本地" },
                 { KeyStatusTaxiSupplyLine, "{0} 已停放, {1} 活跃 | {2} 本地车库 | {3} 车站" },
                 { KeyStatusOutsideTaxisLine, "{0} 来自 OC | {1} OC 来源" },
                 { KeyStatusTaxiPurposeLine,
-                    "{0} 休闲 | {1} 回家 | {2} 上班\n" +
+                    "{0} 休闲 | {1} 回家 | {2} 上班 |\n" +
                     "{3} 上学 | {4} 购物 | {5} 其他"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} 本地乘客 ({1} 屏蔽) | {2} OC 乘客 ({3} 屏蔽)\n" +
+                    "{0} 本地乘客 ({1} 屏蔽) | {2} OC 乘客 ({3} 屏蔽) |\n" +
                     "{4} 本地供应 | {5} OC 供应 | {6} 车站"
                 },
                 { KeyStatusTaxiStandsLine, "{0} 等待中" },
                 { KeyStatusTaxiFleetLine,
-                    "{0} 载客 | {1} 待命 | {2} 返回\n" +
+                    "{0} 载客 | {1} 待命 | {2} 返回 |\n" +
                     "{3} 派车 | {4} 途中 | {5} 已停放"
                 },
                 { KeyStatusCoverageLine, "{0} 本地 | {1} 通勤者 | {2} 游客" },

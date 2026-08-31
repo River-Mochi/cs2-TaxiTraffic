@@ -238,23 +238,23 @@ namespace TaxiTraffic
 #endif
 
                 // Status row format strings
-                { KeyStatusCitizensLine, "{0} 計程車 | {1} 公車 | {2} 電車\n{3} 火車 | {4} 捷運 | {5} 飛機" },
-                { KeyStatusTouristsLine, "{0} 計程車 | {1} 公車 | {2} 電車\n{3} 火車 | {4} 捷運 | {5} 飛機" },
+                { KeyStatusCitizensLine, "{0} 計程車 | {1} 公車 | {2} 電車 |\n{3} 火車 | {4} 捷運 | {5} 飛機" },
+                { KeyStatusTouristsLine, "{0} 計程車 | {1} 公車 | {2} 電車 |\n{3} 火車 | {4} 捷運 | {5} 飛機" },
                 { KeyStatusTotalsLine, "{0} 等待中 | {1} 遊客/月 | {2} 市民/月" },
                 { KeyStatusPassengersLine, "{0} 總計 | {1} 已封鎖 | {2} 本地" },
                 { KeyStatusTaxiSupplyLine, "{0} 已停放, {1} 活躍 | {2} 本地車庫 | {3} 車站" },
                 { KeyStatusOutsideTaxisLine, "{0} 來自 OC | {1} OC 來源" },
                 { KeyStatusTaxiPurposeLine,
-                    "{0} 休閒 | {1} 回家 | {2} 上班\n" +
+                    "{0} 休閒 | {1} 回家 | {2} 上班 |\n" +
                     "{3} 上學 | {4} 購物 | {5} 其他"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} 本地乘客 ({1} 封鎖) | {2} OC 乘客 ({3} 封鎖)\n" +
+                    "{0} 本地乘客 ({1} 封鎖) | {2} OC 乘客 ({3} 封鎖) |\n" +
                     "{4} 本地供應 | {5} OC 供應 | {6} 車站"
                 },
                 { KeyStatusTaxiStandsLine, "{0} 等待中" },
                 { KeyStatusTaxiFleetLine,
-                    "{0} 載客 | {1} 待命 | {2} 返回\n" +
+                    "{0} 載客 | {1} 待命 | {2} 返回 |\n" +
                     "{3} 派車 | {4} 途中 | {5} 已停放"
                 },
                 { KeyStatusCoverageLine, "{0} 本地 | {1} 通勤者 | {2} 遊客" },

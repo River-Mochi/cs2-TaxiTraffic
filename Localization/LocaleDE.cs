@@ -238,23 +238,23 @@ namespace TaxiTraffic
 #endif
 
                 // Status row format strings
-                { KeyStatusCitizensLine, "{0} Taxi | {1} Bus | {2} Tram\n{3} Zug | {4} U-Bahn | {5} Flug" },
-                { KeyStatusTouristsLine, "{0} Taxi | {1} Bus | {2} Tram\n{3} Zug | {4} U-Bahn | {5} Flug" },
+                { KeyStatusCitizensLine, "{0} Taxi | {1} Bus | {2} Tram |\n{3} Zug | {4} U-Bahn | {5} Flug" },
+                { KeyStatusTouristsLine, "{0} Taxi | {1} Bus | {2} Tram |\n{3} Zug | {4} U-Bahn | {5} Flug" },
                 { KeyStatusTotalsLine, "{0} wartend | {1} Touristen/Monat | {2} Bürger/Monat" },
                 { KeyStatusPassengersLine, "{0} gesamt | {1} blockiert | {2} lokal" },
                 { KeyStatusTaxiSupplyLine, "{0} geparkt, {1} aktiv | {2} lokale Depots | {3} Stände" },
                 { KeyStatusOutsideTaxisLine, "{0} von OC | {1} OC-Quellen" },
                 { KeyStatusTaxiPurposeLine,
-                    "{0} Freizeit | {1} Zuhause | {2} Arbeit\n" +
+                    "{0} Freizeit | {1} Zuhause | {2} Arbeit |\n" +
                     "{3} Schule | {4} Einkaufen | {5} Sonstiges"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} Stadt-Fahrgast ({1} blockiert) | {2} OC-Fahrgast ({3} blockiert)\n" +
+                    "{0} Stadt-Fahrgast ({1} blockiert) | {2} OC-Fahrgast ({3} blockiert) |\n" +
                     "{4} lokale Versorgung | {5} OC-Versorgung | {6} Stand"
                 },
                 { KeyStatusTaxiStandsLine, "{0} wartend" },
                 { KeyStatusTaxiFleetLine,
-                    "{0} Fahrt | {1} Bereitschaft | {2} Rückfahrt\n" +
+                    "{0} Fahrt | {1} Bereitschaft | {2} Rückfahrt |\n" +
                     "{3} Dispatch | {4} unterwegs | {5} geparkt"
                 },
                 { KeyStatusCoverageLine, "{0} lokal | {1} Pendler | {2} Tourist" },

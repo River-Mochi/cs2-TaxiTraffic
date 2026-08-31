@@ -238,23 +238,23 @@ namespace TaxiTraffic
 #endif
 
                 // Status row format strings
-                { KeyStatusCitizensLine, "{0} taxi | {1} autobus | {2} tramwaj\n{3} pociąg | {4} metro | {5} samolot" },
-                { KeyStatusTouristsLine, "{0} taxi | {1} autobus | {2} tramwaj\n{3} pociąg | {4} metro | {5} samolot" },
+                { KeyStatusCitizensLine, "{0} taxi | {1} autobus | {2} tramwaj |\n{3} pociąg | {4} metro | {5} samolot" },
+                { KeyStatusTouristsLine, "{0} taxi | {1} autobus | {2} tramwaj |\n{3} pociąg | {4} metro | {5} samolot" },
                 { KeyStatusTotalsLine, "{0} oczekuje | {1} turyści/mies. | {2} obywatele/mies." },
                 { KeyStatusPassengersLine, "{0} razem | {1} zablok. | {2} lokalni" },
                 { KeyStatusTaxiSupplyLine, "{0} zapark., {1} aktywne | {2} lokalne zajezdnie | {3} postoje" },
                 { KeyStatusOutsideTaxisLine, "{0} z OC | {1} źródła OC" },
                 { KeyStatusTaxiPurposeLine,
-                    "{0} rozrywka | {1} dom | {2} praca\n" +
+                    "{0} rozrywka | {1} dom | {2} praca |\n" +
                     "{3} szkoła | {4} zakupy | {5} inne"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} pasażer miasta ({1} blok.) | {2} pasażer OC ({3} blok.)\n" +
+                    "{0} pasażer miasta ({1} blok.) | {2} pasażer OC ({3} blok.) |\n" +
                     "{4} lokalna podaż | {5} podaż OC | {6} postój"
                 },
                 { KeyStatusTaxiStandsLine, "{0} oczekuje" },
                 { KeyStatusTaxiFleetLine,
-                    "{0} kurs | {1} postój | {2} powrót\n" +
+                    "{0} kurs | {1} postój | {2} powrót |\n" +
                     "{3} dispatch | {4} w drodze | {5} zapark."
                 },
                 { KeyStatusCoverageLine, "{0} lokalni | {1} dojeżdżający | {2} turyści" },

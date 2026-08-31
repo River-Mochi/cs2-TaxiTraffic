@@ -155,19 +155,7 @@ namespace TaxiTraffic
 
         public void OnDispose()
         {
-            LogUtils.Info($"{ModTag} OnDispose");
-
-            try
-            {
-                Setting?.UnregisterInOptionsUI();
-            }
-            catch (Exception ex)
-            {
-                LogUtils.Warn(
-                    $"{ModTag} UnregisterInOptionsUI failed.",
-                    ex);
-            }
-
+            Setting?.UnregisterInOptionsUI();
             Setting = null;
         }
     }

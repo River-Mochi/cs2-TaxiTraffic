@@ -238,23 +238,23 @@ namespace TaxiTraffic
 #endif
 
                 // Status row format strings
-                { KeyStatusCitizensLine, "{0} 택시 | {1} 버스 | {2} 트램\n{3} 기차 | {4} 지하철 | {5} 항공" },
-                { KeyStatusTouristsLine, "{0} 택시 | {1} 버스 | {2} 트램\n{3} 기차 | {4} 지하철 | {5} 항공" },
+                { KeyStatusCitizensLine, "{0} 택시 | {1} 버스 | {2} 트램 |\n{3} 기차 | {4} 지하철 | {5} 항공" },
+                { KeyStatusTouristsLine, "{0} 택시 | {1} 버스 | {2} 트램 |\n{3} 기차 | {4} 지하철 | {5} 항공" },
                 { KeyStatusTotalsLine, "{0} 대기 | {1} 관광객/월 | {2} 시민/월" },
                 { KeyStatusPassengersLine, "{0} 합계 | {1} 차단 | {2} 지역" },
                 { KeyStatusTaxiSupplyLine, "{0} 주차, {1} 활성 | {2} 지역 차고지 | {3} 승강장" },
                 { KeyStatusOutsideTaxisLine, "{0} OC에서 | {1} OC 공급원" },
                 { KeyStatusTaxiPurposeLine,
-                    "{0} 여가 | {1} 귀가 | {2} 직장\n" +
+                    "{0} 여가 | {1} 귀가 | {2} 직장 |\n" +
                     "{3} 학교 | {4} 쇼핑 | {5} 기타"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} 지역 승객 ({1} 차단) | {2} OC 승객 ({3} 차단)\n" +
+                    "{0} 지역 승객 ({1} 차단) | {2} OC 승객 ({3} 차단) |\n" +
                     "{4} 지역 공급 | {5} OC 공급 | {6} 승강장"
                 },
                 { KeyStatusTaxiStandsLine, "{0} 대기" },
                 { KeyStatusTaxiFleetLine,
-                    "{0} 운행 | {1} 대기 | {2} 복귀\n" +
+                    "{0} 운행 | {1} 대기 | {2} 복귀 |\n" +
                     "{3} 배차 | {4} 이동 중 | {5} 주차"
                 },
                 { KeyStatusCoverageLine, "{0} 지역 | {1} 통근자 | {2} 관광객" },

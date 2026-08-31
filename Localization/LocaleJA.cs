@@ -238,23 +238,23 @@ namespace TaxiTraffic
 #endif
 
                 // Status row format strings
-                { KeyStatusCitizensLine, "{0} タクシー | {1} バス | {2} トラム\n{3} 鉄道 | {4} 地下鉄 | {5} 航空" },
-                { KeyStatusTouristsLine, "{0} タクシー | {1} バス | {2} トラム\n{3} 鉄道 | {4} 地下鉄 | {5} 航空" },
+                { KeyStatusCitizensLine, "{0} タクシー | {1} バス | {2} トラム |\n{3} 鉄道 | {4} 地下鉄 | {5} 航空" },
+                { KeyStatusTouristsLine, "{0} タクシー | {1} バス | {2} トラム |\n{3} 鉄道 | {4} 地下鉄 | {5} 航空" },
                 { KeyStatusTotalsLine, "{0} 待機中 | {1} 観光客/月 | {2} 市民/月" },
                 { KeyStatusPassengersLine, "{0} 合計 | {1} ブロック | {2} 市内" },
                 { KeyStatusTaxiSupplyLine, "{0} 駐車中, {1} 稼働中 | {2} 市内営業所 | {3} 乗り場" },
                 { KeyStatusOutsideTaxisLine, "{0} OCから | {1} OC供給元" },
                 { KeyStatusTaxiPurposeLine,
-                    "{0} レジャー | {1} 帰宅 | {2} 仕事\n" +
+                    "{0} レジャー | {1} 帰宅 | {2} 仕事 |\n" +
                     "{3} 学校 | {4} 買い物 | {5} その他"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} 市内客 ({1} ブロック) | {2} OC客 ({3} ブロック)\n" +
+                    "{0} 市内客 ({1} ブロック) | {2} OC客 ({3} ブロック) |\n" +
                     "{4} 市内供給 | {5} OC供給 | {6} 乗り場"
                 },
                 { KeyStatusTaxiStandsLine, "{0} 待機中" },
                 { KeyStatusTaxiFleetLine,
-                    "{0} 乗車中 | {1} 待機 | {2} 帰還\n" +
+                    "{0} 乗車中 | {1} 待機 | {2} 帰還 |\n" +
                     "{3} 配車 | {4} 移動中 | {5} 駐車"
                 },
                 { KeyStatusCoverageLine, "{0} 市内 | {1} 通勤者 | {2} 観光客" },
