@@ -255,7 +255,7 @@ namespace TaxiTraffic
                 Math.Min(kTaxiAvoidPercentMax, snapped));
         }
 
-       // New installs start with cims = maximum avoid taxis.
+       // New installs start with maximum taxi avoidance.
         public override void SetDefaults()
         {
             ResidentsAvoidTaxis = kTaxiAvoidPercentDefault;
@@ -265,7 +265,7 @@ namespace TaxiTraffic
             EnableDebugLogging = false;
         }
 
-        // Game Defaults button returns values to vanilla
+        // Game Defaults returns to normal vanilla values
         private void ApplyGameDefaults()
         {
             ResidentsAvoidTaxis = kTaxiAvoidPercentMin;
