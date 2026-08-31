@@ -4,56 +4,55 @@
 <!--Name of the mod to display to players-->
 <DisplayName Value="Taxi Traffic" />
 <!--Short description of the mod-->
-<ShortDescription Value="Adjust Taxi use and Traffic for Citizens, Tourists, or Commuters." />
+<ShortDescription Value="Reduce Taxi use and Traffic for Citizens, Tourists, or Commuters." />
 <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 <!--LongDescription Value="This is a long description" /-->
 <LongDescription>
-    ### Taxi Traffic
+### Taxi Traffic
 
-    Do you want more control of the many taxis creating traffic gridlock?
-    Citizens can make smarter travel choices by reducing taxi use.
+Do you want more control of the many taxis creating traffic gridlock?
+Citizens can make smarter travel choices by reducing taxi use.
 
-    Background: I started this mod in 2025 but only shared with a few players as it's a bit of effort between what's good enough for me versus adding all the extras for public release (tooltips/languages/images/etc.).
-    Several have asked me to release it so I finally dotted all the "i's" If it's not a bother, please click the Like 👍 button top right to help people know about the mod.
+Background: I started this mod in 2025 but only shared with a few players. It's a bit of effort between what's good enough for personal use versus adding all the extras for public release (tooltips/languages/images/etc.).
+As more started asking, I finally dotted all the "i's." And if it's not a bother, please click the Like 👍 button top right to help people know about the mod.
 
-    ### Adjustable Settings
-    - ✅ **Residents avoid taxis**, set the range for locals;  0% = normal taxi use | 100% = maximum avoid taxis
-    - ✅ Features: **Commuters avoid taxis** and **Tourists avoid taxis** [x] toggles let you reduce taxi use for those groups too.
+### Adjustable Settings
+- ✅ **Residents avoid taxis**, set the range for locals;  0% = normal taxi use | 100% = maximum avoid taxis
+- ✅ Features: **Commuters avoid taxis** and **Tourists avoid taxis** [x] toggles let you reduce taxi use for those groups too.
 
-    ### What to expect
-    - Taxi traffic drops after the city runs for a few minutes.
-    - Existing taxis may still be visible briefly while active trips finish naturally (depends on the options picked).
-    - Use **Game Defaults** to restore vanilla taxi choices (toggles off and Resident slider at 0%).
-    - Safe to remove anytime. No Harmony based patching; less likely to break on game patch day.
-    - Tip: to verify usage, check Options menu > mod Status, to see usage is going down after a city runs a little.
+### What to expect
+- Taxi traffic drops after the city runs for a few minutes.
+- Existing taxis may still be visible briefly while active trips finish naturally (depends on the options picked).
+- Use **Game Defaults** to restore vanilla taxi choices (toggles off and Resident slider at 0%).
+- Safe to remove anytime. No Harmony based patching; less likely to break on game patch day.
+- Tip: to verify usage, check Options menu > mod Status, to see usage is going down after a city runs a little.
 
-    ### Support and Feedback
-    - Easiest way to support is click the LIKE 👍 button (top right).
-    - For Feedback use Github or Discord links (icons on right side of page). PR's are welcome.
+### Support and Feedback
+- Easiest way to support is click the LIKE 👍 button (top right).
+- For Feedback use Github or Discord links (icons on right side of page). PRs are welcome.
 
-    ### Credits and Thanks
-    - RiverMochi: mod author
-    - Noel/Noel2 (of MapExt): testing
-    - Winterqt (of Grass sprites): testing
+### Credits and Thanks
+- RiverMochi: mod author
+- Noel/Noel2 (of MapExt): testing
+- Winterqt (of Grass sprites): testing
+- Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
 
-    - Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
+### How it works
 
-    ### How it works
+- Taxi Traffic (TT) uses the game's own ignore taxis methods (safer + easier).
+- Some taxis may still remain. Active trips are allowed to finish naturally for game stability. Some systems may still independently call taxis.
+- Removing taxi stands prevents taxis from parking there - much easier to use vanilla for that part.
+- Fun Fact: if local taxi supply can't meet demand, the game can send in outside connection (OC) taxis for local requests.
+- Keeping some local taxi depots can reduce the calls for OC taxis when taxi use is still allowed (in Options menu).
+- In testing, with the slider full 100% + Commuter ON + Tourist ON, it also reduced OC taxi traffic because of reduced taxi requests.
+- Fun Fact: since game update 1.5.7, some moving-in/out cims that previously used taxis are now moved instantly; pets are teleported too. Even so, taxi tuning is still useful for all the other trips.
 
-    - Taxi Traffic (TT) uses the game's own ignore taxis methods instead of shutting down the whole taxi system (easier + safer).
-    - Some taxis may still remain. Active trips are allowed to finish naturally for game stability. Some systems may independently call taxis.
-    - Removing taxi stands prevents taxis from parking there.
-    - Fun Fact: if local taxi supply can't meet demand, the game can send in outside connection (OC) taxis for local requests.
-    - Keeping some local taxi depots can reduce the calls for OC taxis when taxi use is still allowed (in Options menu).
-    - In testing, with the slider full 100% + Commuter ON + Tourist ON, it also reduced OC taxi traffic because of reduced taxi requests.
-    - Fun Fact: since game update 1.5.7, the moving-in/out cims that previously used taxis are now instant moved; the pets are teleported too. Even so, taxi management is still useful for all the other trips.
+**10+ Languages**
 
-    **10+ Languages**
+Français, Deutsch, Español, Italiano, Polski, Português Brazilian
+日本語, 한국어, 简体中文, 繁體中文
 
-    Français, Deutsch, Español, Italiano, Polski, Português Brazilian
-    日本語, 한국어, 简体中文, 繁體中文
-
-    tags: taxi service disable taxi use, reduce taxis.
+tags: taxi service disable taxi use, reduce taxis.
 </LongDescription>
 <!--Thumbnail-->
 <Thumbnail Value="Properties/Thumbnail-Taxi01.jpg" />

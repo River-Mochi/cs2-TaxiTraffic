@@ -79,7 +79,7 @@ namespace TaxiTraffic
                 // Actions
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ResidentsAvoidTaxis)), "Residents avoid taxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.ResidentsAvoidTaxis)),
-                    "<0%> = normal resident taxi use.\n" +
+                    "<0%> = normal taxi use.\n" +
                     "<25–75%> = percentage of local households that avoid taxis.\n" +
                     "<100%> = all eligible local residents avoid taxis.\n" +
                     "**Some taxis may still remain. Taxi Traffic allows active trips and normal taxi-stand standby behavior to finish naturally for game stability.**"
@@ -157,7 +157,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "Taxi supply" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiSupply)),
                     "<Parked> = taxis currently parked.\n" +
-                    "<Active> = taxis not parked, includes taxis on standby at taxi stands.\n" +
+                    "<Active> = taxis not parked, including taxis on standby at taxi stands.\n" +
                     "<Local depots> = player-built taxi depots.\n" +
                     "<Stands> = designated taxi pickup/waiting areas."
                 },
@@ -166,7 +166,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)),
                     "<From OC> = taxis coming from outside connections.\n" +
                     "<OC sources> = Outside Connections that can send taxis (think of this like invisible depots).\n" +
-                    "**If there are no local depots, then the game can send in OC taxis for local requests.**" +
+                    "**If there are no local depots, then the game can send in OC taxis for local requests.**\n" +
                     "**In testing, setting sliders + toggles [x] to max taxi-avoidance showed few to no OC taxis coming into the city.**"
                 },
 
