@@ -82,3 +82,10 @@ Status is bonus info; the mod's main job is reducing taxi traffic.
 - Thumbnail: *World Class Traffic Jam 2* by joiseyshowaa, Freehold NJ — [CC BY-SA 2.0](https://commons.wikimedia.org/w/index.php?curid=63542844)
 
 Source: <https://github.com/River-Mochi/cs2-TaxiTraffic>
+
+
+### License
+
+Taxi Traffic is licensed under GPL-3.0-or-later with the Cities: Skylines II Linking Exception.
+
+The shared files in `Utils/` are separately licensed under the MIT License; see `LICENSE-MIT`.

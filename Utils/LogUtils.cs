@@ -1,13 +1,13 @@
 // <copyright file="LogUtils.cs" company="River-Mochi">
 // Copyright (c) 2026 River-Mochi. All rights reserved.
-// Licensed under the MIT License. You may not use this file except in compliance with this License.
-// See LICENSE file in the project root for full license information.
+// Licensed under the MIT License.
+// See LICENSE-MIT in the project root for full license information.
 // This notice and the MIT License notice must be kept with
 // all copies or substantial portions of this code.
 // ================= </copyright> ======================
 
 // File: Utils/LogUtils.cs
-// Version: 0.7.1 based on River-Mochi shared CS2 utilities.
+// Version: 0.7.2 based on River-Mochi shared CS2 utilities.
 // Purpose: reduce Colossal logger NRE popups with direct .NET file logging.
 // Why: routine mod logs bypass Colossal's logger write path.
 //
