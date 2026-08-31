@@ -8,49 +8,54 @@
 <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 <!--LongDescription Value="This is a long description" /-->
 <LongDescription>
-    ### Taxi Traffic [BETA]
-    Do you want more control of the many taxis creating traffic gridlock?
+### Taxi Traffic
 
-    Now citizens can make smarter travel choices by reducing taxi use.
+Do you want more control of the many taxis creating traffic gridlock?
+Citizens can make smarter travel choices by reducing taxi use.
 
-    ### What it does
-    - ✅ **Residents avoid taxis**, set the range for locals;  0% = vanilla behavior | 100% = maximum avoid taxis
-    - ✅ Features: **Commuters avoid taxis** and **Tourists avoid taxis** [x] toggles let you reduce taxi use for those groups too.
+Background: I started this mod in 2025 but only shared with a few players. It's a bit of effort between what works for me versus adding all the extras for public release (tooltips/languages/images/etc.).
+If it's not a bother, please click the Like 👍 button top right to help people know about the mod.
 
-    ### What to expect
-    - Taxi traffic drops after the city runs for a few minutes.
-    - Existing taxis may still be visible briefly while active trips finish naturally.
-    - Use **Game Defaults** to restore vanilla taxi choices (toggles off and Resident slider at 0%).
+### What it does
+- ✅ **Residents avoid taxis**, set the range for locals;  0% = vanilla behavior | 100% = maximum avoid taxis
+- ✅ Features: **Commuters avoid taxis** and **Tourists avoid taxis** [x] toggles let you reduce taxi use for those groups too.
 
-    ### Safety / compatibility
-    - Safe to remove anytime. No Harmony based patching; less likely to break on game patch day.
-    - Tip: to verify usage, check Options menu > mod Status, see if usage is going down after a city runs a little.
+### What to expect
+- Taxi traffic drops after the city runs for a few minutes.
+- Existing taxis may still be visible briefly while active trips finish naturally.
+- Use **Game Defaults** to restore vanilla taxi choices (toggles off and Resident slider at 0%).
 
-    ### Support and Feedback
-    - Easiest way to support is click the LIKE 👍 button (top right).
-    - For Feedback use Github or Discord links (icons on right side of page). PR's are welcome.
+### Safety / compatibility
+- Safe to remove anytime. No Harmony based patching; less likely to break on game patch day.
+- Tip: to verify usage, check Options menu > mod Status, see if usage is going down after a city runs a little.
 
-    ### Credits and Thanks
-    - RiverMochi: mod author
-    - Noel/Noel2 (of MapExt): testing, feedback
-    - Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
+### Support and Feedback
+- Easiest way to support is click the LIKE 👍 button (top right).
+- For Feedback use Github or Discord links (icons on right side of page). PR's are welcome.
 
-    ### How it works
+### Credits and Thanks
+- RiverMochi: mod author
+- Winterqt (grass sprites), Noel/Noel2 (of MapExt): testing
+- Seraphina: testing
 
-    - Taxi Traffic (TT) uses the game's own ignore taxis methods instead of shutting down the whole taxi system (easier + safer).
-    - Some taxis may still remain. Active trips are allowed to finish naturally for game stability. Some systems may independently call taxis.
-    - Removing taxi stands prevents taxis from parking there.
-    - Fun Fact: if local taxi supply can't meet demand, the game uses outside connection (OC) taxis to fill local requests.
-    - Recommended: have some local taxi depots if you prefer slider and toggles are at anything but full ON [x]. This prevents more inbound OC taxis.
-    - Alternately, in testing, we discovered making the slider full 100% + Commuter ON + Tourist ON, also prevented OC taxi traffic because there was almost no taxi demand left.
-    - Fun Fact: since game update 1.5.7, moving-in/out cims no longer use taxis to get to the destination; it even teleports their pet. Even so, there are still a lot of taxis to manage.
+- Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
 
-    **10+ Languages**
+### How it works
+
+- Taxi Traffic (TT) uses the game's own ignore taxis methods instead of shutting down the whole taxi system (easier + safer).
+- Some taxis may still remain. Active trips are allowed to finish naturally for game stability. Some systems may independently call taxis.
+- Removing taxi stands prevents taxis from parking there.
+- Fun Fact: if local taxi supply can't meet demand, the game uses outside connection (OC) taxis to fill local requests.
+- Recommended: have some local taxi depots if you prefer slider and toggles are at anything but full ON [x]. This prevents more inbound OC taxis.
+- Alternately, in testing, we discovered making the slider full 100% + Commuter ON + Tourist ON, also prevented OC taxi traffic because there was almost no taxi demand left.
+- Fun Fact: since game update 1.5.7, moving-in/out cims no longer use taxis to get to the destination; it even teleports their pet. Even so, there are still a lot of taxis to manage.
+
+**10+ Languages**
 
 Français, Deutsch, Español, Italiano, Polski, Português Brazilian
-    日本語, 한국어, 简体中文, 繁體中文
+日本語, 한국어, 简体中文, 繁體中文
 
-    tags: taxi service disable taxi use, reduce taxis.
+tags: taxi service disable taxi use, reduce taxis.
 </LongDescription>
 <!--Thumbnail-->
 <Thumbnail Value="Properties/Thumbnail-Taxi01.jpg" />
@@ -75,5 +80,5 @@ Français, Deutsch, Español, Italiano, Polski, Português Brazilian
 <!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 <ExternalLink Type="" Url="" />
 <!--Supported values Public, Private, Unlisted-->
-<AccessLevel Value="Unlisted" />
+<AccessLevel Value="Public" />
 </Publish>

@@ -13,7 +13,7 @@ namespace TaxiTraffic
 {
     using System;
     using Colossal.IO.AssetDatabase;
-    using CS2Shared.RiverMochi; // LogUtils, ShellOpen
+    using CS2Shared.RiverMochi;         // LogUtils, ShellOpen
     using Game.Modding;
     using Game.Settings;
     using Game.UI;
@@ -21,26 +21,22 @@ namespace TaxiTraffic
 
     [FileLocation("ModsSettings/TaxiTraffic/TaxiTraffic")]
     [SettingsUITabOrder(ActionsTab, StatusTab, AboutTab)]
+
     [SettingsUIGroupOrder(
-        BehaviorGroup, CityScanGroup, TaxiScanGroup, LastUpdateGroup,
-#if DEBUG
+        BehaviorGroup, TaxiScanGroup, CityScanGroup, LastUpdateGroup,
+    #if DEBUG
         AdvancedDebugGroup,
-#endif
+    #endif
         StatusActionsGroup, AboutInfoGroup, AboutLinksGroup, DebugGroup
     )]
     [SettingsUIShowGroupName(
-        BehaviorGroup,
-        CityScanGroup,
-        TaxiScanGroup,
-        LastUpdateGroup,
-#if DEBUG
+        BehaviorGroup, TaxiScanGroup, CityScanGroup, LastUpdateGroup,
+    #if DEBUG
         AdvancedDebugGroup,
-#endif
-        StatusActionsGroup,
-        AboutInfoGroup,
-        AboutLinksGroup,
-        DebugGroup
+    #endif
+        StatusActionsGroup, AboutInfoGroup, AboutLinksGroup, DebugGroup
     )]
+
     public sealed partial class TaxiSettings : ModSetting
     {
         public const string ActionsTab = "Actions";
@@ -61,6 +57,7 @@ namespace TaxiTraffic
         public const string AboutInfoGroup = "Info";
         public const string AboutLinksGroup = "Support Links";
 
+        // Tuning knobs.
         internal const int kTaxiAvoidPercentMin = 0;
         internal const int kTaxiAvoidPercentMax = 100;
         internal const int kTaxiAvoidPercentStep = 25;
@@ -104,9 +101,7 @@ namespace TaxiTraffic
         [SettingsUISection(ActionsTab, BehaviorGroup)]
         [SettingsUISetter(typeof(TaxiSettings), nameof(OnTaxiEligibilityToggleChanged))]
         public bool BlockTourists
-        {
-            get; set;
-        }
+        { get; set; }
 
         [SettingsUIButtonGroup(BehaviorGroup)]
         [SettingsUIButton]
@@ -129,9 +124,7 @@ namespace TaxiTraffic
 
         [SettingsUISection(StatusTab, LastUpdateGroup)]
         public bool ShowLastUpdateInfo
-        {
-            get; set;
-        }
+        { get; set; }
 
         // ---- Debug / logging ----
 
@@ -262,7 +255,7 @@ namespace TaxiTraffic
                 Math.Min(kTaxiAvoidPercentMax, snapped));
         }
 
-       // New installs start with max cims avoid taxis.
+       // New installs start with cims = maximum avoid taxis.
         public override void SetDefaults()
         {
             ResidentsAvoidTaxis = kTaxiAvoidPercentDefault;
@@ -272,7 +265,7 @@ namespace TaxiTraffic
             EnableDebugLogging = false;
         }
 
-        // Game Defaults button returs to vanilla
+        // Game Defaults button returns values to vanilla
         private void ApplyGameDefaults()
         {
             ResidentsAvoidTaxis = kTaxiAvoidPercentMin;
