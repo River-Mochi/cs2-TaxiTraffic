@@ -12,7 +12,10 @@
 using Game.Citizens;
 using Game.Common;
 using Game.Creatures;
+using Game.Simulation;
 using Game.Tools;
+using Unity.Burst;
+using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
 
@@ -23,10 +26,12 @@ namespace TaxiTraffic
         private void UpdateResidentTaxiEligibility(
             TaxiSettings setting,
             out int applied,
-            out int removed)
+            out int removed,
+            out int reapplied)
         {
             applied = 0;
             removed = 0;
+            reapplied = 0;
 
             EntityCommandBuffer buffer = default;
             bool hasBuffer = false;
@@ -56,7 +61,14 @@ namespace TaxiTraffic
                 {
                     if (ownsIgnoreTaxi)
                     {
-                        // The fast re-apply pass handles vanilla clearing our flag.
+                        // The small UpdateFrame pass normally repairs this sooner.
+                        // The full scan also catches any unusual missed resident.
+                        if (!ignoreTaxiNow)
+                        {
+                            resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
+                            reapplied++;
+                        }
+
                         continue;
                     }
 
@@ -100,27 +112,72 @@ namespace TaxiTraffic
             }
         }
 
-        private void ReapplyOwnedTaxiBlocks(out int reapplied)
+        private void ReapplyOwnedTaxiBlocks(
+            uint simulationFrame,
+            out int reapplied)
         {
-            reapplied = 0;
+            m_ReapplyCounter[0] = 0;
 
-            foreach (RefRW<Resident> resident in SystemAPI
-                         .Query<RefRW<Resident>>()
-                         .WithAll<IgnoreTaxiMark>()
-                         .WithNone<CurrentVehicle, Deleted, Temp>())
+            // Match the exact UpdateFrame bucket ResidentAI just processed.
+            // This cuts the steady reapply scan to about 1/16 of owned cims.
+            m_ReapplyBlockQuery.SetSharedComponentFilter(
+                new UpdateFrame(
+                    simulationFrame % kResidentUpdateFrameCount));
+
+            ReapplyOwnedTaxiBlocksJob job = new()
             {
-                ResidentFlags flags = resident.ValueRO.m_Flags;
+                m_ResidentType =
+                    SystemAPI.GetComponentTypeHandle<Resident>(),
+                m_ReappliedCount = m_ReapplyCounter
+            };
 
-                if ((flags & ResidentFlags.InVehicle) != 0)
-                    continue;
+            // This pass is small after UpdateFrame filtering. Running it immediately
+            // preserves ordering before the RideNeeder protection pass and avoids
+            // worker-job scheduling/Complete overhead for only a few thousand cims.
+            job.Run(m_ReapplyBlockQuery);
 
-                // ResidentAI can clear IgnoreTaxi during normal trip resets.
-                // Keep it on for residents Taxi Traffic still owns.
-                if ((flags & ResidentFlags.IgnoreTaxi) == 0)
+            reapplied = m_ReapplyCounter[0];
+        }
+
+        [BurstCompile]
+        private struct ReapplyOwnedTaxiBlocksJob : IJobChunk
+        {
+            public ComponentTypeHandle<Resident> m_ResidentType;
+
+            public NativeArray<int> m_ReappliedCount;
+
+            public void Execute(
+                in ArchetypeChunk chunk,
+                int unfilteredChunkIndex,
+                bool useEnabledMask,
+                in v128 chunkEnabledMask)
+            {
+                NativeArray<Resident> residents =
+                    chunk.GetNativeArray(ref m_ResidentType);
+
+                int reapplied = 0;
+                ChunkEntityEnumerator enumerator =
+                    new(useEnabledMask, chunkEnabledMask, chunk.Count);
+
+                while (enumerator.NextEntityIndex(out int i))
                 {
-                    resident.ValueRW.m_Flags |= ResidentFlags.IgnoreTaxi;
+                    Resident resident = residents[i];
+                    ResidentFlags flags = resident.m_Flags;
+
+                    // Preserve the same safety guard as the old managed pass.
+                    if ((flags & ResidentFlags.InVehicle) != 0)
+                        continue;
+
+                    if ((flags & ResidentFlags.IgnoreTaxi) != 0)
+                        continue;
+
+                    resident.m_Flags |= ResidentFlags.IgnoreTaxi;
+                    residents[i] = resident;
                     reapplied++;
                 }
+
+                if (reapplied != 0)
+                    m_ReappliedCount[0] += reapplied;
             }
         }
 
@@ -167,6 +224,16 @@ namespace TaxiTraffic
             TaxiSettings setting,
             Resident resident)
         {
+            // Fresh-install defaults block every eligible group. Avoid household
+            // lookups entirely for this common and most aggressive setting.
+            if (setting.ResidentsAvoidTaxis >=
+                    TaxiSettings.kTaxiAvoidPercentMax &&
+                setting.BlockCommuters &&
+                setting.BlockTourists)
+            {
+                return true;
+            }
+
             Entity citizenEntity = resident.m_Citizen;
             Entity household = Entity.Null;
 

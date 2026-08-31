@@ -12,15 +12,17 @@
 using Game;
 using Game.Common;
 using Game.Tools;
+using Unity.Collections;
 using Unity.Entities;
 
 namespace TaxiTraffic
 {
     public partial class TaxiTrafficSystem : GameSystemBase
     {
-        // Full household eligibility does not need to run every simulation tick.
-        // The small "keep IgnoreTaxi applied" and RideNeeder protection passes do.
-        private const uint kEligibilityScanMask = 15u; // every 16 simulation frames
+        // Vanilla ResidentAI divides resident work across 16 UpdateFrame buckets.
+        // Full household eligibility still runs every 16 simulation frames.
+        private const uint kResidentUpdateFrameCount = 16u;
+        private const uint kEligibilityScanMask = kResidentUpdateFrameCount - 1u;
 
         private const float kDebugSummaryIntervalSeconds = 120.0f;
         private const uint kTaxiEligibilityHashSalt = 0x54415849u; // 'TAXI'
@@ -29,6 +31,8 @@ namespace TaxiTraffic
 
         private Game.Simulation.SimulationSystem m_ControlSimulationSystem = null!;
         private EntityQuery m_OwnedBlockQuery;
+        private EntityQuery m_ReapplyBlockQuery;
+        private NativeArray<int> m_ReapplyCounter;
 
         private bool m_ResidentCleanupPending;
         private bool m_EligibilityRefreshRequested;
@@ -47,6 +51,23 @@ namespace TaxiTraffic
                     ComponentType.Exclude<Deleted>(),
                     ComponentType.Exclude<Temp>());
 
+            // ResidentAI processes one UpdateFrame bucket per simulation frame.
+            // Reapply only that same bucket after ResidentAI had a chance to clear IgnoreTaxi.
+            m_ReapplyBlockQuery =
+                GetEntityQuery(
+                    ComponentType.ReadWrite<Game.Creatures.Resident>(),
+                    ComponentType.ReadOnly<IgnoreTaxiMark>(),
+                    ComponentType.ReadOnly<Game.Simulation.UpdateFrame>(),
+                    ComponentType.Exclude<Game.Creatures.CurrentVehicle>(),
+                    ComponentType.Exclude<Deleted>(),
+                    ComponentType.Exclude<Temp>());
+
+            m_ReapplyCounter =
+                new NativeArray<int>(
+                    1,
+                    Allocator.Persistent,
+                    NativeArrayOptions.ClearMemory);
+
             InitStatusSystemsOnCreate();
 
             // Only run after a real city is loaded.
@@ -55,6 +76,9 @@ namespace TaxiTraffic
 
         protected override void OnDestroy()
         {
+            if (m_ReapplyCounter.IsCreated)
+                m_ReapplyCounter.Dispose();
+
             if (ReferenceEquals(s_Instance, this))
                 s_Instance = null;
 
@@ -131,20 +155,53 @@ namespace TaxiTraffic
 
                 if (runFullEligibility)
                 {
+#if DEBUG
+                    long eligibilityStartTicks =
+                        System.Diagnostics.Stopwatch.GetTimestamp();
+#endif
+
                     UpdateResidentTaxiEligibility(
                         setting,
                         out appliedIgnoreTaxi,
-                        out removedIgnoreTaxi);
+                        out removedIgnoreTaxi,
+                        out int fullScanReappliedIgnoreTaxi);
 
+                    reappliedIgnoreTaxi += fullScanReappliedIgnoreTaxi;
                     m_EligibilityRefreshRequested = false;
+
+#if DEBUG
+                    RecordDebugEligibilityTiming(
+                        System.Diagnostics.Stopwatch.GetTimestamp() -
+                        eligibilityStartTicks);
+#endif
                 }
 
-                // Vanilla clears IgnoreTaxi during normal trip resets.
-                // Keep our owned flag applied without repeating the household work.
-                ReapplyOwnedTaxiBlocks(out reappliedIgnoreTaxi);
+                // ResidentAI only updates one of its 16 UpdateFrame buckets each frame.
+                // Reapply IgnoreTaxi only to Taxi Traffic-owned residents in that same bucket.
+#if DEBUG
+                long reapplyStartTicks =
+                    System.Diagnostics.Stopwatch.GetTimestamp();
+#endif
+
+                ReapplyOwnedTaxiBlocks(
+                    simulationFrame,
+                    out int bucketReappliedIgnoreTaxi);
+
+                reappliedIgnoreTaxi += bucketReappliedIgnoreTaxi;
+
+#if DEBUG
+                RecordDebugReapplyTiming(
+                    System.Diagnostics.Stopwatch.GetTimestamp() -
+                    reapplyStartTicks);
+#endif
 
                 // Catch blocked cims that already reached the on-demand taxi path.
                 // This is targeted to RideNeeder only; taxi stands are left alone.
+#if DEBUG
+                long enforcementStartTicks =
+                    System.Diagnostics.Stopwatch.GetTimestamp();
+#endif
+
                 StopBlockedRideNeeders(
                     setting,
                     out int lateAppliedIgnoreTaxi,
@@ -153,6 +210,12 @@ namespace TaxiTraffic
                     out repathedTaxiWaiters);
 
                 appliedIgnoreTaxi += lateAppliedIgnoreTaxi;
+
+#if DEBUG
+                RecordDebugEnforcementTiming(
+                    System.Diagnostics.Stopwatch.GetTimestamp() -
+                    enforcementStartTicks);
+#endif
             }
             else if (m_ResidentCleanupPending)
             {
