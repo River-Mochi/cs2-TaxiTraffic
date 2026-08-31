@@ -10,11 +10,11 @@
 // Version: 0.3.5
 // Purpose: File/folder opening helpers for CS2 Options UI buttons.
 // Based on River-Mochi shared CS2 utilities.
-    using System;
-    using System.Diagnostics;
-    using System.IO;
-    using Colossal.Logging;
-    using UnityEngine;
+using System;
+using System.Diagnostics;
+using System.IO;
+using Colossal.Logging;
+using UnityEngine;
 
 namespace CS2Shared.RiverMochi
 {
