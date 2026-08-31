@@ -1,4 +1,4 @@
-// <copyright file="LocaleZH_CN.cs" company="River-Mochi">
+﻿// <copyright file="LocaleZH_CN.cs" company="River-Mochi">
 // Copyright (c) 2026 River-Mochi. All rights reserved.
 // Licensed under the GNU General Public License v3.0 or later,
 // with the Cities: Skylines II Linking Exception.
@@ -14,7 +14,7 @@ namespace TaxiTraffic
     using System.Collections.Generic;
     using Colossal;
 
-    public sealed class LocaleZH_CN : IDictionarySource
+    public sealed class LocaleZH_HANS : IDictionarySource
     {
         public const string KeyStatusCitizensLine = "TaxiTraffic.Status.CitizensLine";
         public const string KeyStatusTouristsLine = "TaxiTraffic.Status.TouristsLine";
@@ -37,7 +37,7 @@ namespace TaxiTraffic
 
         private readonly TaxiSettings m_Setting;
 
-        public LocaleZH_CN(TaxiSettings setting)
+        public LocaleZH_HANS(TaxiSettings setting)
         {
             m_Setting = setting;
         }

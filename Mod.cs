@@ -8,6 +8,7 @@
 
 // File: Mod.cs
 // Entry point for "Taxi Traffic".
+// Registers settings, localization, logging, and the Taxi Traffic system.
 
 namespace TaxiTraffic
 {
@@ -29,6 +30,12 @@ namespace TaxiTraffic
         public const string ModTag = "[TAXI]";
         public const string ShortName = "Taxi Traffic";
 
+#if DEBUG
+        private const string kBuildType = "DEBUG";
+#else
+        private const string kBuildType = "RELEASE";
+#endif
+
         private static bool s_BannerLogged;
 
         public static readonly string ModVersion =
@@ -44,13 +51,22 @@ namespace TaxiTraffic
 
         public void OnLoad(UpdateSystem updateSystem)
         {
-            LogUtils.Configure(ModId);
+            LogUtils.Configure(ModId, s_Log);
             ShellOpen.Configure(s_Log, ModId, ModTag);
 
             if (!s_BannerLogged)
             {
                 s_BannerLogged = true;
-                LogUtils.Info(s_Log, () => $"{ModId} {ModTag} v{ModVersion} OnLoad");
+                LogUtils.Info(
+                    $"{ModName} {ModTag} v{ModVersion} [{kBuildType}] OnLoad");
+            }
+
+            GameManager? gameManager = GameManager.instance;
+            if (gameManager == null)
+            {
+                LogUtils.Warn(
+                    $"{ModTag} GameManager.instance is null; {ModName} cannot initialize.");
+                return;
             }
 
             TaxiSettings setting = new(this);
@@ -58,40 +74,62 @@ namespace TaxiTraffic
 
             try
             {
-                LocalizationManager? lm = GameManager.instance?.localizationManager;
-                if (lm != null)
+                LocalizationManager? localizationManager =
+                    gameManager.localizationManager;
+
+                if (localizationManager == null)
                 {
-                    lm.AddSource("en-US", new LocaleEN(setting));
+                    LogUtils.Warn(
+                        $"{ModTag} LocalizationManager is null; locale sources were not registered.");
                 }
                 else
                 {
-                    LogUtils.WarnOnce(
-                        s_Log,
-                        key: "LocalizationManagerNull",
-                        messageFactory: () => $"{ModTag} LocalizationManager is null; skipping locale registration.");
+                    // Current Options UI translations.
+                    localizationManager.AddSource("en-US", new LocaleEN(setting));
+                    localizationManager.AddSource("fr-FR", new LocaleFR(setting));
+                    localizationManager.AddSource("de-DE", new LocaleDE(setting));
+                    localizationManager.AddSource("es-ES", new LocaleES(setting));
+                    localizationManager.AddSource("it-IT", new LocaleIT(setting));
+                    localizationManager.AddSource("pl-PL", new LocalePL(setting));
+                    localizationManager.AddSource("pt-BR", new LocalePT_BR(setting));
+                    localizationManager.AddSource("ja-JP", new LocaleJA(setting));
+                    localizationManager.AddSource("ko-KR", new LocaleKO(setting));
+                    localizationManager.AddSource("zh-HANS", new LocaleZH_HANS(setting));
+                    localizationManager.AddSource("zh-HANT", new LocaleZH_HANT(setting));
+
+                    // Future translations.
+                    // Some require a localization mod because CS2 does not
+                    // officially expose every language in the normal language menu.
+                    // localizationManager.AddSource("pt-PT", new LocalePT_PT(setting));
+                    // localizationManager.AddSource("th-TH", new LocaleTH(setting));
+                    // localizationManager.AddSource("tr-TR", new LocaleTR(setting));
+                    // localizationManager.AddSource("uk-UA", new LocaleUK(setting));
+                    // localizationManager.AddSource("vi-VN", new LocaleVI(setting));
                 }
             }
             catch (Exception ex)
             {
-                LogUtils.WarnOnce(
-                    s_Log,
-                    key: "LocaleRegistrationFailed",
-                    messageFactory: () => $"{ModTag} Locale registration failed; Options UI text may be missing.",
-                    exception: ex);
+                LogUtils.Warn(
+                    $"{ModTag} Localization registration failed: " +
+                    $"{ex.GetType().Name}: {ex.Message}",
+                    ex);
             }
 
             try
             {
                 TaxiSettings defaults = new(this);
-                AssetDatabase.global.LoadSettings(ModId, setting, defaults, userSetting: true);
+
+                AssetDatabase.global.LoadSettings(
+                    ModId,
+                    setting,
+                    defaults,
+                    userSetting: true);
             }
             catch (Exception ex)
             {
-                LogUtils.WarnOnce(
-                    s_Log,
-                    key: "LoadSettingsFailed",
-                    messageFactory: () => $"{ModTag} LoadSettings failed; using defaults.",
-                    exception: ex);
+                LogUtils.Warn(
+                    $"{ModTag} LoadSettings failed; using defaults.",
+                    ex);
             }
 
             try
@@ -100,26 +138,24 @@ namespace TaxiTraffic
             }
             catch (Exception ex)
             {
-                LogUtils.WarnOnce(
-                    s_Log,
-                    key: "RegisterOptionsFailed",
-                    messageFactory: () => $"{ModTag} RegisterInOptionsUI failed; mod options may be missing.",
-                    exception: ex);
+                LogUtils.Warn(
+                    $"{ModTag} RegisterInOptionsUI failed; mod options may be missing.",
+                    ex);
             }
 
-
-
-            // IMPORTANT ORDERING: Register this only ONE time. Keep TaxiTraffic AFTER ResidentAISystem. Do Not Move.
+            // IMPORTANT ORDERING: Register this only ONE time.
+            // Keep TaxiTraffic AFTER ResidentAISystem. Do Not Move.
+            //
             // Running it before ResidentAI caused repeatable native CTDs in testing.
-            // Preserve this order, it's stable and still updates taxi choices for future trips.
-
+            // Preserve this order: it is stable and still updates taxi choices
+            // in time for future trips.
             updateSystem.UpdateAfter<TaxiTrafficSystem, ResidentAISystem>(
                 SystemUpdatePhase.GameSimulation);
         }
 
         public void OnDispose()
         {
-            LogUtils.Info(s_Log, () => $"{ModTag} OnDispose");
+            LogUtils.Info($"{ModTag} OnDispose");
 
             try
             {
@@ -127,11 +163,9 @@ namespace TaxiTraffic
             }
             catch (Exception ex)
             {
-                LogUtils.WarnOnce(
-                    s_Log,
-                    key: "UnregisterOptionsFailed",
-                    messageFactory: () => $"{ModTag} UnregisterInOptionsUI failed.",
-                    exception: ex);
+                LogUtils.Warn(
+                    $"{ModTag} UnregisterInOptionsUI failed.",
+                    ex);
             }
 
             Setting = null;

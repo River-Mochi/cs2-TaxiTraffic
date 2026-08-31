@@ -1,4 +1,4 @@
-// <copyright file="TaxiTrafficSystem.Status.cs" company="River-Mochi">
+﻿// <copyright file="TaxiTrafficSystem.Status.cs" company="River-Mochi">
 // Copyright (c) 2026 River-Mochi. All rights reserved.
 // Licensed under the GNU General Public License v3.0 or later,
 // with the Cities: Skylines II Linking Exception.
@@ -36,7 +36,7 @@ namespace TaxiTraffic
         internal static double s_StatusLastSnapshotRealtime;
         internal static string s_StatusLastSnapshotClock = kNotReadyValue;
 
-        // Active physical cim agents. These are NOT the city's total population.
+        // Active physical cim agents; not the city's total population.
         internal static int s_StatusActiveCimsTotal;
         internal static int s_StatusLocalCimsTotal;
         internal static int s_StatusLocalBlockedMark;
@@ -85,7 +85,7 @@ namespace TaxiTraffic
         internal static int s_StatusReqOutsideSeekerIgnoreTaxi;
         internal static int s_StatusReqOutsideSeekerBlockedMark;
 
-        // Current city-rider request purpose. Kept lightweight for the player Status row.
+        // Current city-rider request purpose. Kept light for the player Status row, more detailed in report.
         internal static int s_StatusReqPurposeLeisure;
         internal static int s_StatusReqPurposeHome;
         internal static int s_StatusReqPurposeWork;
@@ -451,28 +451,22 @@ namespace TaxiTraffic
 
             switch (purpose)
             {
-                case Purpose.Leisure:
-                    s_StatusReqPurposeLeisure++;
+                case Purpose.Leisure: s_StatusReqPurposeLeisure++;
                     break;
 
-                case Purpose.GoingHome:
-                    s_StatusReqPurposeHome++;
+                case Purpose.GoingHome: s_StatusReqPurposeHome++;
                     break;
 
-                case Purpose.GoingToWork:
-                    s_StatusReqPurposeWork++;
+                case Purpose.GoingToWork: s_StatusReqPurposeWork++;
                     break;
 
-                case Purpose.GoingToSchool:
-                    s_StatusReqPurposeSchool++;
+                case Purpose.GoingToSchool: s_StatusReqPurposeSchool++;
                     break;
 
-                case Purpose.Shopping:
-                    s_StatusReqPurposeShopping++;
+                case Purpose.Shopping: s_StatusReqPurposeShopping++;
                     break;
 
-                default:
-                    s_StatusReqPurposeOther++;
+                default: s_StatusReqPurposeOther++;
                     break;
             }
         }
