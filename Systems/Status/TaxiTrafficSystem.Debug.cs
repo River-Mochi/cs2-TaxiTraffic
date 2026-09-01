@@ -19,7 +19,7 @@ namespace TaxiTraffic
         private const float kDebugMinSummaryIntervalSeconds = 60f;
         private const double kDebugForceStatusRefreshMaxAgeSeconds = 30.0;
 
-        private float m_DebugTimerSeconds;
+        private double m_DebugLastSummaryRealtime;
 
 #if DEBUG
         private long m_DebugEligibilityTotalTicks;
@@ -37,7 +37,8 @@ namespace TaxiTraffic
 
         private void ResetDebugOnCityLoaded()
         {
-            m_DebugTimerSeconds = 0f;
+            m_DebugLastSummaryRealtime =
+                UnityEngine.Time.realtimeSinceStartupAsDouble;
 
 #if DEBUG
             ResetDebugPerformanceTimings();
@@ -124,13 +125,16 @@ namespace TaxiTraffic
                     intervalSeconds,
                     kDebugMinSummaryIntervalSeconds);
 
-            m_DebugTimerSeconds +=
-                UnityEngine.Time.unscaledDeltaTime;
+            double now =
+                UnityEngine.Time.realtimeSinceStartupAsDouble;
 
-            if (m_DebugTimerSeconds < effectiveIntervalSeconds)
+            if (now - m_DebugLastSummaryRealtime <
+                effectiveIntervalSeconds)
+            {
                 return;
+            }
 
-            m_DebugTimerSeconds = 0f;
+            m_DebugLastSummaryRealtime = now;
 
 #if DEBUG
             if (IsStatusSnapshotStale(

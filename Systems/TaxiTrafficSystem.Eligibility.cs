@@ -112,6 +112,112 @@ namespace TaxiTraffic
             }
         }
 
+        private void UpdateResidentTaxiEligibilityBucket(
+            TaxiSettings setting,
+            uint simulationFrame,
+            out int applied,
+            out int removed,
+            out int reapplied)
+        {
+            applied = 0;
+            removed = 0;
+            reapplied = 0;
+
+            // Match ResidentAI's current shared UpdateFrame bucket. Each resident
+            // is still reevaluated once per 16 simulation frames, but the work is
+            // spread evenly instead of producing one large periodic spike.
+            m_EligibilityBucketQuery.SetSharedComponentFilter(
+                new UpdateFrame(
+                    simulationFrame % kResidentUpdateFrameCount));
+
+            using NativeArray<Entity> entities =
+                m_EligibilityBucketQuery.ToEntityArray(Allocator.Temp);
+
+            ComponentLookup<Resident> residentLookup =
+                SystemAPI.GetComponentLookup<Resident>();
+
+            ComponentLookup<IgnoreTaxiMark> ownedBlockLookup =
+                SystemAPI.GetComponentLookup<IgnoreTaxiMark>(isReadOnly: true);
+
+            EntityCommandBuffer buffer = default;
+            bool hasBuffer = false;
+
+            for (int i = 0; i < entities.Length; i++)
+            {
+                Entity entity = entities[i];
+                Resident resident = residentLookup[entity];
+                ResidentFlags flags = resident.m_Flags;
+
+                if ((flags & ResidentFlags.InVehicle) != 0)
+                    continue;
+
+                bool shouldAvoid =
+                    ShouldResidentAvoidTaxi(setting, resident);
+
+                bool ownsIgnoreTaxi =
+                    ownedBlockLookup.HasComponent(entity);
+
+                bool ignoreTaxiNow =
+                    (flags & ResidentFlags.IgnoreTaxi) != 0;
+
+                if (shouldAvoid)
+                {
+                    if (ownsIgnoreTaxi)
+                    {
+                        if (!ignoreTaxiNow)
+                        {
+                            resident.m_Flags |= ResidentFlags.IgnoreTaxi;
+                            residentLookup[entity] = resident;
+                            reapplied++;
+                        }
+
+                        continue;
+                    }
+
+                    // If vanilla already owns IgnoreTaxi, do not claim it.
+                    if (ignoreTaxiNow)
+                        continue;
+
+                    resident.m_Flags |= ResidentFlags.IgnoreTaxi;
+                    residentLookup[entity] = resident;
+
+                    if (!hasBuffer)
+                    {
+                        buffer = new EntityCommandBuffer(Allocator.Temp);
+                        hasBuffer = true;
+                    }
+
+                    buffer.AddComponent<IgnoreTaxiMark>(entity);
+                    applied++;
+                    continue;
+                }
+
+                if (!ownsIgnoreTaxi)
+                    continue;
+
+                if (ignoreTaxiNow)
+                {
+                    resident.m_Flags &= ~ResidentFlags.IgnoreTaxi;
+                    residentLookup[entity] = resident;
+                }
+
+                if (!hasBuffer)
+                {
+                    buffer = new EntityCommandBuffer(Allocator.Temp);
+                    hasBuffer = true;
+                }
+
+                buffer.RemoveComponent<IgnoreTaxiMark>(entity);
+                removed++;
+            }
+
+            if (hasBuffer)
+            {
+                buffer.Playback(EntityManager);
+                buffer.Dispose();
+            }
+        }
+
         private void ReapplyOwnedTaxiBlocks(
             uint simulationFrame,
             out int reapplied)

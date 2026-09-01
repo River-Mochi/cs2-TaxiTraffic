@@ -20,9 +20,9 @@ namespace TaxiTraffic
     public partial class TaxiTrafficSystem : GameSystemBase
     {
         // Vanilla ResidentAI divides resident work across 16 UpdateFrame buckets.
-        // Full household eligibility still runs every 16 simulation frames.
+        // Taxi Traffic follows the same buckets so each resident is reevaluated
+        // once per 16 simulation frames without one large periodic scan.
         private const uint kResidentUpdateFrameCount = 16u;
-        private const uint kEligibilityScanMask = kResidentUpdateFrameCount - 1u;
 
         private const float kDebugSummaryIntervalSeconds = 120.0f;
         private const uint kTaxiEligibilityHashSalt = 0x54415849u; // 'TAXI'
@@ -31,6 +31,7 @@ namespace TaxiTraffic
 
         private Game.Simulation.SimulationSystem m_ControlSimulationSystem = null!;
         private EntityQuery m_OwnedBlockQuery;
+        private EntityQuery m_EligibilityBucketQuery;
         private EntityQuery m_ReapplyBlockQuery;
         private NativeArray<int> m_ReapplyCounter;
 
@@ -48,6 +49,15 @@ namespace TaxiTraffic
             m_OwnedBlockQuery =
                 GetEntityQuery(
                     ComponentType.ReadOnly<IgnoreTaxiMark>(),
+                    ComponentType.Exclude<Deleted>(),
+                    ComponentType.Exclude<Temp>());
+
+            // Use the same UpdateFrame bucket as ResidentAI for steady-state eligibility work.
+            m_EligibilityBucketQuery =
+                GetEntityQuery(
+                    ComponentType.ReadWrite<Game.Creatures.Resident>(),
+                    ComponentType.ReadOnly<Game.Simulation.UpdateFrame>(),
+                    ComponentType.Exclude<Game.Creatures.CurrentVehicle>(),
                     ComponentType.Exclude<Deleted>(),
                     ComponentType.Exclude<Temp>());
 
@@ -149,17 +159,16 @@ namespace TaxiTraffic
                 m_ResidentCleanupPending = true;
 
                 uint simulationFrame = m_ControlSimulationSystem.frameIndex;
-                bool runFullEligibility =
-                    m_EligibilityRefreshRequested ||
-                    (simulationFrame & kEligibilityScanMask) == 0u;
 
-                if (runFullEligibility)
-                {
 #if DEBUG
-                    long eligibilityStartTicks =
-                        System.Diagnostics.Stopwatch.GetTimestamp();
+                long eligibilityStartTicks =
+                    System.Diagnostics.Stopwatch.GetTimestamp();
 #endif
 
+                if (m_EligibilityRefreshRequested)
+                {
+                    // Settings changes and city load get one immediate reconciliation.
+                    // Normal gameplay is spread across ResidentAI's 16 buckets below.
                     UpdateResidentTaxiEligibility(
                         setting,
                         out appliedIgnoreTaxi,
@@ -168,13 +177,24 @@ namespace TaxiTraffic
 
                     reappliedIgnoreTaxi += fullScanReappliedIgnoreTaxi;
                     m_EligibilityRefreshRequested = false;
+                }
+                else
+                {
+                    UpdateResidentTaxiEligibilityBucket(
+                        setting,
+                        simulationFrame,
+                        out appliedIgnoreTaxi,
+                        out removedIgnoreTaxi,
+                        out int bucketEligibilityReappliedIgnoreTaxi);
+
+                    reappliedIgnoreTaxi += bucketEligibilityReappliedIgnoreTaxi;
+                }
 
 #if DEBUG
-                    RecordDebugEligibilityTiming(
-                        System.Diagnostics.Stopwatch.GetTimestamp() -
-                        eligibilityStartTicks);
+                RecordDebugEligibilityTiming(
+                    System.Diagnostics.Stopwatch.GetTimestamp() -
+                    eligibilityStartTicks);
 #endif
-                }
 
                 // ResidentAI only updates one of its 16 UpdateFrame buckets each frame.
                 // Reapply IgnoreTaxi only to Taxi Traffic-owned residents in that same bucket.
