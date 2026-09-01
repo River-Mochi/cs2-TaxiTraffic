@@ -82,7 +82,7 @@ namespace TaxiTraffic
                     "<0%> = normalne korzystanie z taksówek.\n" +
                     "<25–75%> = procent lokalnych gospodarstw domowych unikających taksówek.\n" +
                     "<100%> = wszyscy kwalifikujący się lokalni mieszkańcy unikają taksówek.\n" +
-                    "**Niektóre taksówki mogą nadal zostać. Taxi Traffic pozwala dokończyć aktywne kursy i normalne oczekiwanie na postojach, żeby gra działała stabilnie.**"
+                    "**Niektóre taksówki mogą nadal pozostać w ruchu. Aktywne kursy i normalne oczekiwanie na postojach mogą zakończyć się naturalnie, a niektóre systemy gry mogą niezależnie wzywać taksówki.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "Dojeżdżający unikają taksówek" },
@@ -167,7 +167,7 @@ namespace TaxiTraffic
                     "<Z OC> = taksówki z połączeń zewnętrznych.\n" +
                     "<Źródła OC> = połączenia zewnętrzne, które mogą wysyłać taksówki (jak niewidzialne zajezdnie).\n" +
                     "**Jeśli nie ma lokalnych zajezdni, gra może wysłać taksówki OC do lokalnych zgłoszeń.**\n" +
-                    "**W testach, przy suwaku + opcjach [x] unikania taksówek na maksimum, do miasta przyjeżdżało mało albo zero taksówek OC.**"
+                    "**W testach maksymalne unikanie taksówek powodowało, że do miasta przyjeżdżało mało albo zero taksówek OC.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "Cel taksówki" },

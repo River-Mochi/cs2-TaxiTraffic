@@ -82,7 +82,7 @@ namespace TaxiTraffic
                     "<0%> = 正常使用計程車。\n" +
                     "<25–75%> = 避開計程車的本地家庭比例。\n" +
                     "<100%> = 所有符合條件的本地居民都避開計程車。\n" +
-                    "**仍可能看到少量計程車。為了讓遊戲保持穩定，Taxi Traffic 會讓進行中的行程和計程車站的正常待命自然結束。**"
+                    "**仍可能看到少量計程車。進行中的行程和計程車站的正常待命可以自然結束，而且某些遊戲系統也可能獨立呼叫計程車。**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "通勤者避開計程車" },
@@ -167,7 +167,7 @@ namespace TaxiTraffic
                     "<來自 OC> = 從外部連線來的計程車。\n" +
                     "<OC 來源> = 可以派計程車的外部連線（可以想成看不見的車庫）。\n" +
                     "**如果沒有本地車庫，遊戲可以為本地需求派來 OC 計程車。**\n" +
-                    "**測試中，把滑桿 + 選項 [x] 的避開計程車設到最大後，進入城市的 OC 計程車很少或沒有。**"
+                    "**測試中，將避開計程車設到最大後，進入城市的 OC 計程車很少或沒有。**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "計程車用途" },
@@ -222,15 +222,15 @@ namespace TaxiTraffic
 
 #if DEBUG
                 // Advanced Debug (DEV builds only)
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)), "封鎖標記（dev）" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)), "封鎖標誌（dev）" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)),
                     "DEV 檢查。\n" +
                     "活躍市民 = 目前模擬中實際存在的市民實體。\n" +
                     "TT 封鎖 = Taxi Traffic 的所有權標記。\n" +
-                    "目前 IgnoreTaxi = 此刻實際的原版標記。"
+                    "目前 IgnoreTaxi = 此刻實際的原版旗標。"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)), "計程車標記（dev）" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)), "計程車旗標（dev）" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)),
                     "DEV 檢查。\n" +
                     "順序：有 dispatch buffer | 來自外部 | 已停用。"

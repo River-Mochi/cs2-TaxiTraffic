@@ -82,7 +82,7 @@ namespace TaxiTraffic
                     "<0%> = 正常使用出租车。\n" +
                     "<25–75%> = 避开出租车的本地家庭比例。\n" +
                     "<100%> = 所有符合条件的本地居民都避开出租车。\n" +
-                    "**仍可能看到少量出租车。为保证游戏稳定，Taxi Traffic 会让进行中的行程和出租车站的正常待命自然结束。**"
+                    "**仍可能看到少量出租车。进行中的行程和出租车站的正常待命可以自然结束，而且某些游戏系统也可能独立呼叫出租车。**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "通勤者避开出租车" },
@@ -167,7 +167,7 @@ namespace TaxiTraffic
                     "<来自 OC> = 从外部连接来的出租车。\n" +
                     "<OC 来源> = 可以派出租车的外部连接（可以理解成看不见的车库）。\n" +
                     "**如果没有本地车库，游戏可以为本地请求派来 OC 出租车。**\n" +
-                    "**测试中，把滑块 + 选项 [x] 的出租车规避设到最大后，进入城市的 OC 出租车很少或没有。**"
+                    "**测试中，将出租车规避设到最大后，进入城市的 OC 出租车很少或没有。**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "出租车用途" },
@@ -227,10 +227,10 @@ namespace TaxiTraffic
                     "DEV 检查。\n" +
                     "活跃市民 = 当前模拟中实际存在的市民实体。\n" +
                     "TT 屏蔽 = Taxi Traffic 的所有权标记。\n" +
-                    "当前 IgnoreTaxi = 此刻实际的原版标记。"
+                    "当前 IgnoreTaxi = 此刻实际的原版标志。"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)), "出租车标记（dev）" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)), "出租车标志（dev）" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)),
                     "DEV 检查。\n" +
                     "顺序：有 dispatch buffer | 来自外部 | 已禁用。"

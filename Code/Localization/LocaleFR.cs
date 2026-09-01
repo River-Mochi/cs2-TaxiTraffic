@@ -82,7 +82,7 @@ namespace TaxiTraffic
                     "<0%> = usage normal des taxis.\n" +
                     "<25–75%> = pourcentage de foyers locaux qui évitent les taxis.\n" +
                     "<100%> = tous les résidents locaux éligibles évitent les taxis.\n" +
-                    "**Quelques taxis peuvent encore rester. Taxi Traffic laisse les trajets actifs et l'attente normale aux stations de taxis se terminer pour garder le jeu stable.**"
+                    "**Quelques taxis peuvent encore circuler. Les trajets actifs et l'attente normale aux stations de taxis peuvent se terminer naturellement, et certains systèmes du jeu peuvent appeler des taxis indépendamment.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "Les navetteurs évitent les taxis" },
@@ -167,7 +167,7 @@ namespace TaxiTraffic
                     "<Depuis OC> = taxis venant des connexions extérieures.\n" +
                     "<Sources OC> = connexions extérieures pouvant envoyer des taxis (comme des dépôts invisibles).\n" +
                     "**Sans dépôt local, le jeu peut envoyer des taxis OC pour les demandes locales.**\n" +
-                    "**En test, avec le curseur et les options [x] d'évitement au maximum, peu ou pas de taxis OC entraient en ville.**"
+                    "**En test, l'évitement maximal des taxis a donné peu ou pas de taxis OC entrant dans la ville.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "Motif du taxi" },
@@ -222,15 +222,15 @@ namespace TaxiTraffic
 
 #if DEBUG
                 // Advanced Debug (DEV builds only)
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)), "Marqueurs de blocage (dev)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)), "Drapeaux de blocage (dev)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)),
                     "Vérification DEV.\n" +
                     "Cims actifs = agents physiques actuellement dans la simulation.\n" +
                     "TT bloqués = marqueur de propriété de Taxi Traffic.\n" +
-                    "IgnoreTaxi actuel = vrai marqueur vanilla à cet instant."
+                    "IgnoreTaxi actuel = état réel du drapeau vanilla à cet instant."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)), "Marqueurs taxi (dev)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)), "Drapeaux taxi (dev)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)),
                     "Vérification DEV.\n" +
                     "Ordre : Avec buffer de dispatch | Depuis l'extérieur | Désactivé."
@@ -249,7 +249,7 @@ namespace TaxiTraffic
                     "{3} école | {4} achats | {5} autre"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} client ville ({1} bloqué) | {2} client OC ({3} bloqué) |\n" +
+                    "{0} demande ville ({1} bloquée) | {2} demande OC ({3} bloquée) |\n" +
                     "{4} offre locale | {5} offre OC | {6} station"
                 },
                 { KeyStatusTaxiStandsLine, "{0} en attente" },

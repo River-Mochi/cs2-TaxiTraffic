@@ -82,7 +82,7 @@ namespace TaxiTraffic
                     "<0%> = normale Taxinutzung.\n" +
                     "<25–75%> = Anteil lokaler Haushalte, die Taxis meiden.\n" +
                     "<100%> = alle passenden lokalen Einwohner meiden Taxis.\n" +
-                    "**Einige Taxis können trotzdem bleiben. Taxi Traffic lässt aktive Fahrten und normales Warten an Taxiständen aus Stabilitätsgründen sauber auslaufen.**"
+                    "**Einige Taxis können trotzdem unterwegs sein. Aktive Fahrten und normales Warten an Taxiständen können natürlich auslaufen, und einige Spielsysteme können unabhängig davon Taxis rufen.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "Pendler meiden Taxis" },
@@ -167,7 +167,7 @@ namespace TaxiTraffic
                     "<Von OC> = Taxis aus Außenverbindungen.\n" +
                     "<OC-Quellen> = Außenverbindungen, die Taxis schicken können (wie unsichtbare Depots).\n" +
                     "**Ohne lokale Depots kann das Spiel OC-Taxis für lokale Anfragen schicken.**\n" +
-                    "**Im Test kamen mit Regler + Optionen [x] auf maximaler Taxi-Vermeidung nur wenige oder keine OC-Taxis in die Stadt.**"
+                    "**In Tests führte maximale Taxi-Vermeidung dazu, dass nur wenige oder keine OC-Taxis in die Stadt kamen.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "Taxi-Zweck" },
