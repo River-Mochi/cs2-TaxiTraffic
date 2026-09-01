@@ -1,4 +1,4 @@
-﻿// <copyright file="LocaleEN.cs" company="River-Mochi">
+// <copyright file="LocaleEN.cs" company="River-Mochi">
 // Copyright (c) 2026 River-Mochi. All rights reserved.
 // Licensed under the GNU General Public License v3.0 or later,
 // with the Cities: Skylines II Linking Exception.
@@ -82,7 +82,7 @@ namespace TaxiTraffic
                     "<0%> = normal taxi use.\n" +
                     "<25–75%> = percentage of local households that avoid taxis.\n" +
                     "<100%> = all eligible local residents avoid taxis.\n" +
-                    "**Some taxis may still remain. Taxi Traffic allows active trips and normal taxi-stand standby behavior to finish naturally for game stability.**"
+                    "**Some taxis may still remain. Active trips and normal taxi-stand standby can finish naturally, and some game systems may independently call taxis.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "Commuters avoid taxis" },
@@ -167,7 +167,7 @@ namespace TaxiTraffic
                     "<From OC> = taxis coming from outside connections.\n" +
                     "<OC sources> = Outside Connections that can send taxis (think of this like invisible depots).\n" +
                     "**If there are no local depots, then the game can send in OC taxis for local requests.**\n" +
-                    "**In testing, setting sliders + toggles [x] to max taxi-avoidance showed few to no OC taxis coming into the city.**"
+                    "**In testing, maximum taxi avoidance showed few to no OC taxis entering the city.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "Taxi purpose" },
