@@ -6,7 +6,7 @@
 # This notice MUST be kept with copies or substantial portions of this code.
 # ================= </copyright> ======================
 
-# version 0.6.1
+# version 0.6.2
 """
 Add standard River-Mochi GPL file headers to source files.
 
@@ -38,11 +38,13 @@ Not supported on purpose:
   Those file types either cannot safely use this same header style or are
   bundled into COHTML/UI output where extra comments are not always helpful.
 
-Preserved separately these shared licensed MIT files are intentionally skipped:
-  Utils/LocaleUtils.cs
-  Utils/LogUtils.cs
-  Utils/ShellOpen.cs
-  Utils/DebugLocaleScan.cs
+
+Preserved separately these shared licensed MIT files are intentionally skipped
+when found inside any Utils folder:
+  LocaleUtils.cs
+  LogUtils.cs
+  ShellOpen.cs
+  DebugLocaleScan.cs
 
 Scan behavior:
   Uses git ls-files when available, so ignored folders such as bin, obj,
@@ -84,11 +86,13 @@ SKIP_DIRS = {
 }
 
 # Shared library files keep their original MIT license.
+# Match by filename inside any Utils folder so this works with
+# both root-level and nested mod project layouts.
 PRESERVE_LICENSE_FILES = {
-    "utils/localeutils.cs",
-    "utils/logutils.cs",
-    "utils/shellopen.cs",
-    "utils/debuglocalescan.cs",
+    "localeutils.cs",
+    "logutils.cs",
+    "shellopen.cs",
+    "debuglocalescan.cs",
 }
 
 SUPPORTED_SUFFIXES = {
@@ -145,10 +149,12 @@ def should_skip(path: Path) -> bool:
     if path.name.endswith(".g.cs"):
         return True
 
-    relative_path = path.as_posix().lower()
-    if relative_path in PRESERVE_LICENSE_FILES:
+    if (
+        path.parent.name.lower() == "utils"
+        and path.name.lower() in PRESERVE_LICENSE_FILES
+    ):
         return True
-
+    
     parts = {part.lower() for part in path.parts}
     return any(skip_dir in parts for skip_dir in SKIP_DIRS)
 

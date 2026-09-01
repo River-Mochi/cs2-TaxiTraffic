@@ -177,7 +177,7 @@ namespace TaxiTraffic
         public string NameDisplay => Mod.ModName;
 
         [SettingsUISection(AboutTab, AboutInfoGroup)]
-        public string VersionDisplay => Mod.ModVersion;
+        public string VersionDisplay => $"{Mod.ModVersion} {Mod.BuildDisplayName}";
 
         [SettingsUIButtonGroup(AboutLinksGroup)]
         [SettingsUIButton]

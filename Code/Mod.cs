@@ -36,6 +36,9 @@ namespace TaxiTraffic
         private const string kBuildType = "RELEASE";
 #endif
 
+        public static string BuildDisplayName =>
+            kBuildType == "RELEASE" ? "Release" : kBuildType;
+
         private static bool s_BannerLogged;
 
         public static readonly string ModVersion =
