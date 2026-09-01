@@ -145,12 +145,33 @@ namespace TaxiTraffic
             out int removed,
             out int reapplied)
         {
+            uint updateFrameIndex =
+                simulationFrame % kResidentUpdateFrameCount;
+
+            // Maximum avoidance is the common heavy setting. Residents already
+            // owned by Taxi Traffic no longer need household/group classification.
+            // Keep ResidentAI's 16-frame bucket, but only inspect new/unowned cims.
+            if (avoidanceData.m_ResidentsAvoidTaxis >=
+                    TaxiSettings.kTaxiAvoidPercentMax &&
+                avoidanceData.m_BlockCommuters &&
+                avoidanceData.m_BlockTourists)
+            {
+                m_MaxAvoidanceEligibilityBucketQuery.SetSharedComponentFilter(
+                    new UpdateFrame(updateFrameIndex));
+
+                RunMaximumAvoidanceEligibilityJob(
+                    out applied,
+                    out removed,
+                    out reapplied);
+
+                return;
+            }
+
             // Match ResidentAI's current shared UpdateFrame bucket. Each resident
             // is still reevaluated once per 16 simulation frames, but the work is
             // spread evenly instead of producing one large periodic spike.
             m_EligibilityBucketQuery.SetSharedComponentFilter(
-                new UpdateFrame(
-                    simulationFrame % kResidentUpdateFrameCount));
+                new UpdateFrame(updateFrameIndex));
 
             RunResidentTaxiEligibilityJob(
                 m_EligibilityBucketQuery,
@@ -158,6 +179,102 @@ namespace TaxiTraffic
                 out applied,
                 out removed,
                 out reapplied);
+        }
+
+        private void RunMaximumAvoidanceEligibilityJob(
+            out int applied,
+            out int removed,
+            out int reapplied)
+        {
+            m_EligibilityCounters[0] = 0;
+            m_EligibilityCounters[1] = 0;
+            m_EligibilityCounters[2] = 0;
+
+            using EntityCommandBuffer buffer =
+                new EntityCommandBuffer(Allocator.TempJob);
+
+            MaximumAvoidanceEligibilityJob job =
+                new MaximumAvoidanceEligibilityJob
+                {
+                    m_EntityType =
+                        SystemAPI.GetEntityTypeHandle(),
+                    m_ResidentType =
+                        SystemAPI.GetComponentTypeHandle<Resident>(),
+                    m_AppliedCount = m_EligibilityCounters,
+                    m_CommandBuffer = buffer.AsParallelWriter()
+                };
+
+            // The query already excludes Taxi Traffic-owned residents, so this
+            // Burst pass only handles new/unowned cims in ResidentAI's current
+            // bucket. Vanilla-owned IgnoreTaxi flags are observed but never claimed.
+            job.Run(m_MaxAvoidanceEligibilityBucketQuery);
+
+            buffer.Playback(EntityManager);
+
+            applied = m_EligibilityCounters[0];
+            removed = 0;
+            reapplied = 0;
+        }
+
+        [BurstCompile]
+        private struct MaximumAvoidanceEligibilityJob : IJobChunk
+        {
+            [ReadOnly]
+            public EntityTypeHandle m_EntityType;
+
+            public ComponentTypeHandle<Resident> m_ResidentType;
+
+            public NativeArray<int> m_AppliedCount;
+
+            public EntityCommandBuffer.ParallelWriter m_CommandBuffer;
+
+            public void Execute(
+                in ArchetypeChunk chunk,
+                int unfilteredChunkIndex,
+                bool useEnabledMask,
+                in v128 chunkEnabledMask)
+            {
+                NativeArray<Entity> entities =
+                    chunk.GetNativeArray(m_EntityType);
+
+                NativeArray<Resident> residents =
+                    chunk.GetNativeArray(ref m_ResidentType);
+
+                int applied = 0;
+
+                ChunkEntityEnumerator enumerator =
+                    new ChunkEntityEnumerator(
+                        useEnabledMask,
+                        chunkEnabledMask,
+                        chunk.Count);
+
+                while (enumerator.NextEntityIndex(out int i))
+                {
+                    Resident resident = residents[i];
+                    ResidentFlags flags = resident.m_Flags;
+
+                    // Keep the same safety guard as the general eligibility path.
+                    if ((flags & ResidentFlags.InVehicle) != 0)
+                        continue;
+
+                    // If vanilla already owns IgnoreTaxi, leave it untouched and
+                    // do not add Taxi Traffic's ownership marker.
+                    if ((flags & ResidentFlags.IgnoreTaxi) != 0)
+                        continue;
+
+                    resident.m_Flags |= ResidentFlags.IgnoreTaxi;
+                    residents[i] = resident;
+
+                    m_CommandBuffer.AddComponent<IgnoreTaxiMark>(
+                        unfilteredChunkIndex,
+                        entities[i]);
+
+                    applied++;
+                }
+
+                if (applied != 0)
+                    m_AppliedCount[0] += applied;
+            }
         }
 
         private void RunResidentTaxiEligibilityJob(

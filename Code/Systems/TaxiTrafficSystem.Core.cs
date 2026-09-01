@@ -33,6 +33,7 @@ namespace TaxiTraffic
         private EntityQuery m_OwnedBlockQuery;
         private EntityQuery m_EligibilityFullQuery;
         private EntityQuery m_EligibilityBucketQuery;
+        private EntityQuery m_MaxAvoidanceEligibilityBucketQuery;
         private EntityQuery m_ReapplyBlockQuery;
         private EntityQuery m_RideNeederQuery;
 
@@ -71,6 +72,19 @@ namespace TaxiTraffic
                 GetEntityQuery(
                     ComponentType.ReadWrite<Game.Creatures.Resident>(),
                     ComponentType.ReadOnly<Game.Simulation.UpdateFrame>(),
+                    ComponentType.Exclude<Game.Creatures.CurrentVehicle>(),
+                    ComponentType.Exclude<Deleted>(),
+                    ComponentType.Exclude<Temp>());
+
+            // At 100% with both groups enabled, residents already owned by Taxi
+            // Traffic do not need another eligibility decision. Only new/unowned
+            // residents stay in this bucket query; the tiny reapply pass maintains
+            // IgnoreTaxi on residents we already own.
+            m_MaxAvoidanceEligibilityBucketQuery =
+                GetEntityQuery(
+                    ComponentType.ReadWrite<Game.Creatures.Resident>(),
+                    ComponentType.ReadOnly<Game.Simulation.UpdateFrame>(),
+                    ComponentType.Exclude<IgnoreTaxiMark>(),
                     ComponentType.Exclude<Game.Creatures.CurrentVehicle>(),
                     ComponentType.Exclude<Deleted>(),
                     ComponentType.Exclude<Temp>());
