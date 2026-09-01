@@ -31,12 +31,17 @@ namespace TaxiTraffic
 
         private Game.Simulation.SimulationSystem m_ControlSimulationSystem = null!;
         private EntityQuery m_OwnedBlockQuery;
+        private EntityQuery m_EligibilityFullQuery;
         private EntityQuery m_EligibilityBucketQuery;
         private EntityQuery m_ReapplyBlockQuery;
+        private EntityQuery m_RideNeederQuery;
+
+        private NativeArray<int> m_EligibilityCounters;
         private NativeArray<int> m_ReapplyCounter;
+        private NativeArray<int> m_EnforcementCounters;
 
         private bool m_ResidentCleanupPending;
-        private bool m_EligibilityRefreshRequested;
+        private bool m_FullEligibilityRefreshRequested;
 
         protected override void OnCreate()
         {
@@ -49,6 +54,15 @@ namespace TaxiTraffic
             m_OwnedBlockQuery =
                 GetEntityQuery(
                     ComponentType.ReadOnly<IgnoreTaxiMark>(),
+                    ComponentType.Exclude<Deleted>(),
+                    ComponentType.Exclude<Temp>());
+
+            // City load gets one complete reconciliation so saved residents start
+            // from a known state before normal bucketed updates take over.
+            m_EligibilityFullQuery =
+                GetEntityQuery(
+                    ComponentType.ReadWrite<Game.Creatures.Resident>(),
+                    ComponentType.Exclude<Game.Creatures.CurrentVehicle>(),
                     ComponentType.Exclude<Deleted>(),
                     ComponentType.Exclude<Temp>());
 
@@ -72,9 +86,32 @@ namespace TaxiTraffic
                     ComponentType.Exclude<Deleted>(),
                     ComponentType.Exclude<Temp>());
 
+            // Keep RideNeeder protection targeted. This query is small compared
+            // with the full resident population and must remain available every
+            // simulation update so taxi requests are stopped before dispatch.
+            m_RideNeederQuery =
+                GetEntityQuery(
+                    ComponentType.ReadWrite<Game.Creatures.Resident>(),
+                    ComponentType.ReadOnly<Game.Creatures.RideNeeder>(),
+                    ComponentType.Exclude<Game.Creatures.CurrentVehicle>(),
+                    ComponentType.Exclude<Deleted>(),
+                    ComponentType.Exclude<Temp>());
+
+            m_EligibilityCounters =
+                new NativeArray<int>(
+                    3,
+                    Allocator.Persistent,
+                    NativeArrayOptions.ClearMemory);
+
             m_ReapplyCounter =
                 new NativeArray<int>(
                     1,
+                    Allocator.Persistent,
+                    NativeArrayOptions.ClearMemory);
+
+            m_EnforcementCounters =
+                new NativeArray<int>(
+                    4,
                     Allocator.Persistent,
                     NativeArrayOptions.ClearMemory);
 
@@ -86,8 +123,14 @@ namespace TaxiTraffic
 
         protected override void OnDestroy()
         {
+            if (m_EligibilityCounters.IsCreated)
+                m_EligibilityCounters.Dispose();
+
             if (m_ReapplyCounter.IsCreated)
                 m_ReapplyCounter.Dispose();
+
+            if (m_EnforcementCounters.IsCreated)
+                m_EnforcementCounters.Dispose();
 
             if (ReferenceEquals(s_Instance, this))
                 s_Instance = null;
@@ -110,7 +153,7 @@ namespace TaxiTraffic
                 return;
 
             m_ResidentCleanupPending = true;
-            m_EligibilityRefreshRequested = true;
+            m_FullEligibilityRefreshRequested = true;
 
             ResetDebugOnCityLoaded();
             ResetStatusOnCityLoaded();
@@ -129,7 +172,9 @@ namespace TaxiTraffic
             if (s_Instance == null)
                 return;
 
-            s_Instance.m_EligibilityRefreshRequested = true;
+            // Do not turn an Options change into a full-city spike. The new
+            // setting reaches every resident through the next 16 buckets.
+            s_Instance.m_FullEligibilityRefreshRequested = false;
             s_Instance.Enabled = true;
         }
 
@@ -159,29 +204,31 @@ namespace TaxiTraffic
                 m_ResidentCleanupPending = true;
 
                 uint simulationFrame = m_ControlSimulationSystem.frameIndex;
+                TaxiAvoidanceData avoidanceData =
+                    CreateTaxiAvoidanceData(setting);
 
 #if DEBUG
                 long eligibilityStartTicks =
                     System.Diagnostics.Stopwatch.GetTimestamp();
 #endif
 
-                if (m_EligibilityRefreshRequested)
+                if (m_FullEligibilityRefreshRequested)
                 {
-                    // Settings changes and city load get one immediate reconciliation.
-                    // Normal gameplay is spread across ResidentAI's 16 buckets below.
+                    // City load gets one immediate reconciliation. Options changes
+                    // are deliberately spread over the normal 16-frame bucket cycle.
                     UpdateResidentTaxiEligibility(
-                        setting,
+                        avoidanceData,
                         out appliedIgnoreTaxi,
                         out removedIgnoreTaxi,
                         out int fullScanReappliedIgnoreTaxi);
 
                     reappliedIgnoreTaxi += fullScanReappliedIgnoreTaxi;
-                    m_EligibilityRefreshRequested = false;
+                    m_FullEligibilityRefreshRequested = false;
                 }
                 else
                 {
                     UpdateResidentTaxiEligibilityBucket(
-                        setting,
+                        avoidanceData,
                         simulationFrame,
                         out appliedIgnoreTaxi,
                         out removedIgnoreTaxi,
@@ -216,14 +263,15 @@ namespace TaxiTraffic
 #endif
 
                 // Catch blocked cims that already reached the on-demand taxi path.
-                // This is targeted to RideNeeder only; taxi stands are left alone.
+                // This stays every simulation update so later taxi systems do not
+                // get a chance to dispatch a newly created request.
 #if DEBUG
                 long enforcementStartTicks =
                     System.Diagnostics.Stopwatch.GetTimestamp();
 #endif
 
                 StopBlockedRideNeeders(
-                    setting,
+                    avoidanceData,
                     out int lateAppliedIgnoreTaxi,
                     out stoppedRideNeeders,
                     out existingTaxiRequestsStopped,
@@ -237,14 +285,21 @@ namespace TaxiTraffic
                     enforcementStartTicks);
 #endif
             }
-            else if (m_ResidentCleanupPending)
+            else
             {
-                // Game-default mode clears only IgnoreTaxi flags owned by Taxi Traffic.
-                // In-vehicle residents are left alone until their current trip finishes.
-                removedIgnoreTaxi = ClearOwnedResidentTaxiBlocks();
+                // There is nothing to reconcile at city load when all controls are
+                // vanilla. Any future Options change should use the bucketed path.
+                m_FullEligibilityRefreshRequested = false;
 
-                m_ResidentCleanupPending =
-                    !m_OwnedBlockQuery.IsEmptyIgnoreFilter;
+                if (m_ResidentCleanupPending)
+                {
+                    // Game-default mode clears only IgnoreTaxi flags owned by Taxi Traffic.
+                    // In-vehicle residents are left alone until their current trip finishes.
+                    removedIgnoreTaxi = ClearOwnedResidentTaxiBlocks();
+
+                    m_ResidentCleanupPending =
+                        !m_OwnedBlockQuery.IsEmptyIgnoreFilter;
+                }
             }
 
             RecordLastUpdateCounters(
