@@ -9,13 +9,18 @@
 // File: Systems/TaxiTrafficMarkers.cs
 // Purpose: marks residents whose IgnoreTaxi flag is owned by Taxi Traffic.
 
+using Colossal.Serialization.Entities;
 using Unity.Entities;
 
 namespace TaxiTraffic
 {
     // Taxi Traffic turned on ResidentFlags.IgnoreTaxi for this resident.
-    // Only residents with this marker are cleared when the player allows taxis again.
-    internal struct IgnoreTaxiMark : IComponentData
+    // Persist ownership across saves so Taxi Traffic can distinguish its
+    // own flag from vanilla IgnoreTaxi after reloading the city.
+    internal struct IgnoreTaxiMark :
+        IComponentData,
+        IQueryTypeParameter,
+        IEmptySerializable
     {
     }
 }
