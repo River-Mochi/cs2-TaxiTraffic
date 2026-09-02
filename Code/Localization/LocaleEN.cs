@@ -174,7 +174,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "Taxi purpose" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)),
                     "Purpose of current taxi requests.\n" +
-                    "<Leisure> | <Home> | <Work> | <School> | <Shopping> | <Other>"
+                    "<Leisure> | <Home> | <Work> | <School> | <Shop> | <Other>"
                 },
 
                 // CITY TRANSIT
