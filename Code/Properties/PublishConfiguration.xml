@@ -10,11 +10,10 @@
 <LongDescription>
 ### Taxi Traffic
 
-Do you want more control of the many taxis creating traffic?
-Citizens can make smarter travel choices by reducing taxi use.
+Citizens can make smarter travel choices by reducing taxi use and traffic.
 
 I started this mod in **2025** for personal use, and only gave it to a few people.
-As more asked for it, I finally dotted all the "i's" to get it public ready with more testing/images/tooltips.
+As more asked for it, I finally dotted the "i's" to get it public ready with more testing/images/tooltips.
 And if it's not a bother, please click the Like 👍 button (top right) to help people know about the mod.
 
 ### Adjustable Settings
@@ -28,15 +27,16 @@ And if it's not a bother, please click the Like 👍 button (top right) to help 
 - Safe to remove anytime. No Harmony based patching; less likely to break on game patch day.
 - Tip: to verify usage, check Options menu > mod Status, to see usage is going down after a city runs a little.
 
-### Support and Feedback
-- Easiest way to support is click the LIKE 👍 button (top right).
-- For Feedback use Github or Discord links (icons on right side of page). PRs are welcome.
 
 ### Credits and Thanks
 - RiverMochi: mod author
 - Noel/Noel2 (MapExt): testing
 - Winterqt (Grass sprites): testing
 - Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
+
+### Support and Feedback
+- Easiest way to support is click the LIKE 👍 button (top right).
+- For Feedback use Github or Discord links (icons on right side of page). PRs are welcome.
 
 ### How it works
 
@@ -59,12 +59,14 @@ tags: taxi service disable taxi use, reduce taxis.
 <Thumbnail Value="Properties/Thumbnail-Taxi01.jpg" />
 <!--Screenshot, can be set multiple times-->
 <Screenshot Value="Properties/image10-Options.jpg" />
+<Screenshot Value="Properties/image20-TaxiJam.jpg" />
+<Screenshot Value="Properties/image40-Status.jpg" />
 <!--Tag, can be set multiple times-->
 <Tag Value="" />
 <!--Link to the forum post where the mod can be discussed-->
 <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/taxi-traffic.1939962/" />
 <!--Version of the mod-->
-<ModVersion Value="0.5.0" />
+<ModVersion Value="0.5.1" />
 <!--Recommended version of the base game to use the mod-->
 <GameVersion Value="1.6.*" />
 <!--Dependency for the mod, can be set multiple times-->
