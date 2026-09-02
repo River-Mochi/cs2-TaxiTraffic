@@ -40,6 +40,7 @@ As more asked for it, I finally pushed through to get it public ready (testing, 
 ### How it works
 
 - Taxi Traffic (TT) uses the game's own ignore taxis methods (safer + easier).
+- Although you can put everything at 100%, I recommend 25% - 50% to allow some normal game trips.
 - Some taxis may still remain. Active trips are allowed to finish naturally for game stability. Some systems may still independently call taxis.
 - Removing taxi stands prevents taxis from parking there - much easier to use vanilla for that part.
 - Fun Fact: if local taxi supply can't meet demand, the game can send in outside connection (OC) taxis for local requests.
