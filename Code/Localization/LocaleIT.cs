@@ -151,7 +151,8 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "Passeggeri attualmente nei taxi.\n" +
                     "<Locali> = passeggeri che vivono nella tua città.\n" +
-                    "<OC> = pendolari e turisti da un collegamento esterno."
+                    "<OC> = pendolari e turisti da un collegamento esterno.\n" +
+                    "Il totale può essere più alto a causa degli animali nei taxi."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "Disponibilità taxi" },

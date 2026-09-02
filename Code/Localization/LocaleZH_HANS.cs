@@ -151,7 +151,8 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "当前出租车乘客。\n" +
                     "<本地> = 住在你城市里的乘客。\n" +
-                    "<OC> = 来自外部连接的通勤者和游客。"
+                    "<OC> = 来自外部连接的通勤者和游客。\n"+
+                    "由于出租车内可能有宠物，总数可能会更高。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "出租车供应" },
