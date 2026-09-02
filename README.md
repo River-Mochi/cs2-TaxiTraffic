@@ -1,21 +1,16 @@
 # Taxi Traffic (Cities: Skylines II)
 
-**Taxi Traffic** cuts down the taxis clogging your streets.
-
-A taxi only carries a few people, so a city full of them can mean a lot of traffic for not many passengers. This mod nudges cims to use another travel option instead.
+Reduces taxi traffic by nudging cims to pick other travel options.
 
 ---
 
 ## How it works
 
-Taxi Traffic uses the game's own **IgnoreTaxi** behavior.
+Taxi Traffic uses the game's own taxi-avoidance behavior.
 
-- Cims you block are told to avoid taxis.
-- Cims still waiting for an unassigned taxi can leave the pickup spot and find another way to travel.
-- If a taxi is already dispatched, boarding, or carrying someone, that trip is left alone to finish.
-- Taxi stands still work normally, including their usual standby taxis.
-- If local taxi supply can't keep up, outside connections (OC) can send taxis into the city.
-- At max taxi-avoid settings, testing showed few or no OC taxis coming into the city.
+- Selected cims avoid taxis.
+- Active taxi trips are left alone to finish.
+- Taxi stands and outside-connection taxis still work normally.
 
 No Harmony patching and no attempt to shut down the whole taxi system.
 
@@ -32,15 +27,13 @@ Found in **Options → Taxi Traffic → Actions**.
 | **Tourists avoid taxis** | ON = tourists avoid taxis. |
 | **Game Defaults** | Returns to vanilla taxi choices: 0%, commuters OFF, tourists OFF. |
 
-### Fresh install
+### Defaults on a new install
 
-Taxi Traffic starts strong so you can actually see the difference:
+- **Residents avoid taxis: 50%**
+- **Commuters avoid taxis: OFF**
+- **Tourists avoid taxis: OFF**
 
-- **Residents avoid taxis: 100%**
-- **Commuters avoid taxis: ON**
-- **Tourists avoid taxis: ON**
-
-Want some taxi traffic back? Lower the slider or turn either group off.
+Want stronger taxi reduction? Raise the slider or turn either group on.
 
 ---
 
@@ -55,13 +48,13 @@ Want some taxi traffic back? Lower the slider or turn either group off.
 
 ## Status
 
-The Status tab gives a quick look at things like:
+The Status tab gives a quick look at:
 
-- current taxi passengers
-- parked vs active taxis
+- current passengers, including local and OC
+- parked and active taxis
 - outside-connection taxis
 - taxi trip purpose
-- current Taxi Traffic blocking
+- current Taxi Traffic blocks
 
 Status is bonus info; the mod's main job is reducing taxi traffic.
 
@@ -78,7 +71,8 @@ Status is bonus info; the mod's main job is reducing taxi traffic.
 ## Credits and thanks
 
 - **River Mochi** — mod author
-- **Noel / Noel2** (of MapExt) — testing and feedback
+- **Noel / Noel2** (of MapExt): testing
+- **Winterqt** (Grass sprites): testing
 - Thumbnail: *World Class Traffic Jam 2* by joiseyshowaa, Freehold NJ — [CC BY-SA 2.0](https://commons.wikimedia.org/w/index.php?curid=63542844)
 
 Source: <https://github.com/River-Mochi/cs2-TaxiTraffic>

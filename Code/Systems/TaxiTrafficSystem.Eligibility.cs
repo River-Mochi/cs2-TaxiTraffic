@@ -43,8 +43,8 @@ namespace TaxiTraffic
 
             public bool ShouldAvoid(Resident resident)
             {
-                // Fresh-install defaults block every eligible group. Avoid household
-                // lookups entirely for this common and most aggressive setting.
+                // Maximum avoidance blocks every eligible group, so skip household
+                // lookups for this all avoidance setting - no need.
                 if (m_ResidentsAvoidTaxis >= TaxiSettings.kTaxiAvoidPercentMax &&
                     m_BlockCommuters &&
                     m_BlockTourists)

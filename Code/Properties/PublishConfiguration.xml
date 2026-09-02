@@ -10,7 +10,7 @@
 <LongDescription>
 ### Taxi Traffic
 
-Citizens can make smarter travel choices by reducing taxi use and traffic.
+Citizens make smarter travel choices, reducing taxi use and traffic.
 
 I started this mod in **2025** for personal use, and only gave it to a few people.
 As more asked for it, I finally dotted the "i's" to get it public ready with more testing/images/tooltips.
@@ -24,7 +24,7 @@ And if it's not a bother, please click the Like 👍 button (top right) to help 
 - Taxi traffic drops after the city runs for a few minutes.
 - Existing taxis may still be visible briefly while active trips finish naturally (depends on the options picked).
 - Use **Game Defaults** to restore vanilla taxi choices (toggles off and Resident slider at 0%).
-- Safe to remove anytime. No Harmony based patching; less likely to break on game patch day.
+- Safe to remove. No Harmony based patching; less likely to break on game patch day.
 - Tip: to verify usage, check Options menu > mod Status, to see usage is going down after a city runs a little.
 
 
