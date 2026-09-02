@@ -82,4 +82,4 @@ Source: <https://github.com/River-Mochi/cs2-TaxiTraffic>
 
 Taxi Traffic is licensed under GPL-3.0-or-later with the Cities: Skylines II Linking Exception.
 
-The shared files in `Utils/` are separately licensed under the MIT License; see `LICENSE-MIT`.
+The shared files in `Code/Utils/` are separately licensed under the MIT License; see `LICENSE-MIT`.

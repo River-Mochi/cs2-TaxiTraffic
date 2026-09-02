@@ -1,6 +1,6 @@
 <Publish>
 <!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-<ModId Value="" />
+<ModId Value="157660" />
 <!--Name of the mod to display to players-->
 <DisplayName Value="Taxi Traffic" />
 <!--Short description of the mod-->
@@ -8,24 +8,24 @@
 <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 <!--LongDescription Value="This is a long description" /-->
 <LongDescription>
-### Taxi Traffic
+# 🚕
 
-Citizens make smarter travel choices, reducing taxi use and traffic.
+**Citizens make smarter choices, reducing taxi use and traffic.**
 
 I started this mod in **2025** for personal use, and only gave it to a few people.
-As more asked for it, I finally dotted the "i's" to get it public ready with more testing/images/tooltips.
-And if it's not a bother, please click the Like 👍 button (top right) to help people know about the mod.
+As more asked for it, I finally pushed through to get it public ready (testing, images, tooltips).
+If it's not a bother, please click the Like 👍 button (top right) to help people know about the mod.
 
-### Adjustable Settings
-- ✅ **Residents avoid taxis**, set the range for locals;  0% = normal taxi use | 100% = maximum avoid taxis
-- ✅ Features: **Commuters avoid taxis** and **Tourists avoid taxis** [x] toggles let you reduce taxi use for those groups too.
+### Adjustable
+- ✅ **Residents avoid taxis**, set ranges for locals.  0% = normal taxi use | 100% = maximum avoid taxis
+- ✅ **Commuters** avoid taxis toggle..
 
 ### What to expect
-- Taxi traffic drops after the city runs for a few minutes.
+- Taxi traffic drops after the city runs for a bit.
 - Existing taxis may still be visible briefly while active trips finish naturally (depends on the options picked).
 - Use **Game Defaults** to restore vanilla taxi choices (toggles off and Resident slider at 0%).
 - Safe to remove. No Harmony based patching; less likely to break on game patch day.
-- Tip: to verify usage, check Options menu > mod Status, to see usage is going down after a city runs a little.
+- Tip: to verify usage, check Options menu > mod Status, to see usage going down after the city runs.
 
 
 ### Credits and Thanks
@@ -35,8 +35,8 @@ And if it's not a bother, please click the Like 👍 button (top right) to help 
 - Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
 
 ### Support and Feedback
-- Easiest way to support is click the LIKE 👍 button (top right).
 - For Feedback use Github or Discord links (icons on right side of page). PRs are welcome.
+- Easiest way to support is click the LIKE 👍 button (top right).
 
 ### How it works
 
