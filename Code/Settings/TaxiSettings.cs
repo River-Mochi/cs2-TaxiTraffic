@@ -61,7 +61,7 @@ namespace TaxiTraffic
         internal const int kTaxiAvoidPercentMin = 0;
         internal const int kTaxiAvoidPercentMax = 100;
         internal const int kTaxiAvoidPercentStep = 25;
-        internal const int kTaxiAvoidPercentDefault = 100;
+        internal const int kTaxiAvoidPercentDefault = 50;
 
         private const string kUrlParadox =
             "https://mods.paradoxplaza.com/authors/River-mochi/cities_skylines_2?games=cities_skylines_2&orderBy=desc&sortBy=best&time=alltime";
@@ -255,12 +255,12 @@ namespace TaxiTraffic
                 Math.Min(kTaxiAvoidPercentMax, snapped));
         }
 
-       // New installs start with maximum taxi avoidance.
+        // New installs start by having half of local households avoid taxis.
         public override void SetDefaults()
         {
             ResidentsAvoidTaxis = kTaxiAvoidPercentDefault;
-            BlockCommuters = true;
-            BlockTourists = true;
+            BlockCommuters = false;
+            BlockTourists = false;
             ShowLastUpdateInfo = false;
             EnableDebugLogging = false;
         }

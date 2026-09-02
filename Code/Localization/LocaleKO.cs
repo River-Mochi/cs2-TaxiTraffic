@@ -150,8 +150,8 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusPassengers)), "현재 승객" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "현재 택시 승객.\n" +
-                    "<차단> = Taxi Traffic이 택시를 피하도록 설정한 승객.\n" +
-                    "<지역> = 내 도시에 사는 승객."
+                    "<지역> = 내 도시에 사는 승객.\n" +
+                    "<OC> = 외부 연결에서 온 통근자와 관광객."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "택시 공급" },
@@ -241,7 +241,7 @@ namespace TaxiTraffic
                 { KeyStatusCitizensLine, "{0} 택시 | {1} 버스 | {2} 트램 |\n{3} 기차 | {4} 지하철 | {5} 항공" },
                 { KeyStatusTouristsLine, "{0} 택시 | {1} 버스 | {2} 트램 |\n{3} 기차 | {4} 지하철 | {5} 항공" },
                 { KeyStatusTotalsLine, "{0} 대기 | {1} 관광객/월 | {2} 시민/월" },
-                { KeyStatusPassengersLine, "{0} 합계 | {1} 차단 | {2} 지역" },
+                { KeyStatusPassengersLine, "{0} 합계 | {1} 지역 | {2} OC" },
                 { KeyStatusTaxiSupplyLine, "{0} 주차, {1} 활성 | {2} 지역 차고지 | {3} 승강장" },
                 { KeyStatusOutsideTaxisLine, "{0} OC에서 | {1} OC 공급원" },
                 { KeyStatusTaxiPurposeLine,

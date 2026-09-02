@@ -150,8 +150,8 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusPassengers)), "Passageiros agora" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "Passageiros atuais em táxis.\n" +
-                    "<Bloqueados> = passageiros que o Taxi Traffic mandou evitar táxis.\n" +
-                    "<Locais> = passageiros que moram na sua cidade."
+                    "<Locais> = passageiros que moram na sua cidade.\n" +
+                    "<OC> = trabalhadores pendulares e turistas de conexão externa."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "Oferta de táxis" },
@@ -241,7 +241,7 @@ namespace TaxiTraffic
                 { KeyStatusCitizensLine, "{0} táxi | {1} ônibus | {2} bonde |\n{3} trem | {4} metrô | {5} avião" },
                 { KeyStatusTouristsLine, "{0} táxi | {1} ônibus | {2} bonde |\n{3} trem | {4} metrô | {5} avião" },
                 { KeyStatusTotalsLine, "{0} esperando | {1} turistas/mês | {2} cidadãos/mês" },
-                { KeyStatusPassengersLine, "{0} total | {1} bloqueados | {2} locais" },
+                { KeyStatusPassengersLine, "{0} total | {1} locais | {2} OC" },
                 { KeyStatusTaxiSupplyLine, "{0} estacionados, {1} ativos | {2} garagens locais | {3} pontos" },
                 { KeyStatusOutsideTaxisLine, "{0} de OC | {1} fontes OC" },
                 { KeyStatusTaxiPurposeLine,

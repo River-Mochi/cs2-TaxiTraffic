@@ -348,9 +348,6 @@ namespace TaxiTraffic
 
                     s_StatusPassengerHasResident++;
 
-                    if (SystemAPI.HasComponent<IgnoreTaxiMark>(passenger))
-                        s_StatusPassengerBlockedMark++;
-
                     Resident passengerResident =
                         SystemAPI.GetComponentRO<Resident>(
                             passenger).ValueRO;
@@ -360,7 +357,9 @@ namespace TaxiTraffic
                         out bool isCommuter,
                         out bool isTourist);
 
-                    if (!isCommuter && !isTourist)
+                    if (isCommuter || isTourist)
+                        s_StatusPassengerOutsideConnection++;
+                    else
                         s_StatusPassengerLocal++;
 
                     if (detailed &&

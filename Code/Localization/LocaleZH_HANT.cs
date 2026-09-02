@@ -150,8 +150,8 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusPassengers)), "目前乘客" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "目前計程車乘客。\n" +
-                    "<已封鎖> = Taxi Traffic 標記為避開計程車的乘客。\n" +
-                    "<本地> = 住在你城市裡的乘客。"
+                    "<本地> = 住在你城市裡的乘客。\n" +
+                    "<OC> = 來自外部連線的通勤者和遊客。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "計程車供應" },
@@ -241,7 +241,7 @@ namespace TaxiTraffic
                 { KeyStatusCitizensLine, "{0} 計程車 | {1} 公車 | {2} 電車 |\n{3} 火車 | {4} 捷運 | {5} 飛機" },
                 { KeyStatusTouristsLine, "{0} 計程車 | {1} 公車 | {2} 電車 |\n{3} 火車 | {4} 捷運 | {5} 飛機" },
                 { KeyStatusTotalsLine, "{0} 等待中 | {1} 遊客/月 | {2} 市民/月" },
-                { KeyStatusPassengersLine, "{0} 總計 | {1} 已封鎖 | {2} 本地" },
+                { KeyStatusPassengersLine, "{0} 總計 | {1} 本地 | {2} OC" },
                 { KeyStatusTaxiSupplyLine, "{0} 已停放, {1} 活躍 | {2} 本地車庫 | {3} 車站" },
                 { KeyStatusOutsideTaxisLine, "{0} 來自 OC | {1} OC 來源" },
                 { KeyStatusTaxiPurposeLine,

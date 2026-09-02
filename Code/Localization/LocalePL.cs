@@ -150,8 +150,8 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusPassengers)), "Aktualni pasażerowie" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "Aktualni pasażerowie taksówek.\n" +
-                    "<Zablokowani> = pasażerowie, którym Taxi Traffic kazał unikać taksówek.\n" +
-                    "<Lokalni> = pasażerowie mieszkający w twoim mieście."
+                    "<Lokalni> = pasażerowie mieszkający w twoim mieście.\n" +
+                    "<OC> = dojeżdżający i turyści z połączenia zewnętrznego."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "Dostępność taksówek" },
@@ -241,7 +241,7 @@ namespace TaxiTraffic
                 { KeyStatusCitizensLine, "{0} taxi | {1} autobus | {2} tramwaj |\n{3} pociąg | {4} metro | {5} samolot" },
                 { KeyStatusTouristsLine, "{0} taxi | {1} autobus | {2} tramwaj |\n{3} pociąg | {4} metro | {5} samolot" },
                 { KeyStatusTotalsLine, "{0} oczekuje | {1} turyści/mies. | {2} obywatele/mies." },
-                { KeyStatusPassengersLine, "{0} razem | {1} zablok. | {2} lokalni" },
+                { KeyStatusPassengersLine, "{0} razem | {1} lokalni | {2} OC" },
                 { KeyStatusTaxiSupplyLine, "{0} zapark., {1} aktywne | {2} lokalne zajezdnie | {3} postoje" },
                 { KeyStatusOutsideTaxisLine, "{0} z OC | {1} źródła OC" },
                 { KeyStatusTaxiPurposeLine,

@@ -122,8 +122,8 @@ namespace TaxiTraffic
                 return StatusValue(
                     nameof(StatusPassengers),
                     TaxiTrafficSystem.s_StatusPassengerTotal,
-                    TaxiTrafficSystem.s_StatusPassengerBlockedMark,
-                    TaxiTrafficSystem.s_StatusPassengerLocal);
+                    TaxiTrafficSystem.s_StatusPassengerLocal,
+                    TaxiTrafficSystem.s_StatusPassengerOutsideConnection);
             }
         }
 
@@ -360,8 +360,8 @@ namespace TaxiTraffic
             sb.AppendLine("Current passengers: " + StatusValue(
                 nameof(StatusPassengers),
                 TaxiTrafficSystem.s_StatusPassengerTotal,
-                TaxiTrafficSystem.s_StatusPassengerBlockedMark,
-                TaxiTrafficSystem.s_StatusPassengerLocal));
+                TaxiTrafficSystem.s_StatusPassengerLocal,
+                TaxiTrafficSystem.s_StatusPassengerOutsideConnection));
 
             sb.AppendLine("Taxi supply: " + StatusValue(
                 nameof(StatusTaxiSupply),

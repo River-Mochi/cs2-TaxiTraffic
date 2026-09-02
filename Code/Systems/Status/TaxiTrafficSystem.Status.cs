@@ -108,7 +108,7 @@ namespace TaxiTraffic
         internal static int s_StatusPassengerHasResident;
         internal static int s_StatusPassengerLocal;
         internal static int s_StatusPassengerIgnoreTaxi;
-        internal static int s_StatusPassengerBlockedMark;
+        internal static int s_StatusPassengerOutsideConnection;
 
         // Stands and taxi supply nodes.
         internal static int s_StatusTaxiStandsTotal;
@@ -276,7 +276,7 @@ namespace TaxiTraffic
             s_StatusPassengerHasResident = 0;
             s_StatusPassengerLocal = 0;
             s_StatusPassengerIgnoreTaxi = 0;
-            s_StatusPassengerBlockedMark = 0;
+            s_StatusPassengerOutsideConnection = 0;
 
             s_StatusTaxiStandsTotal = 0;
             s_StatusTaxiDepotsTotal = 0;

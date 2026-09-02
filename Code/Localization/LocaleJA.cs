@@ -150,8 +150,8 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusPassengers)), "現在の乗客" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "現在タクシーに乗っている乗客。\n" +
-                    "<ブロック> = Taxi Trafficがタクシーを避けるよう設定した乗客。\n" +
-                    "<市内> = あなたの都市に住む乗客。"
+                    "<市内> = あなたの都市に住む乗客。\n" +
+                    "<OC> = 都市外接続からの通勤者と観光客。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "タクシー供給" },
@@ -241,7 +241,7 @@ namespace TaxiTraffic
                 { KeyStatusCitizensLine, "{0} タクシー | {1} バス | {2} トラム |\n{3} 鉄道 | {4} 地下鉄 | {5} 航空" },
                 { KeyStatusTouristsLine, "{0} タクシー | {1} バス | {2} トラム |\n{3} 鉄道 | {4} 地下鉄 | {5} 航空" },
                 { KeyStatusTotalsLine, "{0} 待機中 | {1} 観光客/月 | {2} 市民/月" },
-                { KeyStatusPassengersLine, "{0} 合計 | {1} ブロック | {2} 市内" },
+                { KeyStatusPassengersLine, "{0} 合計 | {1} 市内 | {2} OC" },
                 { KeyStatusTaxiSupplyLine, "{0} 駐車中, {1} 稼働中 | {2} 市内営業所 | {3} 乗り場" },
                 { KeyStatusOutsideTaxisLine, "{0} OCから | {1} OC供給元" },
                 { KeyStatusTaxiPurposeLine,

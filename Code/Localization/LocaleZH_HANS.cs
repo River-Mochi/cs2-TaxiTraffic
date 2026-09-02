@@ -150,8 +150,8 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusPassengers)), "当前乘客" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "当前出租车乘客。\n" +
-                    "<已屏蔽> = Taxi Traffic 标记为避开出租车的乘客。\n" +
-                    "<本地> = 住在你城市里的乘客。"
+                    "<本地> = 住在你城市里的乘客。\n" +
+                    "<OC> = 来自外部连接的通勤者和游客。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "出租车供应" },
@@ -241,7 +241,7 @@ namespace TaxiTraffic
                 { KeyStatusCitizensLine, "{0} 出租车 | {1} 公交 | {2} 电车 |\n{3} 火车 | {4} 地铁 | {5} 飞机" },
                 { KeyStatusTouristsLine, "{0} 出租车 | {1} 公交 | {2} 电车 |\n{3} 火车 | {4} 地铁 | {5} 飞机" },
                 { KeyStatusTotalsLine, "{0} 等待中 | {1} 游客/月 | {2} 市民/月" },
-                { KeyStatusPassengersLine, "{0} 总计 | {1} 已屏蔽 | {2} 本地" },
+                { KeyStatusPassengersLine, "{0} 总计 | {1} 本地 | {2} OC" },
                 { KeyStatusTaxiSupplyLine, "{0} 已停放, {1} 活跃 | {2} 本地车库 | {3} 车站" },
                 { KeyStatusOutsideTaxisLine, "{0} 来自 OC | {1} OC 来源" },
                 { KeyStatusTaxiPurposeLine,
