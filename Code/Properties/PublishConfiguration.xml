@@ -10,11 +10,12 @@
 <LongDescription>
 ### Taxi Traffic
 
-Do you want more control of the many taxis creating traffic gridlock?
+Do you want more control of the many taxis creating traffic?
 Citizens can make smarter travel choices by reducing taxi use.
 
-Background: I started this mod in 2025 but only gave it to a few players I know. It's a bit of effort between what's good enough for personal use versus adding all the extras for public release (tooltips/languages/images/etc.).
-As more started asking, I finally dotted all the "i's." And if it's not a bother, please click the Like 👍 button top right to help people know about the mod.
+I started this mod in **2025** for personal use, and only gave it to a few people.
+As more asked for it, I finally dotted all the "i's" to get it public ready with more testing/images/tooltips.
+And if it's not a bother, please click the Like 👍 button (top right) to help people know about the mod.
 
 ### Adjustable Settings
 - ✅ **Residents avoid taxis**, set the range for locals;  0% = normal taxi use | 100% = maximum avoid taxis
@@ -33,8 +34,8 @@ As more started asking, I finally dotted all the "i's." And if it's not a bother
 
 ### Credits and Thanks
 - RiverMochi: mod author
-- Noel/Noel2 (of MapExt): testing
-- Winterqt (of Grass sprites): testing
+- Noel/Noel2 (MapExt): testing
+- Winterqt (Grass sprites): testing
 - Thumbnail: Wikipedia Traffic Congestion, photo by joiseyshowaa from Freehold, NJ - World Class Traffic Jam 2, license CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=63542844
 
 ### How it works
