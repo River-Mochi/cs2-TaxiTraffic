@@ -152,7 +152,7 @@ namespace TaxiTraffic
                     "Current taxi passengers.\n" +
                     "<Local> = passengers who live in your city.\n" +
                     "<OC> = commuters and tourists from outside connection.\n" +
-                    "Total may be higher due to pets in taxis."
+                    "**Total may be higher due to pets in taxis.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "Taxi supply" },
@@ -168,7 +168,7 @@ namespace TaxiTraffic
                     "<From OC> = taxis coming from outside connections.\n" +
                     "<OC sources> = Outside Connections that can send taxis (think of this like invisible depots).\n" +
                     "**If there are no local depots, then the game can send in OC taxis for local requests.**\n" +
-                    "**In testing, maximum taxi avoidance showed few to no OC taxis entering the city.**"
+                    "**In testing, setting all options to max avoid taxis showed few to no OC taxis entering the city.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "Taxi purpose" },
