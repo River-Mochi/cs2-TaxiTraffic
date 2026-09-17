@@ -151,13 +151,13 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "Passageiros atuais em táxis.\n" +
                     "<Local> = passageiros que vivem na cidade.\n" +
-                    "<CE> = pendulares e turistas de ligações externas.\n" +
+                    "<LE> = pendulares e turistas de ligações externas.\n" +
                     "**O total pode ser maior devido a animais nos táxis.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "Oferta de táxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiSupply)),
-                    "<Parados> = táxis estacionados.\n" +
+                    "<Estacionados> = táxis estacionados.\n" +
                     "<Ativos> = táxis não estacionados, incluindo os à espera nas praças.\n" +
                     "<Depósitos locais> = depósitos de táxis construídos pelo jogador.\n" +
                     "<Praças> = áreas designadas para recolha/espera de táxis."
@@ -165,10 +165,10 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)), "Táxis externos" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)),
-                    "<De CE> = táxis vindos de ligações externas.\n" +
-                    "<Fontes CE> = ligações externas que podem enviar táxis (como depósitos invisíveis).\n" +
-                    "**Sem depósitos locais, o jogo pode enviar táxis CE para pedidos locais.**\n" +
-                    "**Nos testes, com todas as opções no máximo, entraram poucos ou nenhuns táxis CE na cidade.**"
+                    "<De LE> = táxis vindos de ligações externas.\n" +
+                    "<Fontes LE> = ligações externas que podem enviar táxis (como depósitos invisíveis).\n" +
+                    "**Sem depósitos locais, o jogo pode enviar táxis de LE para pedidos locais.**\n" +
+                    "**Nos testes, com todas as opções no máximo, entraram poucos ou nenhuns táxis de LE na cidade.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "Motivo do táxi" },
@@ -242,21 +242,21 @@ namespace TaxiTraffic
                 { KeyStatusCitizensLine, "{0} táxi | {1} autoc. | {2} elétr. |\n{3} comboio | {4} metro | {5} avião" },
                 { KeyStatusTouristsLine, "{0} táxi | {1} autoc. | {2} elétr. |\n{3} comboio | {4} metro | {5} avião" },
                 { KeyStatusTotalsLine, "{0} espera | {1} turistas/mês | {2} cidadãos/mês" },
-                { KeyStatusPassengersLine, "{0} total | {1} local | {2} CE" },
-                { KeyStatusTaxiSupplyLine, "{0} parados, {1} ativos | {2} depósitos | {3} praças" },
-                { KeyStatusOutsideTaxisLine, "{0} de CE | {1} fontes CE" },
+                { KeyStatusPassengersLine, "{0} total | {1} local | {2} LE" },
+                { KeyStatusTaxiSupplyLine, "{0} estac., {1} ativos | {2} depósitos | {3} praças" },
+                { KeyStatusOutsideTaxisLine, "{0} de LE | {1} fontes LE" },
                 { KeyStatusTaxiPurposeLine,
                     "{0} lazer | {1} casa | {2} trab. |\n" +
                     "{3} escola | {4} compras | {5} outro"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} cidade ({1} bloq.) | {2} CE ({3} bloq.) |\n" +
-                    "{4} oferta local | {5} oferta CE | {6} praça"
+                    "{0} cidade ({1} bloq.) | {2} LE ({3} bloq.) |\n" +
+                    "{4} oferta local | {5} oferta LE | {6} praça"
                 },
                 { KeyStatusTaxiStandsLine, "{0} espera" },
                 { KeyStatusTaxiFleetLine,
                     "{0} viagem | {1} espera | {2} regresso |\n" +
-                    "{3} despacho | {4} a caminho | {5} parados"
+                    "{3} despacho | {4} a caminho | {5} estac."
                 },
                 { KeyStatusCoverageLine, "{0} local | {1} pendular | {2} turista" },
                 { KeyStatusWorkDoneLine, "{0} bloq. | {1} livres | {2} pedidos parados" },

@@ -180,13 +180,13 @@ namespace TaxiTraffic
                 // CITY TRANSIT
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyPassengers1)), "ประชาชน" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusMonthlyPassengers1)),
-                    "<แท็กซี่> | <รถบัส> | <รถราง> | <รถไฟ> | <รถไฟใต้ดิน> | <อากาศ>\n" +
+                    "<แท็กซี่> | <รถบัส> | <รถราง> | <รถไฟ> | <รถไฟใต้ดิน> | <เครื่องบิน>\n" +
                     "**เที่ยวของประชาชนต่อเดือนจากมุมมองข้อมูลการขนส่งของเกม**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyTourists)), "นักท่องเที่ยว" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusMonthlyTourists)),
-                    "<แท็กซี่> | <รถบัส> | <รถราง> | <รถไฟ> | <รถไฟใต้ดิน> | <อากาศ>\n" +
+                    "<แท็กซี่> | <รถบัส> | <รถราง> | <รถไฟ> | <รถไฟใต้ดิน> | <เครื่องบิน>\n" +
                     "**เที่ยวของนักท่องเที่ยวต่อเดือนจากมุมมองข้อมูลการขนส่งของเกม**"
                 },
 
@@ -239,8 +239,8 @@ namespace TaxiTraffic
 #endif
 
                 // Status row format strings
-                { KeyStatusCitizensLine, "{0} แท็กซี่ | {1} บัส | {2} ราง |\n{3} รถไฟ | {4} ใต้ดิน | {5} อากาศ" },
-                { KeyStatusTouristsLine, "{0} แท็กซี่ | {1} บัส | {2} ราง |\n{3} รถไฟ | {4} ใต้ดิน | {5} อากาศ" },
+                { KeyStatusCitizensLine, "{0} แท็กซี่ | {1} บัส | {2} ราง |\n{3} รถไฟ | {4} ใต้ดิน | {5} บิน" },
+                { KeyStatusTouristsLine, "{0} แท็กซี่ | {1} บัส | {2} ราง |\n{3} รถไฟ | {4} ใต้ดิน | {5} บิน" },
                 { KeyStatusTotalsLine, "{0} รอ | {1} นักท่องฯ/ด. | {2} ประชาชน/ด." },
                 { KeyStatusPassengersLine, "{0} รวม | {1} ในเมือง | {2} OC" },
                 { KeyStatusTaxiSupplyLine, "{0} จอด, {1} ใช้งาน | {2} อู่ | {3} จุด" },
@@ -258,7 +258,7 @@ namespace TaxiTraffic
                     "{0} รับผู้โดยสาร | {1} รอ | {2} กลับ |\n" +
                     "{3} ส่งงาน | {4} ระหว่างทาง | {5} จอด"
                 },
-                { KeyStatusCoverageLine, "{0} ในเมือง | {1} เดินทาง | {2} ท่องเที่ยว" },
+                { KeyStatusCoverageLine, "{0} ในเมือง | {1} เข้าเมือง | {2} ท่องเที่ยว" },
                 { KeyStatusWorkDoneLine, "{0} บล็อก | {1} ปลด | {2} หยุดคำขอ" },
                 { KeyStatusSnapshotLine, "อัปเดต {0}" },
 

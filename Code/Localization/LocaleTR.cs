@@ -197,7 +197,7 @@ namespace TaxiTraffic
                 },
 
                 // LAST UPDATE
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusCoverage1)), "Şimdi engelli" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusCoverage1)), "Engellenenler" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusCoverage1)),
                     "<Yerel> | <Gidip gelen> | <Turist>\n" +
                     "**Taxi Traffic tarafından işaretlenmiş aktif cimler. Şehrin toplam nüfusu değildir.**"
@@ -205,7 +205,7 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusWorkDone1)), "Son değişiklikler" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusWorkDone1)),
-                    "<Engelli> = yeni taksiden kaçınanlar.\n" +
+                    "<Engellenen> = yeni taksiden kaçınanlar.\n" +
                     "<Serbest> = normal taksi seçimine dönenler.\n" +
                     "<Durdurulan istek> = Taxi Traffic'in engellediği taksi çağrıları."
                 },
@@ -227,7 +227,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)),
                     "DEV kontrolü.\n" +
                     "Aktif cimler = simülasyondaki fiziksel cim ajanları.\n" +
-                    "TT engelli = Taxi Traffic sahiplik işareti.\n" +
+                    "TT engellenen = Taxi Traffic sahiplik işareti.\n" +
                     "IgnoreTaxi şimdi = o andaki gerçek vanilla bayrağı."
                 },
 
