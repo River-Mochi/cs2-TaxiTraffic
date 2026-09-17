@@ -13,6 +13,8 @@ using Game.Citizens;
 using Game.Common;
 using Game.Creatures;
 using Game.Events;
+using Game.Pathfind;
+using Game.Simulation;
 using Game.Tools;
 using Unity.Entities;
 
@@ -23,6 +25,22 @@ namespace TaxiTraffic
         private void UpdateStatusSnapshot(bool detailed)
         {
             ClearSnapshotValues();
+
+            TaxiAvoidanceData avoidanceData = default;
+            bool scanBlockedState = false;
+            TaxiSettings? setting = detailed ? Mod.Setting : null;
+
+            if (setting != null)
+            {
+                scanBlockedState =
+                    setting.ResidentsAvoidTaxis >
+                        TaxiSettings.kTaxiAvoidPercentMin ||
+                    setting.BlockCommuters ||
+                    setting.BlockTourists;
+
+                if (scanBlockedState)
+                    avoidanceData = CreateTaxiAvoidanceData(setting);
+            }
 
             UpdateStatusMonthlyPassengers();
             UpdateStatusTaxiDepotAndStandCounts();
@@ -73,6 +91,14 @@ namespace TaxiTraffic
                 {
                     s_StatusResidentsIgnoreTaxi++;
                 }
+
+                if (scanBlockedState)
+                {
+                    UpdateDetailedBlockedState(
+                        entity,
+                        resident,
+                        avoidanceData);
+                }
             }
 
             // Lightweight player-facing waiting total.
@@ -96,6 +122,52 @@ namespace TaxiTraffic
                 UpdateDetailedStatusRequests();
                 UpdateDetailedTaxiStandWaiting();
             }
+        }
+
+        private void UpdateDetailedBlockedState(
+            Entity entity,
+            Resident resident,
+            TaxiAvoidanceData avoidanceData)
+        {
+            ResidentFlags flags = resident.m_Flags;
+
+            // Match the enforcement pass: residents already in a vehicle or
+            // waiting for active transport are observed as active trips, not as
+            // blocked taxi demand that enforcement should clear.
+            if (SystemAPI.HasComponent<CurrentVehicle>(entity) ||
+                (flags &
+                 (ResidentFlags.InVehicle |
+                  ResidentFlags.WaitingTransport)) != 0 ||
+                !avoidanceData.ShouldAvoid(resident))
+            {
+                return;
+            }
+
+            if (SystemAPI.HasComponent<RideNeeder>(entity))
+                s_StatusBlockedRideNeeders++;
+
+            if (!SystemAPI.HasComponent<HumanCurrentLane>(entity))
+                return;
+
+            HumanCurrentLane lane =
+                SystemAPI.GetComponentRO<HumanCurrentLane>(entity).ValueRO;
+
+            if ((lane.m_Flags & CreatureLaneFlags.Taxi) == 0)
+                return;
+
+            s_StatusBlockedTaxiLaneWaiters++;
+
+            if (!SystemAPI.HasComponent<PathOwner>(entity))
+                return;
+
+            PathFlags pathFlags =
+                SystemAPI.GetComponentRO<PathOwner>(entity).ValueRO.m_State;
+
+            if ((pathFlags & PathFlags.Failed) != 0)
+                s_StatusBlockedTaxiPathsFailed++;
+
+            if ((pathFlags & PathFlags.Obsolete) != 0)
+                s_StatusBlockedTaxiPathsObsolete++;
         }
 
         private void GetResidentGroup(

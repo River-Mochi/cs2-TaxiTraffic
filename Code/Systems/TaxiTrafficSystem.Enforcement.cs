@@ -26,12 +26,14 @@ namespace TaxiTraffic
             out int lateAppliedIgnoreTaxi,
             out int stoppedRideNeeders,
             out int existingTaxiRequestsStopped,
-            out int repathedTaxiWaiters)
+            out int repathedTaxiWaiters,
+            out int dispatchedSkipped)
         {
             lateAppliedIgnoreTaxi = 0;
             stoppedRideNeeders = 0;
             existingTaxiRequestsStopped = 0;
             repathedTaxiWaiters = 0;
+            dispatchedSkipped = 0;
 
             if (m_RideNeederQuery.IsEmptyIgnoreFilter)
                 return;
@@ -40,6 +42,7 @@ namespace TaxiTraffic
             m_EnforcementCounters[1] = 0;
             m_EnforcementCounters[2] = 0;
             m_EnforcementCounters[3] = 0;
+            m_EnforcementCounters[4] = 0;
 
             using EntityCommandBuffer buffer = new(Allocator.TempJob);
 
@@ -81,6 +84,7 @@ namespace TaxiTraffic
             stoppedRideNeeders = m_EnforcementCounters[1];
             existingTaxiRequestsStopped = m_EnforcementCounters[2];
             repathedTaxiWaiters = m_EnforcementCounters[3];
+            dispatchedSkipped = m_EnforcementCounters[4];
         }
 
         [BurstCompile]
@@ -144,6 +148,7 @@ namespace TaxiTraffic
                 int stopped = 0;
                 int existingRequests = 0;
                 int repathed = 0;
+                int dispatchedSkipped = 0;
 
                 ChunkEntityEnumerator enumerator =
                     new(
@@ -175,6 +180,7 @@ namespace TaxiTraffic
                     if (requestEntity != Entity.Null &&
                         m_DispatchedLookup.HasComponent(requestEntity))
                     {
+                        dispatchedSkipped++;
                         continue;
                     }
 
@@ -250,6 +256,9 @@ namespace TaxiTraffic
 
                 if (repathed != 0)
                     m_Counters[3] += repathed;
+
+                if (dispatchedSkipped != 0)
+                    m_Counters[4] += dispatchedSkipped;
             }
         }
     }

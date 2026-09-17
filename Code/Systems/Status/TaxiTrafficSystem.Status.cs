@@ -124,11 +124,19 @@ namespace TaxiTraffic
         internal static int s_StatusLastRideNeedersStopped;
         internal static int s_StatusLastTaxiRequestsStopped;
         internal static int s_StatusLastTaxiWaitersRepathed;
+        internal static int s_StatusLastDispatchedSkipped;
 
         // Cheap cumulative counters since city load.
         internal static int s_StatusRideNeedersStoppedTotal;
         internal static int s_StatusTaxiRequestsStoppedTotal;
         internal static int s_StatusTaxiWaitersRepathedTotal;
+        internal static int s_StatusDispatchedSkippedTotal;
+
+        // Detailed status-refresh-only compatibility diagnostics.
+        internal static int s_StatusBlockedRideNeeders;
+        internal static int s_StatusBlockedTaxiLaneWaiters;
+        internal static int s_StatusBlockedTaxiPathsFailed;
+        internal static int s_StatusBlockedTaxiPathsObsolete;
 
         private Game.Simulation.CityStatisticsSystem? m_CityStatisticsSystem;
         private Game.Simulation.SimulationSystem? m_SimulationSystem;
@@ -170,6 +178,7 @@ namespace TaxiTraffic
             s_StatusRideNeedersStoppedTotal = 0;
             s_StatusTaxiRequestsStoppedTotal = 0;
             s_StatusTaxiWaitersRepathedTotal = 0;
+            s_StatusDispatchedSkippedTotal = 0;
 
             try
             {
@@ -284,6 +293,11 @@ namespace TaxiTraffic
             s_StatusTaxiDepotsOutside = 0;
             s_StatusTaxiDepotsWithDispatchCenter = 0;
 
+            s_StatusBlockedRideNeeders = 0;
+            s_StatusBlockedTaxiLaneWaiters = 0;
+            s_StatusBlockedTaxiPathsFailed = 0;
+            s_StatusBlockedTaxiPathsObsolete = 0;
+
             s_InfoTaxiTourist = 0;
             s_InfoTaxiCitizen = 0;
             s_InfoBusTourist = 0;
@@ -312,6 +326,7 @@ namespace TaxiTraffic
             s_StatusLastRideNeedersStopped = 0;
             s_StatusLastTaxiRequestsStopped = 0;
             s_StatusLastTaxiWaitersRepathed = 0;
+            s_StatusLastDispatchedSkipped = 0;
         }
 
         internal static void AutoRequestStatusRefreshOnRead()
@@ -455,7 +470,8 @@ namespace TaxiTraffic
             return s_StatusLastAppliedIgnoreTaxi != 0 ||
                    s_StatusLastRemovedIgnoreTaxi != 0 ||
                    s_StatusLastRideNeedersStopped != 0 ||
-                   s_StatusRideNeedersStoppedTotal != 0;
+                   s_StatusRideNeedersStoppedTotal != 0 ||
+                   s_StatusDispatchedSkippedTotal != 0;
         }
 
         internal static string GetActivityNotReadyText()

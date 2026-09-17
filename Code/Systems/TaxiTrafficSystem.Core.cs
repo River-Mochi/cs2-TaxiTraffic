@@ -125,7 +125,7 @@ namespace TaxiTraffic
 
             m_EnforcementCounters =
                 new NativeArray<int>(
-                    4,
+                    5,
                     Allocator.Persistent,
                     NativeArrayOptions.ClearMemory);
 
@@ -207,6 +207,7 @@ namespace TaxiTraffic
             int stoppedRideNeeders = 0;
             int existingTaxiRequestsStopped = 0;
             int repathedTaxiWaiters = 0;
+            int dispatchedSkipped = 0;
 
             bool residentControlActive =
                 setting.ResidentsAvoidTaxis > TaxiSettings.kTaxiAvoidPercentMin ||
@@ -289,7 +290,8 @@ namespace TaxiTraffic
                     out int lateAppliedIgnoreTaxi,
                     out stoppedRideNeeders,
                     out existingTaxiRequestsStopped,
-                    out repathedTaxiWaiters);
+                    out repathedTaxiWaiters,
+                    out dispatchedSkipped);
 
                 appliedIgnoreTaxi += lateAppliedIgnoreTaxi;
 
@@ -322,11 +324,13 @@ namespace TaxiTraffic
                 reappliedIgnoreTaxi,
                 stoppedRideNeeders,
                 existingTaxiRequestsStopped,
-                repathedTaxiWaiters);
+                repathedTaxiWaiters,
+                dispatchedSkipped);
 
             s_StatusRideNeedersStoppedTotal += stoppedRideNeeders;
             s_StatusTaxiRequestsStoppedTotal += existingTaxiRequestsStopped;
             s_StatusTaxiWaitersRepathedTotal += repathedTaxiWaiters;
+            s_StatusDispatchedSkippedTotal += dispatchedSkipped;
 
             if (setting.EnableDebugLogging)
                 TickDebugLogging(setting, kDebugSummaryIntervalSeconds);
@@ -342,7 +346,8 @@ namespace TaxiTraffic
             int reappliedIgnoreTaxi,
             int stoppedRideNeeders,
             int existingTaxiRequestsStopped,
-            int repathedTaxiWaiters)
+            int repathedTaxiWaiters,
+            int dispatchedSkipped)
         {
             s_StatusLastAppliedIgnoreTaxi = appliedIgnoreTaxi;
             s_StatusLastRemovedIgnoreTaxi = removedIgnoreTaxi;
@@ -350,6 +355,7 @@ namespace TaxiTraffic
             s_StatusLastRideNeedersStopped = stoppedRideNeeders;
             s_StatusLastTaxiRequestsStopped = existingTaxiRequestsStopped;
             s_StatusLastTaxiWaitersRepathed = repathedTaxiWaiters;
+            s_StatusLastDispatchedSkipped = dispatchedSkipped;
         }
     }
 }

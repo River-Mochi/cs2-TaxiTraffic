@@ -431,11 +431,20 @@ namespace TaxiTraffic
                 $"{TaxiTrafficSystem.s_StatusPassengerHasResident} " +
                 "resident passengers IgnoreTaxi");
 
+            sb.AppendLine("Compatibility/test:");
             sb.AppendLine(
-                "Control since load: " +
-                $"{TaxiTrafficSystem.s_StatusRideNeedersStoppedTotal} RideNeeders stopped | " +
-                $"{TaxiTrafficSystem.s_StatusTaxiRequestsStoppedTotal} existing taxi requests intercepted | " +
-                $"{TaxiTrafficSystem.s_StatusTaxiWaitersRepathedTotal} taxi paths repathed");
+                "Enforcement: " +
+                $"RideNeeders stopped total={TaxiTrafficSystem.s_StatusRideNeedersStoppedTotal} | " +
+                $"Taxi requests intercepted total={TaxiTrafficSystem.s_StatusTaxiRequestsStoppedTotal} | " +
+                $"Taxi waiters repathed total={TaxiTrafficSystem.s_StatusTaxiWaitersRepathedTotal} | " +
+                $"Dispatched skipped total={TaxiTrafficSystem.s_StatusDispatchedSkippedTotal}");
+
+            sb.AppendLine(
+                "Current blocked state: " +
+                $"RideNeeders={TaxiTrafficSystem.s_StatusBlockedRideNeeders} | " +
+                $"TaxiLaneWaiters={TaxiTrafficSystem.s_StatusBlockedTaxiLaneWaiters} | " +
+                $"FailedTaxiPaths={TaxiTrafficSystem.s_StatusBlockedTaxiPathsFailed} | " +
+                $"ObsoleteTaxiPaths={TaxiTrafficSystem.s_StatusBlockedTaxiPathsObsolete}");
 
             sb.AppendLine(
                 "Last control pass: " +
@@ -444,7 +453,8 @@ namespace TaxiTraffic
                 $"{TaxiTrafficSystem.s_StatusLastReappliedIgnoreTaxi} re-applied | " +
                 $"{TaxiTrafficSystem.s_StatusLastRideNeedersStopped} RideNeeders stopped | " +
                 $"{TaxiTrafficSystem.s_StatusLastTaxiRequestsStopped} requests intercepted | " +
-                $"{TaxiTrafficSystem.s_StatusLastTaxiWaitersRepathed} repathed");
+                $"{TaxiTrafficSystem.s_StatusLastTaxiWaitersRepathed} repathed | " +
+                $"{TaxiTrafficSystem.s_StatusLastDispatchedSkipped} dispatched skipped");
 
             sb.Append("Snapshot: ");
             sb.Append(StatusValue(
