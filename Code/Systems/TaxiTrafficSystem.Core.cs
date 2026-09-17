@@ -330,7 +330,6 @@ namespace TaxiTraffic
             s_StatusRideNeedersStoppedTotal += stoppedRideNeeders;
             s_StatusTaxiRequestsStoppedTotal += existingTaxiRequestsStopped;
             s_StatusTaxiWaitersRepathedTotal += repathedTaxiWaiters;
-            s_StatusDispatchedSkippedTotal += dispatchedSkipped;
 
             if (setting.EnableDebugLogging)
                 TickDebugLogging(setting, kDebugSummaryIntervalSeconds);

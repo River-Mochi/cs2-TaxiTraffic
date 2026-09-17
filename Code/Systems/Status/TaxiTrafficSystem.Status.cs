@@ -130,7 +130,6 @@ namespace TaxiTraffic
         internal static int s_StatusRideNeedersStoppedTotal;
         internal static int s_StatusTaxiRequestsStoppedTotal;
         internal static int s_StatusTaxiWaitersRepathedTotal;
-        internal static int s_StatusDispatchedSkippedTotal;
 
         // Detailed status-refresh-only compatibility diagnostics.
         internal static int s_StatusBlockedRideNeeders;
@@ -178,7 +177,6 @@ namespace TaxiTraffic
             s_StatusRideNeedersStoppedTotal = 0;
             s_StatusTaxiRequestsStoppedTotal = 0;
             s_StatusTaxiWaitersRepathedTotal = 0;
-            s_StatusDispatchedSkippedTotal = 0;
 
             try
             {
@@ -471,7 +469,7 @@ namespace TaxiTraffic
                    s_StatusLastRemovedIgnoreTaxi != 0 ||
                    s_StatusLastRideNeedersStopped != 0 ||
                    s_StatusRideNeedersStoppedTotal != 0 ||
-                   s_StatusDispatchedSkippedTotal != 0;
+                   s_StatusLastDispatchedSkipped != 0;
         }
 
         internal static string GetActivityNotReadyText()

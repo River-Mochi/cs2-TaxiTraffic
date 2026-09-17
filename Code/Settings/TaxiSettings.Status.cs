@@ -437,7 +437,8 @@ namespace TaxiTraffic
                 $"RideNeeders stopped total={TaxiTrafficSystem.s_StatusRideNeedersStoppedTotal} | " +
                 $"Taxi requests intercepted total={TaxiTrafficSystem.s_StatusTaxiRequestsStoppedTotal} | " +
                 $"Taxi waiters repathed total={TaxiTrafficSystem.s_StatusTaxiWaitersRepathedTotal} | " +
-                $"Dispatched skipped total={TaxiTrafficSystem.s_StatusDispatchedSkippedTotal}");
+                "Already dispatched allowed to finish=" +
+                $"{TaxiTrafficSystem.s_StatusLastDispatchedSkipped}");
 
             sb.AppendLine(
                 "Current blocked state: " +
@@ -453,8 +454,7 @@ namespace TaxiTraffic
                 $"{TaxiTrafficSystem.s_StatusLastReappliedIgnoreTaxi} re-applied | " +
                 $"{TaxiTrafficSystem.s_StatusLastRideNeedersStopped} RideNeeders stopped | " +
                 $"{TaxiTrafficSystem.s_StatusLastTaxiRequestsStopped} requests intercepted | " +
-                $"{TaxiTrafficSystem.s_StatusLastTaxiWaitersRepathed} repathed | " +
-                $"{TaxiTrafficSystem.s_StatusLastDispatchedSkipped} dispatched skipped");
+                $"{TaxiTrafficSystem.s_StatusLastTaxiWaitersRepathed} repathed");
 
             sb.Append("Snapshot: ");
             sb.Append(StatusValue(

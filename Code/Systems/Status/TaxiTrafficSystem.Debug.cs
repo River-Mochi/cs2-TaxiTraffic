@@ -231,8 +231,8 @@ namespace TaxiTraffic
                     $"control[rideNeedersStopped={s_StatusRideNeedersStoppedTotal}, " +
                     $"requestsIntercepted={s_StatusTaxiRequestsStoppedTotal}, " +
                     $"repathed={s_StatusTaxiWaitersRepathedTotal}, " +
-                    $"dispatchedSkipped={s_StatusDispatchedSkippedTotal} total/" +
-                    $"{s_StatusLastDispatchedSkipped} last], " +
+                    "alreadyDispatchedAllowedToFinish=" +
+                    $"{s_StatusLastDispatchedSkipped}], " +
 
                     $"currentBlocked[rideNeeders={s_StatusBlockedRideNeeders}, " +
                     $"taxiLaneWaiters={s_StatusBlockedTaxiLaneWaiters}, " +
