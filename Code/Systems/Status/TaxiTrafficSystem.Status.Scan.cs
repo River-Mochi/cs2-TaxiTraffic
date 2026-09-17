@@ -14,7 +14,6 @@ using Game.Common;
 using Game.Creatures;
 using Game.Events;
 using Game.Pathfind;
-using Game.Simulation;
 using Game.Tools;
 using Unity.Entities;
 
@@ -28,9 +27,8 @@ namespace TaxiTraffic
 
             TaxiAvoidanceData avoidanceData = default;
             bool scanBlockedState = false;
-            TaxiSettings? setting = detailed ? Mod.Setting : null;
 
-            if (setting != null)
+            if (detailed && Mod.Setting is TaxiSettings setting)
             {
                 scanBlockedState =
                     setting.ResidentsAvoidTaxis >
