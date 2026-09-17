@@ -101,11 +101,11 @@ namespace TaxiTraffic
                     localizationManager.AddSource("zh-HANT", new LocaleZH_HANT(setting));
 
                     // Future translations.
-                    // Some require a localization mod because CS2 does not
-                    // officially expose every language in the normal language menu.
-                    // localizationManager.AddSource("pt-PT", new LocalePT_PT(setting));
-                    // localizationManager.AddSource("th-TH", new LocaleTH(setting));
-                    // localizationManager.AddSource("tr-TR", new LocaleTR(setting));
+                    // requires a localization mod because CS2 does not officially
+                    // expose every language in the normal language menu.
+                    localizationManager.AddSource("pt-PT", new LocalePT_PT(setting));
+                    localizationManager.AddSource("th-TH", new LocaleTH(setting));
+                    localizationManager.AddSource("tr-TR", new LocaleTR(setting));
                     // localizationManager.AddSource("uk-UA", new LocaleUK(setting));
                     // localizationManager.AddSource("vi-VN", new LocaleVI(setting));
                 }
