@@ -9,7 +9,6 @@
 // File: Systems/TaxiTrafficSystem.Enforcement.cs
 // Purpose: stop new on-demand taxi requests for cims Taxi Traffic blocks.
 
-using Game.Common;
 using Game.Creatures;
 using Game.Pathfind;
 using Game.Simulation;
@@ -42,11 +41,9 @@ namespace TaxiTraffic
             m_EnforcementCounters[2] = 0;
             m_EnforcementCounters[3] = 0;
 
-            using EntityCommandBuffer buffer =
-                new EntityCommandBuffer(Allocator.TempJob);
+            using EntityCommandBuffer buffer = new(Allocator.TempJob);
 
-            StopBlockedRideNeedersJob job =
-                new StopBlockedRideNeedersJob
+            StopBlockedRideNeedersJob job = new()
                 {
                     m_EntityType =
                         SystemAPI.GetEntityTypeHandle(),
@@ -149,7 +146,7 @@ namespace TaxiTraffic
                 int repathed = 0;
 
                 ChunkEntityEnumerator enumerator =
-                    new ChunkEntityEnumerator(
+                    new(
                         useEnabledMask,
                         chunkEnabledMask,
                         chunk.Count);

@@ -190,11 +190,9 @@ namespace TaxiTraffic
             m_EligibilityCounters[1] = 0;
             m_EligibilityCounters[2] = 0;
 
-            using EntityCommandBuffer buffer =
-                new EntityCommandBuffer(Allocator.TempJob);
+            using EntityCommandBuffer buffer = new(Allocator.TempJob);
 
-            MaximumAvoidanceEligibilityJob job =
-                new MaximumAvoidanceEligibilityJob
+            MaximumAvoidanceEligibilityJob job = new()
                 {
                     m_EntityType =
                         SystemAPI.GetEntityTypeHandle(),
@@ -243,7 +241,7 @@ namespace TaxiTraffic
                 int applied = 0;
 
                 ChunkEntityEnumerator enumerator =
-                    new ChunkEntityEnumerator(
+                    new(
                         useEnabledMask,
                         chunkEnabledMask,
                         chunk.Count);
@@ -288,11 +286,9 @@ namespace TaxiTraffic
             m_EligibilityCounters[1] = 0;
             m_EligibilityCounters[2] = 0;
 
-            using EntityCommandBuffer buffer =
-                new EntityCommandBuffer(Allocator.TempJob);
+            using EntityCommandBuffer buffer = new(Allocator.TempJob);
 
-            ResidentTaxiEligibilityJob job =
-                new ResidentTaxiEligibilityJob
+            ResidentTaxiEligibilityJob job = new()
                 {
                     m_EntityType =
                         SystemAPI.GetEntityTypeHandle(),
@@ -357,8 +353,7 @@ namespace TaxiTraffic
                 int removed = 0;
                 int reapplied = 0;
 
-                ChunkEntityEnumerator enumerator =
-                    new ChunkEntityEnumerator(
+                ChunkEntityEnumerator enumerator = new(
                         useEnabledMask,
                         chunkEnabledMask,
                         chunk.Count);
@@ -447,8 +442,7 @@ namespace TaxiTraffic
                 new UpdateFrame(
                     simulationFrame % kResidentUpdateFrameCount));
 
-            ReapplyOwnedTaxiBlocksJob job =
-                new ReapplyOwnedTaxiBlocksJob
+            ReapplyOwnedTaxiBlocksJob job = new()
                 {
                     m_ResidentType =
                         SystemAPI.GetComponentTypeHandle<Resident>(),
@@ -481,7 +475,7 @@ namespace TaxiTraffic
 
                 int reapplied = 0;
                 ChunkEntityEnumerator enumerator =
-                    new ChunkEntityEnumerator(
+                    new(
                         useEnabledMask,
                         chunkEnabledMask,
                         chunk.Count);
