@@ -48,7 +48,7 @@ As more asked for it, I finally pushed through to get it public ready (testing, 
 - In testing, with the slider full 100% + Commuter ON + Tourist ON, it also reduced OC taxi traffic because of reduced taxi requests.
 - Fun Fact: since game update 1.5.7, some moving-in/out cims that previously used taxis are now moved instantly; pets are teleported too. Even so, taxi tuning is still useful for all the other trips.
 
-**10+ Languages**
+**12+ Languages**
 
 Français, Deutsch, Español, Italiano, Polski, Português Brazilian
 日本語, 한국어, 简体中文, 繁體中文
@@ -66,7 +66,7 @@ tags: taxi service disable taxi use, reduce taxis.
 <!--Link to the forum post where the mod can be discussed-->
 <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/taxi-traffic.1939962/" />
 <!--Version of the mod-->
-<ModVersion Value="0.5.2" />
+<ModVersion Value="0.5.3" />
 <!--Recommended version of the base game to use the mod-->
 <GameVersion Value="1.6.*" />
 <!--Dependency for the mod, can be set multiple times-->
@@ -76,8 +76,8 @@ tags: taxi service disable taxi use, reduce taxis.
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog Value="" />
 <ChangeLog>
-- Tested/compatible with game update 1.6.2f1
-- minor refactor, added report info.
+- Added translations Turkish, Thai, PT-PT
+- update 1.6.2f1
 </ChangeLog>
 <!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 <ExternalLink Type="discord" Url="https://discord.gg/gwXgvtyhjc" />
