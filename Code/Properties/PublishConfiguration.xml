@@ -4,7 +4,7 @@
 <!--Name of the mod to display to players-->
 <DisplayName Value="Taxi Traffic" />
 <!--Short description of the mod-->
-<ShortDescription Value="Reduce Taxi use and Traffic for Citizens, Tourists, and Commuters." />
+<ShortDescription Value="Manage Taxi use and Traffic for Citizens, Tourists, or Commuters." />
 <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 <!--LongDescription Value="This is a long description" /-->
 <LongDescription>
@@ -77,7 +77,7 @@ tags: taxi service disable taxi use, reduce taxis.
 <ChangeLog Value="" />
 <ChangeLog>
 - Tested/compatible with game update 1.6.2f1
-- minor refactor and tidy
+- minor refactor, added report info, and tidy
 </ChangeLog>
 <!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 <ExternalLink Type="discord" Url="https://discord.gg/gwXgvtyhjc" />
