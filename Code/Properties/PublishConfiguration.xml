@@ -77,7 +77,7 @@ tags: taxi service disable taxi use, reduce taxis.
 <ChangeLog Value="" />
 <ChangeLog>
 - Tested/compatible with game update 1.6.2f1
-- minor refactor, added report info, and tidy
+- minor refactor, added report info.
 </ChangeLog>
 <!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 <ExternalLink Type="discord" Url="https://discord.gg/gwXgvtyhjc" />
