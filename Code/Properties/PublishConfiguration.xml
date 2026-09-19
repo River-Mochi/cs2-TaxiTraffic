@@ -16,8 +16,9 @@ I started this mod in **2025** for personal use, and only gave it to a few peopl
 As more asked for it, I finally pushed through to get it public ready (testing, images, tooltips).
 
 ### Adjustable
-- ✅ **Residents avoid taxis**, set range **0% - 100%** maximum.
-- ✅ **Commuters** avoid taxis toggle..
+* ✅ **Residents avoid taxis**, set range **0% - 100%** maximum.
+* ✅ **Commuters** avoid taxis toggle.
+* ✅ **Tourists** avoid taxis toggle.
 
 ### What to expect
 - Taxi traffic drops after the city runs for a bit.
