@@ -82,13 +82,13 @@ namespace TaxiTraffic
                     "<0%> = 正常使用出租车。\n" +
                     "<25–75%> = 避开出租车的本地家庭比例。\n" +
                     "<100%> = 所有符合条件的本地居民都避开出租车。\n" +
-                    "**仍可能看到少量出租车。进行中的行程和出租车站的正常待命可以自然结束，而且某些游戏系统也可能独立呼叫出租车。**"
+                    "**仍可能看到少量出租车。进行中的行程和出租车站的正常待命可以自然结束，某些游戏系统也可能独立呼叫出租车。**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "通勤者避开出租车" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockCommuters)),
                     "**开** = 通勤者避开出租车。\n" +
-                    "**关** = 通勤者正常使用出租车。\n"+
+                    "**关** = 通勤者正常使用出租车。\n" +
                     "给游戏一点时间调整。"
                 },
 
@@ -151,8 +151,8 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "当前出租车乘客。\n" +
                     "<本地> = 住在你城市里的乘客。\n" +
-                    "<OC> = 来自外部连接的通勤者和游客。\n"+
-                    "由于出租车内可能有宠物，总数可能会更高。"
+                    "<OC> = 来自外部连接的通勤者和游客。\n" +
+                    "**由于出租车内可能有宠物，总数可能会更高。**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "出租车供应" },
@@ -160,15 +160,15 @@ namespace TaxiTraffic
                     "<已停放> = 当前停放的出租车。\n" +
                     "<活跃> = 未停放的出租车，包括在出租车站待命的车辆。\n" +
                     "<本地车库> = 玩家建造的出租车车库。\n" +
-                    "<车站> = 指定的出租车上下客/等候区域。"
+                    "<站点> = 指定的出租车上下客/等候区域。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)), "外来出租车" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)),
                     "<来自 OC> = 从外部连接来的出租车。\n" +
-                    "<OC 来源> = 可以派出租车的外部连接（可以理解成看不见的车库）。\n" +
+                    "<OC 来源> = 可以派出租车的外部连接（可理解成看不见的车库）。\n" +
                     "**如果没有本地车库，游戏可以为本地请求派来 OC 出租车。**\n" +
-                    "**测试中，将出租车规避设到最大后，进入城市的 OC 出租车很少或没有。**"
+                    "**测试中，将所有避开出租车选项设到最大后，进入城市的 OC 出租车很少或没有。**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "出租车用途" },
@@ -192,7 +192,7 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyTotal)), "总计" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusMonthlyTotal)),
-                    "<等待中> = 当前正在等待公共交通的市民。\n" +
+                    "<等待中> = 当前等待公共交通的人。\n" +
                     "<游客/月> 和 <市民/月> = 每月公共交通总乘客数。"
                 },
 
@@ -218,8 +218,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "将状态写入日志" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**把更详细的状态报告写入 Taxi Traffic 日志。**"
-                },        
-
+                },
 
 #if DEBUG
                 // Advanced Debug (DEV builds only)
@@ -227,7 +226,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)),
                     "DEV 检查。\n" +
                     "活跃市民 = 当前模拟中实际存在的市民实体。\n" +
-                    "TT 屏蔽 = Taxi Traffic 的所有权标记。\n" +
+                    "TT 屏蔽 = Taxi Traffic 的标记。\n" +
                     "当前 IgnoreTaxi = 此刻实际的原版标志。"
                 },
 
@@ -243,7 +242,7 @@ namespace TaxiTraffic
                 { KeyStatusTouristsLine, "{0} 出租车 | {1} 公交 | {2} 电车 |\n{3} 火车 | {4} 地铁 | {5} 飞机" },
                 { KeyStatusTotalsLine, "{0} 等待中 | {1} 游客/月 | {2} 市民/月" },
                 { KeyStatusPassengersLine, "{0} 总计 | {1} 本地 | {2} OC" },
-                { KeyStatusTaxiSupplyLine, "{0} 已停放, {1} 活跃 | {2} 本地车库 | {3} 车站" },
+                { KeyStatusTaxiSupplyLine, "{0} 已停放, {1} 活跃 | {2} 本地车库 | {3} 站点" },
                 { KeyStatusOutsideTaxisLine, "{0} 来自 OC | {1} OC 来源" },
                 { KeyStatusTaxiPurposeLine,
                     "{0} 休闲 | {1} 回家 | {2} 上班 |\n" +
@@ -251,7 +250,7 @@ namespace TaxiTraffic
                 },
                 { KeyStatusRequestsLine,
                     "{0} 本地乘客 ({1} 屏蔽) | {2} OC 乘客 ({3} 屏蔽) |\n" +
-                    "{4} 本地供应 | {5} OC 供应 | {6} 车站"
+                    "{4} 本地供应 | {5} OC 供应 | {6} 站点"
                 },
                 { KeyStatusTaxiStandsLine, "{0} 等待中" },
                 { KeyStatusTaxiFleetLine,

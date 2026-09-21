@@ -7,7 +7,7 @@
 // ================= </copyright> ======================
 
 // File: Localization/LocaleTH.cs
-// Purpose: Thai (th-TH) Options UI text and status format strings.
+// Thai (th-TH) Options UI text and status format strings.
 
 namespace TaxiTraffic
 {
@@ -88,7 +88,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "ผู้เดินทางเข้าเมืองเลี่ยงแท็กซี่" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockCommuters)),
                     "**เปิด** = ผู้เดินทางเข้าเมืองเลี่ยงแท็กซี่\n" +
-                    "**ปิด** = ใช้แท็กซี่ตามปกติสำหรับผู้เดินทางเข้าเมือง\n"+
+                    "**ปิด** = ใช้แท็กซี่ตามปกติสำหรับผู้เดินทางเข้าเมือง\n" +
                     "รอสักครู่ให้ระบบปรับตัว"
                 },
 
@@ -155,7 +155,7 @@ namespace TaxiTraffic
                     "**ยอดรวมอาจสูงขึ้นเพราะสัตว์เลี้ยงในแท็กซี่**"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "จำนวนแท็กซี่" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "แท็กซี่พร้อมใช้" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiSupply)),
                     "<จอด> = แท็กซี่ที่จอดอยู่ตอนนี้\n" +
                     "<ใช้งาน> = แท็กซี่ที่ไม่ได้จอด รวมถึงที่รอในจุดแท็กซี่\n" +
@@ -168,7 +168,7 @@ namespace TaxiTraffic
                     "<จาก OC> = แท็กซี่จากจุดเชื่อมต่อภายนอก\n" +
                     "<แหล่ง OC> = จุดเชื่อมต่อภายนอกที่ส่งแท็กซี่ได้ (เหมือนอู่ที่มองไม่เห็น)\n" +
                     "**ถ้าไม่มีอู่ในเมือง เกมอาจส่งแท็กซี่ OC มารับคำขอในเมืองได้**\n" +
-                    "**ในการทดสอบ เมื่อตั้งการเลี่ยงแท็กซี่สูงสุด พบแท็กซี่ OC เข้าเมืองน้อยมากหรือไม่มีเลย**"
+                    "**ในการทดสอบ เมื่อตั้งตัวเลือกเลี่ยงแท็กซี่ทั้งหมดไว้สูงสุด แท็กซี่ OC เข้าเมืองน้อยมากหรือไม่มีเลย**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "จุดประสงค์แท็กซี่" },
@@ -218,8 +218,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "เขียนสถานะลงบันทึก" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**เขียนรายงานสถานะแบบละเอียดลงบันทึก Taxi Traffic**"
-                },        
-
+                },
 
 #if DEBUG
                 // Advanced Debug (DEV builds only)
@@ -227,7 +226,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)),
                     "ตรวจสอบ DEV\n" +
                     "cim ที่ใช้งาน = ตัวแทน cim ที่อยู่ในระบบจำลองตอนนี้\n" +
-                    "TT บล็อก = เครื่องหมายความเป็นเจ้าของของ Taxi Traffic\n" +
+                    "TT บล็อก = เครื่องหมายของ Taxi Traffic\n" +
                     "IgnoreTaxi ตอนนี้ = แฟล็ก vanilla จริงในขณะนี้"
                 },
 
@@ -250,7 +249,7 @@ namespace TaxiTraffic
                     "{3} เรียน | {4} ซื้อของ | {5} อื่น"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} เมือง ({1} บล็อก) | {2} OC ({3} บล็อก) |\n" +
+                    "{0} ผู้โดยสารเมือง ({1} บล็อก) | {2} ผู้โดยสาร OC ({3} บล็อก) |\n" +
                     "{4} รถในเมือง | {5} รถ OC | {6} จุด"
                 },
                 { KeyStatusTaxiStandsLine, "{0} รอ" },
@@ -258,7 +257,7 @@ namespace TaxiTraffic
                     "{0} รับผู้โดยสาร | {1} รอ | {2} กลับ |\n" +
                     "{3} ส่งงาน | {4} ระหว่างทาง | {5} จอด"
                 },
-                { KeyStatusCoverageLine, "{0} ในเมือง | {1} เข้าเมือง | {2} ท่องเที่ยว" },
+                { KeyStatusCoverageLine, "{0} ในเมือง | {1} เข้าเมือง | {2} นักท่องเที่ยว" },
                 { KeyStatusWorkDoneLine, "{0} บล็อก | {1} ปลด | {2} หยุดคำขอ" },
                 { KeyStatusSnapshotLine, "อัปเดต {0}" },
 

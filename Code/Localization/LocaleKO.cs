@@ -82,26 +82,26 @@ namespace TaxiTraffic
                     "<0%> = 일반 택시 이용.\n" +
                     "<25–75%> = 택시를 피하는 지역 가구 비율.\n" +
                     "<100%> = 대상 지역 주민 모두 택시를 피함.\n" +
-                    "**일부 택시는 여전히 남아 있을 수 있습니다. 진행 중인 탑승과 택시 승강장의 일반 대기는 자연스럽게 끝날 수 있으며, 일부 게임 시스템이 독립적으로 택시를 호출할 수도 있습니다.**"
+                    "**일부 택시는 남아 있을 수 있습니다. 진행 중인 운행과 승강장 대기는 정상적으로 끝나며, 일부 게임 시스템이 별도로 택시를 호출할 수도 있습니다.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "통근자가 택시를 피함" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockCommuters)),
                     "**켜기** = 통근자가 택시를 피함.\n" +
-                    "**끄기** = 통근자는 일반적으로 택시 이용.\n"+
+                    "**끄기** = 일반 택시 이용.\n" +
                     "반영될 때까지 잠시 기다려 주세요."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockTourists)), "관광객이 택시를 피함" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockTourists)),
                     "**켜기** = 관광객이 택시를 피함.\n" +
-                    "**끄기** = 관광객은 일반적으로 택시 이용.\n" +
+                    "**끄기** = 일반 택시 이용.\n" +
                     "반영될 때까지 잠시 기다려 주세요."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ResetToGameDefaults)), "게임 기본값" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.ResetToGameDefaults)),
-                    "주민을 0%로 설정하고 통근자와 관광객의 택시 회피를 끕니다."
+                    "주민을 0%로 하고 통근자와 관광객의 택시 회피를 끕니다."
                 },
 
                 // Status display
@@ -121,29 +121,29 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "보고서 기록" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "상세 진단 스캔을 실행하고 전체 상태 보고서를 모드 로그에 기록합니다."
+                    "상세 진단을 실행하고 전체 상태 보고서를 모드 로그에 기록합니다."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "로그 열기" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.OpenLogFile)),
-                    "모드 로그를 엽니다. 사용할 수 없으면 Logs 폴더를 엽니다."
+                    "모드 로그를 엽니다. 열 수 없으면 Logs 폴더를 엽니다."
                 },
 
                 // ----- STATUS TAB -----
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusNotReadyCityScan)), "도시 스캔을 아직 사용할 수 없습니다." },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusNotReadyCityScan)),
-                    "도시를 열고 시뮬레이션을 잠시 실행한 뒤 옵션 → 상태를 다시 여세요."
+                    "도시를 열고 잠시 실행한 뒤 옵션 → 상태를 다시 여세요."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusNotReadyTaxiScan)), "택시 스캔을 아직 사용할 수 없습니다." },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusNotReadyTaxiScan)),
-                    "도시를 열고 시뮬레이션을 잠시 실행한 뒤 옵션 → 상태를 다시 여세요."
+                    "도시를 열고 잠시 실행한 뒤 옵션 → 상태를 다시 여세요."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusNotReadyLastUpdate)), "아직 기록된 활동이 없습니다." },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusNotReadyLastUpdate)),
-                    "상태가 준비되면 최근 업데이트 정보가 표시됩니다."
+                    "상태가 준비되면 최근 정보가 표시됩니다."
                 },
 
                 // TAXI SCAN
@@ -152,13 +152,13 @@ namespace TaxiTraffic
                     "현재 택시 승객.\n" +
                     "<지역> = 내 도시에 사는 승객.\n" +
                     "<OC> = 외부 연결에서 온 통근자와 관광객.\n" +
-                    "택시에 탄 반려동물 때문에 합계가 더 높을 수 있습니다."
+                    "**택시에 탄 반려동물 때문에 합계가 더 높을 수 있습니다.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "택시 공급" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiSupply)),
                     "<주차> = 현재 주차된 택시.\n" +
-                    "<활성> = 주차되지 않은 택시. 택시 승강장에서 대기 중인 택시도 포함.\n" +
+                    "<활성> = 주차되지 않은 택시. 승강장 대기도 포함.\n" +
                     "<지역 차고지> = 플레이어가 지은 택시 차고지.\n" +
                     "<승강장> = 택시 승차/대기 구역."
                 },
@@ -166,9 +166,9 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)), "외부 택시" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)),
                     "<OC에서> = 외부 연결에서 오는 택시.\n" +
-                    "<OC 공급원> = 택시를 보낼 수 있는 외부 연결(보이지 않는 차고지처럼 생각하면 됩니다).\n" +
+                    "<OC 공급원> = 택시를 보낼 수 있는 외부 연결(보이지 않는 차고지처럼 작동).\n" +
                     "**지역 차고지가 없으면 게임이 지역 요청에 OC 택시를 보낼 수 있습니다.**\n" +
-                    "**테스트에서는 택시 회피를 최대로 설정했을 때 도시로 들어오는 OC 택시가 거의 또는 전혀 없었습니다.**"
+                    "**테스트에서 회피 옵션을 모두 최대로 하면 OC 택시 유입이 거의 없거나 전혀 없었습니다.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "택시 목적" },
@@ -181,13 +181,13 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyPassengers1)), "시민" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusMonthlyPassengers1)),
                     "<택시> | <버스> | <트램> | <기차> | <지하철> | <항공>\n" +
-                    "**게임 교통 정보 보기의 시민 월간 이용 수.**"
+                    "**교통 정보 보기의 시민 월간 이용 수.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyTourists)), "관광객" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusMonthlyTourists)),
                     "<택시> | <버스> | <트램> | <기차> | <지하철> | <항공>\n" +
-                    "**게임 교통 정보 보기의 관광객 월간 이용 수.**"
+                    "**교통 정보 보기의 관광객 월간 이용 수.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyTotal)), "합계" },
@@ -207,19 +207,18 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusWorkDone1)),
                     "<차단> = 새로 택시를 피하도록 설정됨.\n" +
                     "<해제> = 일반 택시 선택으로 돌아감.\n" +
-                    "<중단된 택시 요청> = Taxi Traffic이 중단한 택시 호출."
+                    "<중단된 택시 요청> = Taxi Traffic이 중단한 호출."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusSnapshotMeta)), "업데이트" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusSnapshotMeta)),
-                    "<업데이트> = 이 상태 정보를 확인한 시간."
+                    "<업데이트> = 이 상태를 확인한 시간."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "상태를 로그에 기록" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Taxi Traffic 로그에 더 자세한 상태 보고서를 기록합니다.**"
-                },        
-
+                },
 
 #if DEBUG
                 // Advanced Debug (DEV builds only)
@@ -227,14 +226,14 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)),
                     "DEV 확인용.\n" +
                     "활성 시민 = 현재 시뮬레이션에 실제로 존재하는 시민 에이전트.\n" +
-                    "TT 차단 = Taxi Traffic 소유 마커.\n" +
+                    "TT 차단 = Taxi Traffic 마커.\n" +
                     "현재 IgnoreTaxi = 이 순간의 실제 기본 게임 플래그."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)), "택시 플래그 (dev)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)),
                     "DEV 확인용.\n" +
-                    "순서: dispatch buffer 있음 | 외부에서 | 비활성."
+                    "순서: 배차 버퍼 있음 | 외부에서 | 비활성."
                 },
 #endif
 
@@ -267,7 +266,7 @@ namespace TaxiTraffic
                     "{0} 활성 시민 | {1} TT 차단 | {2} IgnoreTaxi"
                 },
                 { KeyStatusTaxiFlagsDevLine,
-                    "{0} dispatch buf | {1} 외부 | {2} 비활성"
+                    "{0} 배차 버퍼 | {1} 외부 | {2} 비활성"
                 },
 #endif
 
@@ -284,12 +283,12 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenParadoxMods)), "Paradox Mods" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.OpenParadoxMods)),
-                    "브라우저에서 Paradox Mods의 제작자 페이지를 엽니다."
+                    "Paradox Mods의 제작자 페이지를 엽니다."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenDiscord)), "Discord" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.OpenDiscord)),
-                    "브라우저에서 Discord 커뮤니티 지원을 엽니다."
+                    "Discord 지원을 브라우저에서 엽니다."
                 },
             };
         }

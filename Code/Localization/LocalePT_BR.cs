@@ -82,21 +82,21 @@ namespace TaxiTraffic
                     "<0%> = uso normal de táxis.\n" +
                     "<25–75%> = porcentagem de famílias locais que evitam táxis.\n" +
                     "<100%> = todos os moradores locais elegíveis evitam táxis.\n" +
-                    "**Alguns táxis ainda podem continuar circulando. Viagens ativas e a espera normal nos pontos de táxi podem terminar naturalmente, e alguns sistemas do jogo podem chamar táxis de forma independente.**"
+                    "**Alguns táxis ainda podem circular. Viagens ativas e espera normal nos pontos podem terminar, e alguns sistemas do jogo podem chamar táxis por conta própria.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "Quem vem de fora evita táxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockCommuters)),
                     "**ON** = quem vem de fora evita táxis.\n" +
-                    "**OFF** = uso normal de táxis para quem vem de fora.\n"+
-                    "Dê um tempinho para o jogo se ajustar."
+                    "**OFF** = uso normal de táxis para quem vem de fora.\n" +
+                    "Dê um tempinho para ajustar."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockTourists)), "Turistas evitam táxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockTourists)),
                     "**ON** = turistas evitam táxis.\n" +
                     "**OFF** = uso normal de táxis para turistas.\n" +
-                    "Dê um tempinho para o jogo se ajustar."
+                    "Dê um tempinho para ajustar."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ResetToGameDefaults)), "Padrões do jogo" },
@@ -133,17 +133,17 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusNotReadyCityScan)), "Análise da cidade ainda não disponível." },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusNotReadyCityScan)),
-                    "Abra uma cidade, deixe a simulação rodar e depois reabra Opções → Status."
+                    "Abra uma cidade, deixe a simulação rodar e reabra Opções → Status."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusNotReadyTaxiScan)), "Análise de táxis ainda não disponível." },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusNotReadyTaxiScan)),
-                    "Abra uma cidade, deixe a simulação rodar e depois reabra Opções → Status."
+                    "Abra uma cidade, deixe a simulação rodar e reabra Opções → Status."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusNotReadyLastUpdate)), "Nenhuma atividade registrada ainda." },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusNotReadyLastUpdate)),
-                    "Os detalhes da última atualização aparecem quando o Status estiver pronto."
+                    "Os detalhes aparecem quando o Status estiver pronto."
                 },
 
                 // TAXI SCAN
@@ -151,16 +151,16 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "Passageiros atuais em táxis.\n" +
                     "<Locais> = passageiros que moram na sua cidade.\n" +
-                    "<OC> = trabalhadores pendulares e turistas de conexão externa.\n" +
-                    "O total pode ser maior devido a animais nos táxis."
+                    "<OC> = quem vem de fora e turistas de conexões externas.\n" +
+                    "**O total pode ser maior por causa de animais nos táxis.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "Oferta de táxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiSupply)),
                     "<Estacionados> = táxis estacionados agora.\n" +
-                    "<Ativos> = táxis não estacionados, incluindo os aguardando em pontos de táxi.\n" +
+                    "<Ativos> = táxis não estacionados, incluindo os aguardando em pontos.\n" +
                     "<Garagens locais> = garagens de táxi construídas pelo jogador.\n" +
-                    "<Pontos> = áreas marcadas para embarque e espera de táxis."
+                    "<Pontos> = áreas de embarque e espera de táxis."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)), "Táxis de fora" },
@@ -168,7 +168,7 @@ namespace TaxiTraffic
                     "<De OC> = táxis vindos de conexões externas.\n" +
                     "<Fontes OC> = conexões externas que podem mandar táxis (como garagens invisíveis).\n" +
                     "**Sem garagens locais, o jogo pode mandar táxis OC para pedidos locais.**\n" +
-                    "**Nos testes, com a prevenção de táxis no máximo, poucos ou nenhum táxi OC entrou na cidade.**"
+                    "**Nos testes, com todas as opções de evitar táxis no máximo, poucos ou nenhum táxi OC entrou na cidade.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "Motivo do táxi" },
@@ -205,9 +205,9 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusWorkDone1)), "Mudanças recentes" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusWorkDone1)),
-                    "<Bloqueados> = acabaram de ser configurados para evitar táxis.\n" +
+                    "<Bloqueados> = recém-configurados para evitar táxis.\n" +
                     "<Liberados> = voltaram à escolha normal de táxi.\n" +
-                    "<Pedidos de táxi parados> = chamadas de táxi interrompidas pelo Taxi Traffic."
+                    "<Pedidos de táxi parados> = chamadas interrompidas pelo Taxi Traffic."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusSnapshotMeta)), "Atualizado" },
@@ -218,8 +218,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Gravar Status no log" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Grava um relatório de Status mais detalhado no log do Taxi Traffic.**"
-                },        
-
+                },
 
 #if DEBUG
                 // Advanced Debug (DEV builds only)
@@ -227,7 +226,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)),
                     "Checagem DEV.\n" +
                     "Cims ativos = agentes físicos de cims atualmente na simulação.\n" +
-                    "TT bloqueado = marcador de propriedade do Taxi Traffic.\n" +
+                    "TT bloqueado = marcador do Taxi Traffic.\n" +
                     "IgnoreTaxi agora = flag vanilla real neste instante."
                 },
 

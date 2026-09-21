@@ -7,7 +7,7 @@
 // ================= </copyright> ======================
 
 // File: Localization/LocaleTR.cs
-// Purpose: Turkish (tr-TR) Options UI text and status format strings.
+// Turkish (tr-TR) Options UI text and status format strings.
 
 namespace TaxiTraffic
 {
@@ -82,13 +82,13 @@ namespace TaxiTraffic
                     "<0%> = normal taksi kullanımı.\n" +
                     "<25–75%> = taksiden kaçınan yerel hanelerin yüzdesi.\n" +
                     "<100%> = uygun tüm yerel sakinler taksiden kaçınır.\n" +
-                    "**Bazı taksiler yine de kalabilir. Aktif yolculuklar ve duraktaki normal bekleyişler doğal olarak bitebilir; bazı oyun sistemleri ayrıca taksi çağırabilir.**"
+                    "**Bazı taksiler yine de kalabilir. Aktif yolculuklar ve duraktaki normal bekleyişler bitebilir; bazı oyun sistemleri ayrıca taksi çağırabilir.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "Gidip gelenler taksiden kaçınır" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockCommuters)),
                     "**AÇIK** = gidip gelenler taksiden kaçınır.\n" +
-                    "**KAPALI** = normal gidip gelen taksi kullanımı.\n"+
+                    "**KAPALI** = normal taksi kullanımı.\n" +
                     "Uyum sağlaması için biraz zaman verin."
                 },
 
@@ -101,7 +101,7 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ResetToGameDefaults)), "Oyun Varsayılanları" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.ResetToGameDefaults)),
-                    "Sakinlerin taksiden kaçınmasını %0 yapar; gidip gelen ve turist kaçınmasını KAPALI yapar."
+                    "Sakinleri %0 yapar; gidip gelen ve turist kaçınmasını KAPALI yapar."
                 },
 
                 // Status display
@@ -115,7 +115,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.EnableDebugLogging)), "Ayrıntılı günlüğü aç" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.EnableDebugLogging)),
                     "Test için düzenli TaxiSummary satırları yazar.\n" +
-                    "**KAPALI** = normal oyun için kullanın."
+                    "**KAPALI** = normal oyun için."
                 },
 #endif
 
@@ -151,7 +151,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "Mevcut taksi yolcuları.\n" +
                     "<Yerel> = şehrinizde yaşayan yolcular.\n" +
-                    "<DB> = dış bağlantıdan gelen gidip gelenler ve turistler.\n" +
+                    "<OC> = dış bağlantıdan gelen gidip gelenler ve turistler.\n" +
                     "**Taksilerdeki evcil hayvanlar nedeniyle toplam daha yüksek olabilir.**"
                 },
 
@@ -165,10 +165,10 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)), "Dış taksiler" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)),
-                    "<DB'den> = dış bağlantılardan gelen taksiler.\n" +
-                    "<DB kaynakları> = taksi gönderebilen dış bağlantılar (görünmez depolar gibi).\n" +
-                    "**Yerel depo yoksa oyun yerel istekler için DB taksileri gönderebilir.**\n" +
-                    "**Testlerde tüm kaçınma seçenekleri en yüksekteyken şehre çok az veya hiç DB taksisi girmedi.**"
+                    "<OC'den> = dış bağlantılardan gelen taksiler.\n" +
+                    "<OC kaynakları> = taksi gönderebilen dış bağlantılar (görünmez depolar gibi).\n" +
+                    "**Yerel depo yoksa oyun yerel istekler için OC taksileri gönderebilir.**\n" +
+                    "**Testlerde tüm taksiden kaçınma seçenekleri en yüksekteyken şehre çok az veya hiç OC taksisi girmedi.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "Taksi amacı" },
@@ -180,13 +180,13 @@ namespace TaxiTraffic
                 // CITY TRANSIT
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyPassengers1)), "Vatandaşlar" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusMonthlyPassengers1)),
-                    "<Taksi> | <Otobüs> | <Tramvay> | <Tren> | <Metro> | <Hava>\n" +
+                    "<Taksi> | <Otobüs> | <Tramvay> | <Tren> | <Metro> | <Uçak>\n" +
                     "**Oyunun Ulaşım Bilgi Görünümündeki aylık vatandaş yolculukları.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyTourists)), "Turistler" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusMonthlyTourists)),
-                    "<Taksi> | <Otobüs> | <Tramvay> | <Tren> | <Metro> | <Hava>\n" +
+                    "<Taksi> | <Otobüs> | <Tramvay> | <Tren> | <Metro> | <Uçak>\n" +
                     "**Oyunun Ulaşım Bilgi Görünümündeki aylık turist yolculukları.**"
                 },
 
@@ -218,8 +218,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Durumu Günlüğe Yaz" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Daha ayrıntılı Durum raporunu Taxi Traffic günlüğüne yazar.**"
-                },        
-
+                },
 
 #if DEBUG
                 // Advanced Debug (DEV builds only)
@@ -227,7 +226,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)),
                     "DEV kontrolü.\n" +
                     "Aktif cimler = simülasyondaki fiziksel cim ajanları.\n" +
-                    "TT engellenen = Taxi Traffic sahiplik işareti.\n" +
+                    "TT engellenen = Taxi Traffic işareti.\n" +
                     "IgnoreTaxi şimdi = o andaki gerçek vanilla bayrağı."
                 },
 
@@ -239,19 +238,19 @@ namespace TaxiTraffic
 #endif
 
                 // Status row format strings
-                { KeyStatusCitizensLine, "{0} taksi | {1} otobüs | {2} tramvay |\n{3} tren | {4} metro | {5} hava" },
-                { KeyStatusTouristsLine, "{0} taksi | {1} otobüs | {2} tramvay |\n{3} tren | {4} metro | {5} hava" },
+                { KeyStatusCitizensLine, "{0} taksi | {1} otobüs | {2} tramvay |\n{3} tren | {4} metro | {5} uçak" },
+                { KeyStatusTouristsLine, "{0} taksi | {1} otobüs | {2} tramvay |\n{3} tren | {4} metro | {5} uçak" },
                 { KeyStatusTotalsLine, "{0} bekler | {1} turist/ay | {2} vatandaş/ay" },
-                { KeyStatusPassengersLine, "{0} toplam | {1} yerel | {2} DB" },
+                { KeyStatusPassengersLine, "{0} toplam | {1} yerel | {2} OC" },
                 { KeyStatusTaxiSupplyLine, "{0} park, {1} aktif | {2} depo | {3} durak" },
-                { KeyStatusOutsideTaxisLine, "{0} DB'den | {1} DB kaynağı" },
+                { KeyStatusOutsideTaxisLine, "{0} OC'den | {1} OC kaynağı" },
                 { KeyStatusTaxiPurposeLine,
                     "{0} eğl. | {1} ev | {2} iş |\n" +
                     "{3} okul | {4} alışv. | {5} diğer"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} şehir ({1} eng.) | {2} DB ({3} eng.) |\n" +
-                    "{4} yerel arz | {5} DB arz | {6} durak"
+                    "{0} şehir yolcusu ({1} eng.) | {2} OC yolcusu ({3} eng.) |\n" +
+                    "{4} yerel arz | {5} OC arz | {6} durak"
                 },
                 { KeyStatusTaxiStandsLine, "{0} bekler" },
                 { KeyStatusTaxiFleetLine,

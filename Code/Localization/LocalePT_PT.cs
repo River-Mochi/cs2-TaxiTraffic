@@ -7,7 +7,7 @@
 // ================= </copyright> ======================
 
 // File: Localization/LocalePT_PT.cs
-// Purpose: Portuguese (pt-PT) Options UI text and status format strings.
+// Portuguese (pt-PT) Options UI text and status format strings.
 
 namespace TaxiTraffic
 {
@@ -82,13 +82,13 @@ namespace TaxiTraffic
                     "<0%> = uso normal de táxis.\n" +
                     "<25–75%> = percentagem de agregados locais que evitam táxis.\n" +
                     "<100%> = todos os residentes locais elegíveis evitam táxis.\n" +
-                    "**Alguns táxis podem continuar ativos. Viagens em curso e táxis à espera nas praças podem terminar normalmente, e alguns sistemas do jogo podem chamar táxis de forma independente.**"
+                    "**Alguns táxis podem continuar ativos. Viagens em curso e espera normal nas praças podem terminar, e alguns sistemas do jogo podem chamar táxis por conta própria.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "Pendulares evitam táxis" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockCommuters)),
                     "**ON** = pendulares evitam táxis.\n" +
-                    "**OFF** = uso normal de táxis por pendulares.\n"+
+                    "**OFF** = uso normal de táxis por pendulares.\n" +
                     "Dê algum tempo para ajustar."
                 },
 
@@ -151,7 +151,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "Passageiros atuais em táxis.\n" +
                     "<Local> = passageiros que vivem na cidade.\n" +
-                    "<LE> = pendulares e turistas de ligações externas.\n" +
+                    "<OC> = pendulares e turistas de ligações externas.\n" +
                     "**O total pode ser maior devido a animais nos táxis.**"
                 },
 
@@ -160,15 +160,15 @@ namespace TaxiTraffic
                     "<Estacionados> = táxis estacionados.\n" +
                     "<Ativos> = táxis não estacionados, incluindo os à espera nas praças.\n" +
                     "<Depósitos locais> = depósitos de táxis construídos pelo jogador.\n" +
-                    "<Praças> = áreas designadas para recolha/espera de táxis."
+                    "<Praças> = áreas de recolha/espera de táxis."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)), "Táxis externos" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)),
-                    "<De LE> = táxis vindos de ligações externas.\n" +
-                    "<Fontes LE> = ligações externas que podem enviar táxis (como depósitos invisíveis).\n" +
-                    "**Sem depósitos locais, o jogo pode enviar táxis de LE para pedidos locais.**\n" +
-                    "**Nos testes, com todas as opções no máximo, entraram poucos ou nenhuns táxis de LE na cidade.**"
+                    "<De OC> = táxis vindos de ligações externas.\n" +
+                    "<Fontes OC> = ligações externas que podem enviar táxis (como depósitos invisíveis).\n" +
+                    "**Sem depósitos locais, o jogo pode enviar táxis OC para pedidos locais.**\n" +
+                    "**Nos testes, com todas as opções de evitar táxis no máximo, entraram poucos ou nenhuns táxis OC na cidade.**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "Motivo do táxi" },
@@ -218,8 +218,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Gravar estado no registo" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Grava um relatório de estado detalhado no registo do Taxi Traffic.**"
-                },        
-
+                },
 
 #if DEBUG
                 // Advanced Debug (DEV builds only)
@@ -227,7 +226,7 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)),
                     "Verificação DEV.\n" +
                     "Cims ativos = agentes físicos atualmente na simulação.\n" +
-                    "TT bloqueado = marcador de propriedade do Taxi Traffic.\n" +
+                    "TT bloqueado = marcador do Taxi Traffic.\n" +
                     "IgnoreTaxi agora = flag vanilla real neste instante."
                 },
 
@@ -242,16 +241,16 @@ namespace TaxiTraffic
                 { KeyStatusCitizensLine, "{0} táxi | {1} autoc. | {2} elétr. |\n{3} comboio | {4} metro | {5} avião" },
                 { KeyStatusTouristsLine, "{0} táxi | {1} autoc. | {2} elétr. |\n{3} comboio | {4} metro | {5} avião" },
                 { KeyStatusTotalsLine, "{0} espera | {1} turistas/mês | {2} cidadãos/mês" },
-                { KeyStatusPassengersLine, "{0} total | {1} local | {2} LE" },
+                { KeyStatusPassengersLine, "{0} total | {1} local | {2} OC" },
                 { KeyStatusTaxiSupplyLine, "{0} estac., {1} ativos | {2} depósitos | {3} praças" },
-                { KeyStatusOutsideTaxisLine, "{0} de LE | {1} fontes LE" },
+                { KeyStatusOutsideTaxisLine, "{0} de OC | {1} fontes OC" },
                 { KeyStatusTaxiPurposeLine,
                     "{0} lazer | {1} casa | {2} trab. |\n" +
                     "{3} escola | {4} compras | {5} outro"
                 },
                 { KeyStatusRequestsLine,
-                    "{0} cidade ({1} bloq.) | {2} LE ({3} bloq.) |\n" +
-                    "{4} oferta local | {5} oferta LE | {6} praça"
+                    "{0} passag. local ({1} bloq.) | {2} passag. OC ({3} bloq.) |\n" +
+                    "{4} oferta local | {5} oferta OC | {6} praça"
                 },
                 { KeyStatusTaxiStandsLine, "{0} espera" },
                 { KeyStatusTaxiFleetLine,
@@ -284,7 +283,7 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenParadoxMods)), "Paradox Mods" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.OpenParadoxMods)),
-                    "Abre a página deste autor no site Paradox Mods."
+                    "Abre a página do autor no Paradox Mods."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenDiscord)), "Discord" },

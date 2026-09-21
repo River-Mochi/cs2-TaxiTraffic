@@ -82,26 +82,26 @@ namespace TaxiTraffic
                     "<0%> = 通常のタクシー利用。\n" +
                     "<25–75%> = タクシーを避ける市内世帯の割合。\n" +
                     "<100%> = 対象となる市内住民全員がタクシーを避ける。\n" +
-                    "**一部のタクシーは残ることがあります。進行中の乗車やタクシー乗り場での通常待機は自然に完了し、ゲームの一部システムが独自にタクシーを呼ぶ場合もあります。**"
+                    "**一部のタクシーは残る場合があります。進行中の乗車や乗り場での待機は通常どおり終わり、一部のゲームシステムが独自にタクシーを呼ぶこともあります。**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockCommuters)), "通勤者はタクシーを避ける" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockCommuters)),
                     "**オン** = 通勤者はタクシーを避ける。\n" +
-                    "**オフ** = 通勤者は通常どおりタクシーを利用。\n"+
+                    "**オフ** = 通常どおり利用。\n" +
                     "反映まで少し待ってください。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.BlockTourists)), "観光客はタクシーを避ける" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.BlockTourists)),
                     "**オン** = 観光客はタクシーを避ける。\n" +
-                    "**オフ** = 観光客は通常どおりタクシーを利用。\n" +
+                    "**オフ** = 通常どおり利用。\n" +
                     "反映まで少し待ってください。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.ResetToGameDefaults)), "ゲーム標準" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.ResetToGameDefaults)),
-                    "住民を0%にし、通勤者と観光客のタクシー回避をオフにします。"
+                    "住民を0%にし、通勤者と観光客の回避をオフにします。"
                 },
 
                 // Status display
@@ -114,36 +114,36 @@ namespace TaxiTraffic
 #if DEBUG
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.EnableDebugLogging)), "詳細ログを有効化" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.EnableDebugLogging)),
-                    "テスト用のTaxiSummaryを定期的にログへ出力します。\n" +
+                    "テスト用のTaxiSummaryを定期的に出力します。\n" +
                     "**オフ** = 通常プレイ向け。"
                 },
 #endif
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "レポートを書き出す" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "詳しい診断スキャンを実行し、完全なステータスレポートをModログへ出力します。"
+                    "詳しい診断を実行し、完全なステータスレポートをModログへ出力します。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "ログを開く" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.OpenLogFile)),
-                    "Modのログを開きます。利用できない場合はLogsフォルダーを開きます。"
+                    "Modログを開きます。開けない場合はLogsフォルダーを開きます。"
                 },
 
                 // ----- STATUS TAB -----
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusNotReadyCityScan)), "都市スキャンはまだ利用できません。" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusNotReadyCityScan)),
-                    "都市を開いてシミュレーションを少し進め、オプション → ステータスを開き直してください。"
+                    "都市を開いて少し進め、オプション → ステータスを開き直してください。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusNotReadyTaxiScan)), "タクシースキャンはまだ利用できません。" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusNotReadyTaxiScan)),
-                    "都市を開いてシミュレーションを少し進め、オプション → ステータスを開き直してください。"
+                    "都市を開いて少し進め、オプション → ステータスを開き直してください。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusNotReadyLastUpdate)), "まだ記録された動きはありません。" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusNotReadyLastUpdate)),
-                    "ステータスの準備ができると最終更新の詳細が表示されます。"
+                    "ステータスの準備ができると詳細が表示されます。"
                 },
 
                 // TAXI SCAN
@@ -151,25 +151,24 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusPassengers)),
                     "現在タクシーに乗っている乗客。\n" +
                     "<市内> = あなたの都市に住む乗客。\n" +
-                    "<OC> = 都市外接続からの通勤者と観光客。\n" +
-                    "タクシーに乗っているペットのため、合計が多くなる場合があります。"
-
+                    "<OC> = 外部接続からの通勤者と観光客。\n" +
+                    "**ペットも数えるため、合計が多くなる場合があります。**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiSupply)), "タクシー供給" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusTaxiSupply)),
                     "<駐車中> = 現在駐車しているタクシー。\n" +
-                    "<稼働中> = 駐車していないタクシー。乗り場で待機中も含みます。\n" +
-                    "<市内営業所> = プレイヤーが建てたタクシー営業所。\n" +
-                    "<乗り場> = タクシーの乗車・待機用エリア。"
+                    "<稼働中> = 駐車していないタクシー。乗り場での待機も含む。\n" +
+                    "<市内営業所> = プレイヤーが建てた営業所。\n" +
+                    "<乗り場> = タクシーの乗車・待機エリア。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)), "外部タクシー" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusOutsideTaxis)),
-                    "<OCから> = 外部接続から来たタクシー。\n" +
+                    "<OCから> = 外部接続から来るタクシー。\n" +
                     "<OC供給元> = タクシーを送れる外部接続（見えない営業所のようなもの）。\n" +
                     "**市内営業所がない場合、ゲームは市内の依頼にOCタクシーを送ることがあります。**\n" +
-                    "**テストでは、タクシー回避を最大にすると、OCタクシーの市内流入はほぼ、またはまったくありませんでした。**"
+                    "**テストでは、回避設定をすべて最大にすると、OCタクシーはほとんど、またはまったく市内に入りませんでした。**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusTaxiPurpose)), "タクシー利用目的" },
@@ -182,13 +181,13 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyPassengers1)), "市民" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusMonthlyPassengers1)),
                     "<タクシー> | <バス> | <トラム> | <鉄道> | <地下鉄> | <航空>\n" +
-                    "**ゲームの交通情報ビューにある市民の月間利用数。**"
+                    "**交通情報ビューの市民月間利用数。**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyTourists)), "観光客" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusMonthlyTourists)),
                     "<タクシー> | <バス> | <トラム> | <鉄道> | <地下鉄> | <航空>\n" +
-                    "**ゲームの交通情報ビューにある観光客の月間利用数。**"
+                    "**交通情報ビューの観光客月間利用数。**"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusMonthlyTotal)), "合計" },
@@ -208,19 +207,18 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusWorkDone1)),
                     "<ブロック> = 新たにタクシー回避へ設定。\n" +
                     "<解除> = 通常のタクシー選択へ戻した。\n" +
-                    "<停止したタクシー依頼> = Taxi Trafficが止めたタクシー呼び出し。"
+                    "<停止したタクシー依頼> = Taxi Trafficが止めた呼び出し。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusSnapshotMeta)), "更新" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusSnapshotMeta)),
-                    "<更新> = このステータス情報を確認した時刻。"
+                    "<更新> = このステータスを確認した時刻。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "ステータスをログに出力" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Taxi Trafficのログへ詳しいステータスレポートを書き出します。**"
-                },        
-
+                },
 
 #if DEBUG
                 // Advanced Debug (DEV builds only)
@@ -228,14 +226,14 @@ namespace TaxiTraffic
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugMarkedCoverage)),
                     "DEV確認用。\n" +
                     "アクティブ市民 = 現在シミュレーション内にいる実体の市民エージェント。\n" +
-                    "TTブロック = Taxi Trafficの所有マーカー。\n" +
+                    "TTブロック = Taxi Trafficのマーカー。\n" +
                     "現在のIgnoreTaxi = この時点の実際のバニラフラグ。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)), "タクシーフラグ (dev)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.StatusDebugTaxiFlags)),
                     "DEV確認用。\n" +
-                    "順番: dispatch bufferあり | 外部から | 無効。"
+                    "順番: 配車バッファあり | 外部から | 無効。"
                 },
 #endif
 
@@ -268,7 +266,7 @@ namespace TaxiTraffic
                     "{0} アクティブ市民 | {1} TTブロック | {2} IgnoreTaxi"
                 },
                 { KeyStatusTaxiFlagsDevLine,
-                    "{0} dispatch buf | {1} 外部 | {2} 無効"
+                    "{0} 配車バッファ | {1} 外部 | {2} 無効"
                 },
 #endif
 
@@ -285,12 +283,12 @@ namespace TaxiTraffic
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenParadoxMods)), "Paradox Mods" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.OpenParadoxMods)),
-                    "Paradox Modsの作者ページをブラウザーで開きます。"
+                    "Paradox Modsの作者ページを開きます。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenDiscord)), "Discord" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.OpenDiscord)),
-                    "Discordのコミュニティサポートをブラウザーで開きます。"
+                    "Discordのサポートをブラウザーで開きます。"
                 },
             };
         }
