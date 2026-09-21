@@ -17,8 +17,8 @@ As more asked for it, I finally pushed through to get it public ready (testing, 
 
 ### Adjustable
 * ✅ **Residents avoid taxis**, set range **0% - 100%** maximum.
-* ✅ **Commuters** avoid taxis toggle.
-* ✅ **Tourists** avoid taxis toggle.
+* ✅ **Commuters** avoid taxis option.
+* ✅ **Tourists** avoid taxis option.
 
 ### What to expect
 - Taxi traffic drops after the city runs for a bit.
