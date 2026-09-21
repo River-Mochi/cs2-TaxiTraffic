@@ -227,7 +227,10 @@ namespace TaxiTraffic
                     System.Diagnostics.Stopwatch.GetTimestamp();
 #endif
 
-                if (m_FullEligibilityRefreshRequested)
+                bool usedFullEligibilityRefresh =
+                    m_FullEligibilityRefreshRequested;
+
+                if (usedFullEligibilityRefresh)
                 {
                     // City load gets one immediate reconciliation. Options changes
                     // are deliberately spread over the normal 16-frame bucket cycle.
@@ -258,24 +261,35 @@ namespace TaxiTraffic
                     eligibilityStartTicks);
 #endif
 
-                // ResidentAI only updates one of its 16 UpdateFrame buckets each frame.
-                // Reapply IgnoreTaxi only to Taxi Traffic-owned residents in that same bucket.
+                // A separate reapply scan is only needed when the eligibility query
+                // could not see the residents Taxi Traffic owns. That is true for
+                // the maximum-avoidance bucket query alone, which excludes
+                // IgnoreTaxiMark. The full query and the general bucket query both
+                // include owned residents, and ResidentTaxiEligibilityJob already
+                // restores IgnoreTaxi for them in the same pass, so scanning the
+                // same bucket again would repeat work that is already done.
+                if (!usedFullEligibilityRefresh &&
+                    UsesMaximumAvoidanceQuery(avoidanceData))
+                {
+                    // ResidentAI only updates one of its 16 UpdateFrame buckets each
+                    // frame. Reapply IgnoreTaxi only to owned residents in that bucket.
 #if DEBUG
-                long reapplyStartTicks =
-                    System.Diagnostics.Stopwatch.GetTimestamp();
+                    long reapplyStartTicks =
+                        System.Diagnostics.Stopwatch.GetTimestamp();
 #endif
 
-                ReapplyOwnedTaxiBlocks(
-                    simulationFrame,
-                    out int bucketReappliedIgnoreTaxi);
+                    ReapplyOwnedTaxiBlocks(
+                        simulationFrame,
+                        out int bucketReappliedIgnoreTaxi);
 
-                reappliedIgnoreTaxi += bucketReappliedIgnoreTaxi;
+                    reappliedIgnoreTaxi += bucketReappliedIgnoreTaxi;
 
 #if DEBUG
-                RecordDebugReapplyTiming(
-                    System.Diagnostics.Stopwatch.GetTimestamp() -
-                    reapplyStartTicks);
+                    RecordDebugReapplyTiming(
+                        System.Diagnostics.Stopwatch.GetTimestamp() -
+                        reapplyStartTicks);
 #endif
+                }
 
                 // Catch blocked cims that already reached the on-demand taxi path.
                 // This stays every simulation update so later taxi systems do not
