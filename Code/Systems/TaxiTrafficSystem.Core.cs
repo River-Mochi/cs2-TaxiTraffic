@@ -14,6 +14,7 @@ using Game.Common;
 using Game.Tools;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 
 namespace TaxiTraffic
 {
@@ -30,6 +31,11 @@ namespace TaxiTraffic
         private static TaxiTrafficSystem? s_Instance;
 
         private Game.Simulation.SimulationSystem m_ControlSimulationSystem = null!;
+
+        // Same barrier the vanilla resident systems use. Playing an ECB back
+        // against EntityManager stalls every worker job in the world.
+        private EndFrameBarrier m_EndFrameBarrier = null!;
+
         private EntityQuery m_OwnedBlockQuery;
         private EntityQuery m_EligibilityFullQuery;
         private EntityQuery m_EligibilityBucketQuery;
@@ -51,6 +57,8 @@ namespace TaxiTraffic
             s_Instance = this;
             m_ControlSimulationSystem =
                 World.GetOrCreateSystemManaged<Game.Simulation.SimulationSystem>();
+            m_EndFrameBarrier =
+                World.GetOrCreateSystemManaged<EndFrameBarrier>();
 
             m_OwnedBlockQuery =
                 GetEntityQuery(
@@ -137,6 +145,9 @@ namespace TaxiTraffic
 
         protected override void OnDestroy()
         {
+            // Jobs may still hold the counter arrays. Do not free under them.
+            CompleteDependency();
+
             if (m_EligibilityCounters.IsCreated)
                 m_EligibilityCounters.Dispose();
 
@@ -201,13 +212,10 @@ namespace TaxiTraffic
                 return;
             }
 
-            int appliedIgnoreTaxi = 0;
-            int removedIgnoreTaxi = 0;
-            int reappliedIgnoreTaxi = 0;
-            int stoppedRideNeeders = 0;
-            int existingTaxiRequestsStopped = 0;
-            int repathedTaxiWaiters = 0;
-            int dispatchedSkipped = 0;
+            // BeforeOnUpdate already completed last frame's handle, so this is the
+            // one safe spot to read the counters without a Complete() of our own.
+            PublishPreviousFrameCounters();
+            ResetJobCounters();
 
             bool residentControlActive =
                 setting.ResidentsAvoidTaxis > TaxiSettings.kTaxiAvoidPercentMin ||
@@ -222,37 +230,33 @@ namespace TaxiTraffic
                 TaxiAvoidanceData avoidanceData =
                     CreateTaxiAvoidanceData(setting);
 
+                // perfMs measures scheduling only now, not the work itself.
 #if DEBUG
                 long eligibilityStartTicks =
                     System.Diagnostics.Stopwatch.GetTimestamp();
 #endif
+
+                JobHandle handle = Dependency;
 
                 bool usedFullEligibilityRefresh =
                     m_FullEligibilityRefreshRequested;
 
                 if (usedFullEligibilityRefresh)
                 {
-                    // City load gets one immediate reconciliation. Options changes
-                    // are deliberately spread over the normal 16-frame bucket cycle.
-                    UpdateResidentTaxiEligibility(
+                    // City load gets one full reconciliation. Options changes are
+                    // deliberately spread over the normal 16-frame bucket cycle.
+                    handle = ScheduleResidentTaxiEligibility(
                         avoidanceData,
-                        out appliedIgnoreTaxi,
-                        out removedIgnoreTaxi,
-                        out int fullScanReappliedIgnoreTaxi);
+                        handle);
 
-                    reappliedIgnoreTaxi += fullScanReappliedIgnoreTaxi;
                     m_FullEligibilityRefreshRequested = false;
                 }
                 else
                 {
-                    UpdateResidentTaxiEligibilityBucket(
+                    handle = ScheduleResidentTaxiEligibilityBucket(
                         avoidanceData,
                         simulationFrame,
-                        out appliedIgnoreTaxi,
-                        out removedIgnoreTaxi,
-                        out int bucketEligibilityReappliedIgnoreTaxi);
-
-                    reappliedIgnoreTaxi += bucketEligibilityReappliedIgnoreTaxi;
+                        handle);
                 }
 
 #if DEBUG
@@ -261,28 +265,21 @@ namespace TaxiTraffic
                     eligibilityStartTicks);
 #endif
 
-                // A separate reapply scan is only needed when the eligibility query
-                // could not see the residents Taxi Traffic owns. That is true for
-                // the maximum-avoidance bucket query alone, which excludes
-                // IgnoreTaxiMark. The full query and the general bucket query both
-                // include owned residents, and ResidentTaxiEligibilityJob already
-                // restores IgnoreTaxi for them in the same pass, so scanning the
-                // same bucket again would repeat work that is already done.
+                // Only max-avoidance needs this - its query excludes IgnoreTaxiMark,
+                // so the eligibility job never saw our own cims. Everywhere else it
+                // already reapplied them and this would be a second scan for nothing.
                 if (!usedFullEligibilityRefresh &&
                     UsesMaximumAvoidanceQuery(avoidanceData))
                 {
-                    // ResidentAI only updates one of its 16 UpdateFrame buckets each
-                    // frame. Reapply IgnoreTaxi only to owned residents in that bucket.
+                    // Same 1/16 bucket ResidentAI just did.
 #if DEBUG
                     long reapplyStartTicks =
                         System.Diagnostics.Stopwatch.GetTimestamp();
 #endif
 
-                    ReapplyOwnedTaxiBlocks(
+                    handle = ScheduleReapplyOwnedTaxiBlocks(
                         simulationFrame,
-                        out int bucketReappliedIgnoreTaxi);
-
-                    reappliedIgnoreTaxi += bucketReappliedIgnoreTaxi;
+                        handle);
 
 #if DEBUG
                     RecordDebugReapplyTiming(
@@ -299,21 +296,21 @@ namespace TaxiTraffic
                     System.Diagnostics.Stopwatch.GetTimestamp();
 #endif
 
-                StopBlockedRideNeeders(
+                handle = ScheduleStopBlockedRideNeeders(
                     avoidanceData,
-                    out int lateAppliedIgnoreTaxi,
-                    out stoppedRideNeeders,
-                    out existingTaxiRequestsStopped,
-                    out repathedTaxiWaiters,
-                    out dispatchedSkipped);
-
-                appliedIgnoreTaxi += lateAppliedIgnoreTaxi;
+                    handle);
 
 #if DEBUG
                 RecordDebugEnforcementTiming(
                     System.Diagnostics.Stopwatch.GetTimestamp() -
                     enforcementStartTicks);
 #endif
+
+                // Chained, not side by side - all three write Resident.
+                // Barrier waits for us before playing back; Dependency makes every
+                // later system wait too, which is what closes the old race.
+                m_EndFrameBarrier.AddJobHandleForProducer(handle);
+                Dependency = handle;
             }
             else
             {
@@ -323,27 +320,14 @@ namespace TaxiTraffic
 
                 if (m_ResidentCleanupPending)
                 {
-                    // Game-default mode clears only IgnoreTaxi flags owned by Taxi Traffic.
-                    // In-vehicle residents are left alone until their current trip finishes.
-                    removedIgnoreTaxi = ClearOwnedResidentTaxiBlocks();
+                    // Clears only our own IgnoreTaxi; in-vehicle cims finish their trip.
+                    // Shutdown path, so the inline playback here is fine.
+                    s_StatusLastRemovedIgnoreTaxi = ClearOwnedResidentTaxiBlocks();
 
                     m_ResidentCleanupPending =
                         !m_OwnedBlockQuery.IsEmptyIgnoreFilter;
                 }
             }
-
-            RecordLastUpdateCounters(
-                appliedIgnoreTaxi,
-                removedIgnoreTaxi,
-                reappliedIgnoreTaxi,
-                stoppedRideNeeders,
-                existingTaxiRequestsStopped,
-                repathedTaxiWaiters,
-                dispatchedSkipped);
-
-            s_StatusRideNeedersStoppedTotal += stoppedRideNeeders;
-            s_StatusTaxiRequestsStoppedTotal += existingTaxiRequestsStopped;
-            s_StatusTaxiWaitersRepathedTotal += repathedTaxiWaiters;
 
             if (setting.EnableDebugLogging)
                 TickDebugLogging(setting, kDebugSummaryIntervalSeconds);
@@ -351,6 +335,39 @@ namespace TaxiTraffic
             // True vanilla/no-op state: once our marker is gone, stop running.
             if (!residentControlActive && !m_ResidentCleanupPending)
                 Enabled = false;
+        }
+
+        // Copies last frame's job counters into the Status/DEBUG statics.
+        // Only valid at the top of OnUpdate. See docs/Internals.md.
+        private void PublishPreviousFrameCounters()
+        {
+            int stoppedRideNeeders = m_EnforcementCounters[1];
+            int existingTaxiRequestsStopped = m_EnforcementCounters[2];
+            int repathedTaxiWaiters = m_EnforcementCounters[3];
+
+            RecordLastUpdateCounters(
+                m_EligibilityCounters[0] + m_EnforcementCounters[0],
+                m_EligibilityCounters[1],
+                m_EligibilityCounters[2] + m_ReapplyCounter[0],
+                stoppedRideNeeders,
+                existingTaxiRequestsStopped,
+                repathedTaxiWaiters,
+                m_EnforcementCounters[4]);
+
+            s_StatusRideNeedersStoppedTotal += stoppedRideNeeders;
+            s_StatusTaxiRequestsStoppedTotal += existingTaxiRequestsStopped;
+            s_StatusTaxiWaitersRepathedTotal += repathedTaxiWaiters;
+        }
+
+        private void ResetJobCounters()
+        {
+            for (int i = 0; i < m_EligibilityCounters.Length; i++)
+                m_EligibilityCounters[i] = 0;
+
+            m_ReapplyCounter[0] = 0;
+
+            for (int i = 0; i < m_EnforcementCounters.Length; i++)
+                m_EnforcementCounters[i] = 0;
         }
 
         private static void RecordLastUpdateCounters(

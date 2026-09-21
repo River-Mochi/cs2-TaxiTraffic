@@ -16,35 +16,18 @@ using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 
 namespace TaxiTraffic
 {
     public partial class TaxiTrafficSystem
     {
-        private void StopBlockedRideNeeders(
+        private JobHandle ScheduleStopBlockedRideNeeders(
             TaxiAvoidanceData avoidanceData,
-            out int lateAppliedIgnoreTaxi,
-            out int stoppedRideNeeders,
-            out int existingTaxiRequestsStopped,
-            out int repathedTaxiWaiters,
-            out int dispatchedSkipped)
+            JobHandle inputDeps)
         {
-            lateAppliedIgnoreTaxi = 0;
-            stoppedRideNeeders = 0;
-            existingTaxiRequestsStopped = 0;
-            repathedTaxiWaiters = 0;
-            dispatchedSkipped = 0;
-
             if (m_RideNeederQuery.IsEmptyIgnoreFilter)
-                return;
-
-            m_EnforcementCounters[0] = 0;
-            m_EnforcementCounters[1] = 0;
-            m_EnforcementCounters[2] = 0;
-            m_EnforcementCounters[3] = 0;
-            m_EnforcementCounters[4] = 0;
-
-            using EntityCommandBuffer buffer = new(Allocator.TempJob);
+                return inputDeps;
 
             StopBlockedRideNeedersJob job = new()
                 {
@@ -70,21 +53,13 @@ namespace TaxiTraffic
                             isReadOnly: true),
                     m_AvoidanceData = avoidanceData,
                     m_Counters = m_EnforcementCounters,
-                    m_CommandBuffer = buffer.AsParallelWriter()
+                    m_CommandBuffer =
+                        m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter()
                 };
 
-            // Keep this immediate. Taxi Traffic runs after ResidentAI, and the
-            // RideNeeder must be removed before the later taxi request systems.
-            // Burst cuts the managed hot-loop cost without changing that ordering.
-            job.Run(m_RideNeederQuery);
-
-            buffer.Playback(EntityManager);
-
-            lateAppliedIgnoreTaxi = m_EnforcementCounters[0];
-            stoppedRideNeeders = m_EnforcementCounters[1];
-            existingTaxiRequestsStopped = m_EnforcementCounters[2];
-            repathedTaxiWaiters = m_EnforcementCounters[3];
-            dispatchedSkipped = m_EnforcementCounters[4];
+            // Component writes land with this handle; only the RideNeeder removal
+            // waits for the barrier. future me: see docs on one gap that opens.
+            return job.ScheduleByRef(m_RideNeederQuery, inputDeps);
         }
 
         [BurstCompile]
@@ -133,8 +108,8 @@ namespace TaxiTraffic
                 NativeArray<RideNeeder> rideNeeders =
                     chunk.GetNativeArray(ref m_RideNeederType);
 
-                // These are optional on the query. Like vanilla RideNeederSystem,
-                // an empty array means this archetype does not have the component.
+                // These are optional on query. Like vanilla RideNeederSystem,
+                // an empty array means archetype doesn't have the component.
                 NativeArray<HumanCurrentLane> lanes =
                     chunk.GetNativeArray(ref m_HumanCurrentLaneType);
 
@@ -161,7 +136,7 @@ namespace TaxiTraffic
                     Resident resident = residents[i];
                     ResidentFlags residentFlags = resident.m_Flags;
 
-                    // Never interfere once boarding/transport has become an active trip.
+                    // Never interfere once boarding/transport has become active trip.
                     if ((residentFlags &
                          (ResidentFlags.InVehicle |
                           ResidentFlags.WaitingTransport)) != 0)
@@ -175,7 +150,7 @@ namespace TaxiTraffic
                     Entity entity = entities[i];
                     Entity requestEntity = rideNeeders[i].m_RideRequest;
 
-                    // Once vanilla has already assigned a taxi, let that trip finish.
+                    // Once vanilla already assigned a taxi, let trip finish.
                     // New taxi demand is stopped before dispatch instead.
                     if (requestEntity != Entity.Null &&
                         m_DispatchedLookup.HasComponent(requestEntity))
@@ -237,8 +212,8 @@ namespace TaxiTraffic
                         }
                     }
 
-                    // Immediate playback after this Burst job keeps the same safety
-                    // boundary as the old managed pass.
+                    // Barrier plays this back at end of frame, not here.
+                    // Vanilla TaxiDispatch rejects the request once it is gone.
                     m_CommandBuffer.RemoveComponent<RideNeeder>(
                         unfilteredChunkIndex,
                         entity);
