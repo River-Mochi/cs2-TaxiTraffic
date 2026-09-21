@@ -54,7 +54,7 @@ namespace TaxiTraffic
 
         public void OnLoad(UpdateSystem updateSystem)
         {
-            LogUtils.Configure(ModId, s_Log);
+            // Configures LogUtils too - see ShellOpen.Configure.
             ShellOpen.Configure(s_Log, ModId, ModTag);
 
             if (!s_BannerLogged)

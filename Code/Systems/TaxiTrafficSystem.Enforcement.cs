@@ -212,8 +212,8 @@ namespace TaxiTraffic
                         }
                     }
 
-                    // Immediate playback after this Burst job keeps same safety
-                    // boundary as the old managed pass.
+                    // Barrier plays this back at end of frame, not here.
+                    // Vanilla TaxiDispatch rejects the request once it is gone.
                     m_CommandBuffer.RemoveComponent<RideNeeder>(
                         unfilteredChunkIndex,
                         entity);
