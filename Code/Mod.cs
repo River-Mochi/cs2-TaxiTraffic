@@ -21,7 +21,7 @@ namespace TaxiTraffic
     using Game;                      // UpdateSystem
     using Game.Modding;              // IMod
     using Game.SceneFlow;            // GameManager
-    using Game.Simulation;           // ResidentAISystem
+    using Game.Simulation;           // TaxiDispatchSystem
 
     public sealed class Mod : IMod
     {
@@ -147,12 +147,27 @@ namespace TaxiTraffic
             }
 
             // IMPORTANT ORDERING: Register this only ONE time.
-            // Keep TaxiTraffic AFTER ResidentAISystem. Do Not Move.
             //
+            // GameSimulation registration order in 1.6.2 (Game.Common/SystemOrder.cs):
+            //   ResidentAISystem   -> early in the phase, update interval 1
+            //   TaxiDispatchSystem -> much later, update interval 16
+            //   RideNeederSystem   -> later still, update interval 256
+            //
+            // Taxi Traffic must stay AFTER ResidentAISystem. Do Not Move before it.
             // Running it before ResidentAI caused repeatable native CTDs in testing.
-            // Preserve this order: it is stable and still updates taxi choices
-            // in time for future trips.
-            updateSystem.UpdateAfter<TaxiTrafficSystem, ResidentAISystem>(
+            //
+            // Sitting directly after ResidentAISystem is still the worst slot in the
+            // phase: ResidentAISystem ends with base.Dependency = <scheduled handle>
+            // and never completes it, so its city-wide parallel resident jobs are
+            // still running when Taxi Traffic starts. Anchoring to TaxiDispatchSystem
+            // keeps Taxi Traffic well after ResidentAISystem while staying ahead of
+            // both systems that consume its work:
+            //   - before TaxiDispatchSystem, so a pending request is blocked before dispatch
+            //   - before RideNeederSystem, so RideNeeder never becomes a TaxiRequest
+            //
+            // Intervals differ (1 vs 16), so UpdateSystem does not share an offset
+            // here. Taxi Traffic keeps interval 1 / offset 0 and still runs every frame.
+            updateSystem.UpdateBefore<TaxiTrafficSystem, TaxiDispatchSystem>(
                 SystemUpdatePhase.GameSimulation);
         }
 

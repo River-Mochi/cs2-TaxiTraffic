@@ -124,6 +124,19 @@ namespace TaxiTraffic
             };
         }
 
+        // True when every eligible group is blocked outright. In that mode the
+        // eligibility bucket query excludes IgnoreTaxiMark, so residents Taxi
+        // Traffic already owns are never inspected by the eligibility job and
+        // need the separate reapply pass instead.
+        private static bool UsesMaximumAvoidanceQuery(
+            in TaxiAvoidanceData avoidanceData)
+        {
+            return avoidanceData.m_ResidentsAvoidTaxis >=
+                       TaxiSettings.kTaxiAvoidPercentMax &&
+                   avoidanceData.m_BlockCommuters &&
+                   avoidanceData.m_BlockTourists;
+        }
+
         private void UpdateResidentTaxiEligibility(
             TaxiAvoidanceData avoidanceData,
             out int applied,
@@ -151,10 +164,7 @@ namespace TaxiTraffic
             // Maximum avoidance is the common heavy setting. Residents already
             // owned by Taxi Traffic no longer need household/group classification.
             // Keep ResidentAI's 16-frame bucket, but only inspect new/unowned cims.
-            if (avoidanceData.m_ResidentsAvoidTaxis >=
-                    TaxiSettings.kTaxiAvoidPercentMax &&
-                avoidanceData.m_BlockCommuters &&
-                avoidanceData.m_BlockTourists)
+            if (UsesMaximumAvoidanceQuery(avoidanceData))
             {
                 m_MaxAvoidanceEligibilityBucketQuery.SetSharedComponentFilter(
                     new UpdateFrame(updateFrameIndex));
@@ -449,9 +459,9 @@ namespace TaxiTraffic
                     m_ReappliedCount = m_ReapplyCounter
                 };
 
-            // This pass is small after UpdateFrame filtering. Running it immediately
-            // preserves ordering before the RideNeeder protection pass and avoids
-            // worker-job scheduling/Complete overhead for only a few thousand cims.
+            // Only the maximum-avoidance path reaches this. Every other eligibility
+            // query includes IgnoreTaxiMark, so ResidentTaxiEligibilityJob has
+            // already restored IgnoreTaxi for the residents Taxi Traffic owns.
             job.Run(m_ReapplyBlockQuery);
 
             reapplied = m_ReapplyCounter[0];
