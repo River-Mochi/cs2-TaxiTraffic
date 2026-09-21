@@ -16,35 +16,18 @@ using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 
 namespace TaxiTraffic
 {
     public partial class TaxiTrafficSystem
     {
-        private void StopBlockedRideNeeders(
+        private JobHandle ScheduleStopBlockedRideNeeders(
             TaxiAvoidanceData avoidanceData,
-            out int lateAppliedIgnoreTaxi,
-            out int stoppedRideNeeders,
-            out int existingTaxiRequestsStopped,
-            out int repathedTaxiWaiters,
-            out int dispatchedSkipped)
+            JobHandle inputDeps)
         {
-            lateAppliedIgnoreTaxi = 0;
-            stoppedRideNeeders = 0;
-            existingTaxiRequestsStopped = 0;
-            repathedTaxiWaiters = 0;
-            dispatchedSkipped = 0;
-
             if (m_RideNeederQuery.IsEmptyIgnoreFilter)
-                return;
-
-            m_EnforcementCounters[0] = 0;
-            m_EnforcementCounters[1] = 0;
-            m_EnforcementCounters[2] = 0;
-            m_EnforcementCounters[3] = 0;
-            m_EnforcementCounters[4] = 0;
-
-            using EntityCommandBuffer buffer = new(Allocator.TempJob);
+                return inputDeps;
 
             StopBlockedRideNeedersJob job = new()
                 {
@@ -70,21 +53,33 @@ namespace TaxiTraffic
                             isReadOnly: true),
                     m_AvoidanceData = avoidanceData,
                     m_Counters = m_EnforcementCounters,
-                    m_CommandBuffer = buffer.AsParallelWriter()
+                    m_CommandBuffer =
+                        m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter()
                 };
 
-            // Keep this immediate. Taxi Traffic runs after ResidentAI, and the
-            // RideNeeder must be removed before the later taxi request systems.
-            // Burst cuts the managed hot-loop cost without changing that ordering.
-            job.Run(m_RideNeederQuery);
-
-            buffer.Playback(EntityManager);
-
-            lateAppliedIgnoreTaxi = m_EnforcementCounters[0];
-            stoppedRideNeeders = m_EnforcementCounters[1];
-            existingTaxiRequestsStopped = m_EnforcementCounters[2];
-            repathedTaxiWaiters = m_EnforcementCounters[3];
-            dispatchedSkipped = m_EnforcementCounters[4];
+            // ORDERING NOTE. The job's component writes - IgnoreTaxi on the
+            // Resident, and clearing CreatureLaneFlags.Taxi/ParkingSpace on the
+            // HumanCurrentLane - land as soon as this handle completes, so every
+            // later system sees them through the normal dependency chain. Only the
+            // structural RemoveComponent<RideNeeder> is deferred to EndFrameBarrier
+            // at the end of the frame.
+            //
+            // That deferral is visible to exactly one vanilla system.
+            // TaxiDispatchSystem.ValidateTarget rejects a request only when the
+            // seeker has no RideNeeder, and it updates on a 16 frame interval
+            // directly after this system. So on a dispatch frame it can still see a
+            // RideNeeder this job asked to remove, for a cim that already had a
+            // live, undispatched TaxiRequest. Measured frequency of that
+            // precondition is roughly one per twenty minutes, and it self corrects:
+            // the lane flags are already cleared and PathFlags.Obsolete is already
+            // set, so the cim repaths away, the taxi finds no passenger, and
+            // vanilla's own ServiceRequest fail count takes over.
+            //
+            // Removing RideNeeder inline instead would mean playing an
+            // EntityCommandBuffer back against EntityManager every frame, which
+            // calls CompleteAllJobsAndInvalidateArrays and stalls every worker job
+            // in the world. That measured about 1.7 ms per simulation frame.
+            return job.ScheduleByRef(m_RideNeederQuery, inputDeps);
         }
 
         [BurstCompile]

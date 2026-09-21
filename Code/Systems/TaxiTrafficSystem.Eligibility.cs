@@ -18,6 +18,7 @@ using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 
 namespace TaxiTraffic
 {
@@ -137,26 +138,20 @@ namespace TaxiTraffic
                    avoidanceData.m_BlockTourists;
         }
 
-        private void UpdateResidentTaxiEligibility(
+        private JobHandle ScheduleResidentTaxiEligibility(
             TaxiAvoidanceData avoidanceData,
-            out int applied,
-            out int removed,
-            out int reapplied)
+            JobHandle inputDeps)
         {
-            RunResidentTaxiEligibilityJob(
+            return ScheduleResidentTaxiEligibilityJob(
                 m_EligibilityFullQuery,
                 avoidanceData,
-                out applied,
-                out removed,
-                out reapplied);
+                inputDeps);
         }
 
-        private void UpdateResidentTaxiEligibilityBucket(
+        private JobHandle ScheduleResidentTaxiEligibilityBucket(
             TaxiAvoidanceData avoidanceData,
             uint simulationFrame,
-            out int applied,
-            out int removed,
-            out int reapplied)
+            JobHandle inputDeps)
         {
             uint updateFrameIndex =
                 simulationFrame % kResidentUpdateFrameCount;
@@ -169,12 +164,7 @@ namespace TaxiTraffic
                 m_MaxAvoidanceEligibilityBucketQuery.SetSharedComponentFilter(
                     new UpdateFrame(updateFrameIndex));
 
-                RunMaximumAvoidanceEligibilityJob(
-                    out applied,
-                    out removed,
-                    out reapplied);
-
-                return;
+                return ScheduleMaximumAvoidanceEligibilityJob(inputDeps);
             }
 
             // Match ResidentAI's current shared UpdateFrame bucket. Each resident
@@ -183,25 +173,15 @@ namespace TaxiTraffic
             m_EligibilityBucketQuery.SetSharedComponentFilter(
                 new UpdateFrame(updateFrameIndex));
 
-            RunResidentTaxiEligibilityJob(
+            return ScheduleResidentTaxiEligibilityJob(
                 m_EligibilityBucketQuery,
                 avoidanceData,
-                out applied,
-                out removed,
-                out reapplied);
+                inputDeps);
         }
 
-        private void RunMaximumAvoidanceEligibilityJob(
-            out int applied,
-            out int removed,
-            out int reapplied)
+        private JobHandle ScheduleMaximumAvoidanceEligibilityJob(
+            JobHandle inputDeps)
         {
-            m_EligibilityCounters[0] = 0;
-            m_EligibilityCounters[1] = 0;
-            m_EligibilityCounters[2] = 0;
-
-            using EntityCommandBuffer buffer = new(Allocator.TempJob);
-
             MaximumAvoidanceEligibilityJob job = new()
                 {
                     m_EntityType =
@@ -209,19 +189,21 @@ namespace TaxiTraffic
                     m_ResidentType =
                         SystemAPI.GetComponentTypeHandle<Resident>(),
                     m_AppliedCount = m_EligibilityCounters,
-                    m_CommandBuffer = buffer.AsParallelWriter()
+                    m_CommandBuffer =
+                        m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter()
                 };
 
             // The query already excludes Taxi Traffic-owned residents, so this
             // Burst pass only handles new/unowned cims in ResidentAI's current
             // bucket. Vanilla-owned IgnoreTaxi flags are observed but never claimed.
-            job.Run(m_MaxAvoidanceEligibilityBucketQuery);
-
-            buffer.Playback(EntityManager);
-
-            applied = m_EligibilityCounters[0];
-            removed = 0;
-            reapplied = 0;
+            //
+            // Schedule, not ScheduleParallel: one worker runs every chunk in order,
+            // which keeps the shared counter writes below race free. The bucket is
+            // small, and the win here is getting the work off the simulation thread
+            // rather than splitting it further.
+            return job.ScheduleByRef(
+                m_MaxAvoidanceEligibilityBucketQuery,
+                inputDeps);
         }
 
         [BurstCompile]
@@ -285,19 +267,11 @@ namespace TaxiTraffic
             }
         }
 
-        private void RunResidentTaxiEligibilityJob(
+        private JobHandle ScheduleResidentTaxiEligibilityJob(
             EntityQuery query,
             TaxiAvoidanceData avoidanceData,
-            out int applied,
-            out int removed,
-            out int reapplied)
+            JobHandle inputDeps)
         {
-            m_EligibilityCounters[0] = 0;
-            m_EligibilityCounters[1] = 0;
-            m_EligibilityCounters[2] = 0;
-
-            using EntityCommandBuffer buffer = new(Allocator.TempJob);
-
             ResidentTaxiEligibilityJob job = new()
                 {
                     m_EntityType =
@@ -309,19 +283,15 @@ namespace TaxiTraffic
                             isReadOnly: true),
                     m_AvoidanceData = avoidanceData,
                     m_Counters = m_EligibilityCounters,
-                    m_CommandBuffer = buffer.AsParallelWriter()
+                    m_CommandBuffer =
+                        m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter()
                 };
 
-            // The bucket is intentionally small. Run it immediately so Burst
-            // removes managed per-entity overhead without adding schedule/Complete
-            // latency before the reapply and RideNeeder safety passes.
-            job.Run(query);
-
-            buffer.Playback(EntityManager);
-
-            applied = m_EligibilityCounters[0];
-            removed = m_EligibilityCounters[1];
-            reapplied = m_EligibilityCounters[2];
+            // This is the expensive pass: every resident in the bucket costs three
+            // random-access ComponentLookup hits. Scheduling it hands that work to
+            // a worker thread and leaves the simulation thread free, which is the
+            // whole point. Nothing here needs the result this frame.
+            return job.ScheduleByRef(query, inputDeps);
         }
 
         [BurstCompile]
@@ -440,12 +410,10 @@ namespace TaxiTraffic
             }
         }
 
-        private void ReapplyOwnedTaxiBlocks(
+        private JobHandle ScheduleReapplyOwnedTaxiBlocks(
             uint simulationFrame,
-            out int reapplied)
+            JobHandle inputDeps)
         {
-            m_ReapplyCounter[0] = 0;
-
             // Match the exact UpdateFrame bucket ResidentAI just processed.
             // This cuts the steady reapply scan to about 1/16 of owned cims.
             m_ReapplyBlockQuery.SetSharedComponentFilter(
@@ -462,9 +430,7 @@ namespace TaxiTraffic
             // Only the maximum-avoidance path reaches this. Every other eligibility
             // query includes IgnoreTaxiMark, so ResidentTaxiEligibilityJob has
             // already restored IgnoreTaxi for the residents Taxi Traffic owns.
-            job.Run(m_ReapplyBlockQuery);
-
-            reapplied = m_ReapplyCounter[0];
+            return job.ScheduleByRef(m_ReapplyBlockQuery, inputDeps);
         }
 
         [BurstCompile]
