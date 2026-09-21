@@ -32,11 +32,8 @@ namespace TaxiTraffic
 
         private Game.Simulation.SimulationSystem m_ControlSimulationSystem = null!;
 
-        // Structural changes go through the same barrier vanilla resident systems
-        // use. Playing an EntityCommandBuffer back directly against EntityManager
-        // calls CompleteAllJobsAndInvalidateArrays, which drains every worker job
-        // in the world; doing that once per simulation frame is what made Taxi
-        // Traffic cost roughly a fifth of the simulation thread.
+        // Same barrier the vanilla resident systems use. Playing an ECB back
+        // against EntityManager stalls every worker job in the world.
         private EndFrameBarrier m_EndFrameBarrier = null!;
 
         private EntityQuery m_OwnedBlockQuery;
@@ -148,9 +145,7 @@ namespace TaxiTraffic
 
         protected override void OnDestroy()
         {
-            // The counter arrays are handed to scheduled jobs, so a world teardown
-            // while one is still in flight would free memory a worker is writing.
-            // Wait for our own work before disposing anything.
+            // Jobs may still hold the counter arrays. Do not free under them.
             CompleteDependency();
 
             if (m_EligibilityCounters.IsCreated)
@@ -217,12 +212,8 @@ namespace TaxiTraffic
                 return;
             }
 
-            // Taxi Traffic's jobs are scheduled, not run inline, so their counters
-            // are only valid once those jobs finish. SystemState.BeforeOnUpdate
-            // completes this system's own handle before OnUpdate is entered, so the
-            // previous frame's results are ready here and nowhere earlier. Status
-            // and DEBUG numbers are therefore one simulation frame behind, which
-            // costs nothing and keeps the hot path free of a Complete() call.
+            // BeforeOnUpdate already completed last frame's handle, so this is the
+            // one safe spot to read the counters without a Complete() of our own.
             PublishPreviousFrameCounters();
             ResetJobCounters();
 
@@ -239,9 +230,7 @@ namespace TaxiTraffic
                 TaxiAvoidanceData avoidanceData =
                     CreateTaxiAvoidanceData(setting);
 
-                // DEBUG perfMs now measures what this system costs the simulation
-                // thread, which is scheduling only. Worker execution time is not
-                // included, and that is the point of the measurement.
+                // perfMs measures scheduling only now, not the work itself.
 #if DEBUG
                 long eligibilityStartTicks =
                     System.Diagnostics.Stopwatch.GetTimestamp();
@@ -276,18 +265,13 @@ namespace TaxiTraffic
                     eligibilityStartTicks);
 #endif
 
-                // A separate reapply scan is only needed when the eligibility query
-                // could not see the residents Taxi Traffic owns. That is true for
-                // the maximum-avoidance bucket query alone, which excludes
-                // IgnoreTaxiMark. The full query and the general bucket query both
-                // include owned residents, and ResidentTaxiEligibilityJob already
-                // restores IgnoreTaxi for them in the same pass, so scanning the
-                // same bucket again would repeat work that is already done.
+                // Only max-avoidance needs this - its query excludes IgnoreTaxiMark,
+                // so the eligibility job never saw our own cims. Everywhere else it
+                // already reapplied them and this would be a second scan for nothing.
                 if (!usedFullEligibilityRefresh &&
                     UsesMaximumAvoidanceQuery(avoidanceData))
                 {
-                    // ResidentAI only updates one of its 16 UpdateFrame buckets each
-                    // frame. Reapply IgnoreTaxi only to owned residents in that bucket.
+                    // Same 1/16 bucket ResidentAI just did.
 #if DEBUG
                     long reapplyStartTicks =
                         System.Diagnostics.Stopwatch.GetTimestamp();
@@ -322,12 +306,9 @@ namespace TaxiTraffic
                     enforcementStartTicks);
 #endif
 
-                // The passes are chained rather than run side by side: they all
-                // write Game.Creatures.Resident, so they must not overlap.
-                // Registering with the barrier makes it wait for this work before
-                // playing back the structural changes the jobs recorded, and
-                // assigning Dependency lets every later system that touches these
-                // components wait on us instead of racing.
+                // Chained, not side by side - all three write Resident.
+                // Barrier waits for us before playing back; Dependency makes every
+                // later system wait too, which is what closes the old race.
                 m_EndFrameBarrier.AddJobHandleForProducer(handle);
                 Dependency = handle;
             }
@@ -339,10 +320,8 @@ namespace TaxiTraffic
 
                 if (m_ResidentCleanupPending)
                 {
-                    // Game-default mode clears only IgnoreTaxi flags owned by Taxi
-                    // Traffic. In-vehicle residents are left alone until their trip
-                    // finishes. This runs while shutting down, so its main-thread
-                    // pass and immediate playback are not on any hot path.
+                    // Clears only our own IgnoreTaxi; in-vehicle cims finish their trip.
+                    // Shutdown path, so the inline playback here is fine.
                     s_StatusLastRemovedIgnoreTaxi = ClearOwnedResidentTaxiBlocks();
 
                     m_ResidentCleanupPending =
@@ -358,11 +337,8 @@ namespace TaxiTraffic
                 Enabled = false;
         }
 
-        /// <summary>
-        /// Copies the counters last frame's jobs wrote into the Status and DEBUG
-        /// statics. Only valid at the top of OnUpdate, where this system's previous
-        /// job handle has already been completed on our behalf.
-        /// </summary>
+        // Copies last frame's job counters into the Status/DEBUG statics.
+        // Only valid at the top of OnUpdate. See docs/Internals.md.
         private void PublishPreviousFrameCounters()
         {
             int stoppedRideNeeders = m_EnforcementCounters[1];

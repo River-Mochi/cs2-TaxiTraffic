@@ -57,28 +57,8 @@ namespace TaxiTraffic
                         m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter()
                 };
 
-            // ORDERING NOTE. The job's component writes - IgnoreTaxi on the
-            // Resident, and clearing CreatureLaneFlags.Taxi/ParkingSpace on the
-            // HumanCurrentLane - land as soon as this handle completes, so every
-            // later system sees them through the normal dependency chain. Only the
-            // structural RemoveComponent<RideNeeder> is deferred to EndFrameBarrier
-            // at the end of the frame.
-            //
-            // That deferral is visible to exactly one vanilla system.
-            // TaxiDispatchSystem.ValidateTarget rejects a request only when the
-            // seeker has no RideNeeder, and it updates on a 16 frame interval
-            // directly after this system. So on a dispatch frame it can still see a
-            // RideNeeder this job asked to remove, for a cim that already had a
-            // live, undispatched TaxiRequest. Measured frequency of that
-            // precondition is roughly one per twenty minutes, and it self corrects:
-            // the lane flags are already cleared and PathFlags.Obsolete is already
-            // set, so the cim repaths away, the taxi finds no passenger, and
-            // vanilla's own ServiceRequest fail count takes over.
-            //
-            // Removing RideNeeder inline instead would mean playing an
-            // EntityCommandBuffer back against EntityManager every frame, which
-            // calls CompleteAllJobsAndInvalidateArrays and stalls every worker job
-            // in the world. That measured about 1.7 ms per simulation frame.
+            // Component writes land with this handle; only the RideNeeder removal
+            // waits for the barrier. future me: see docs on one gap that opens.
             return job.ScheduleByRef(m_RideNeederQuery, inputDeps);
         }
 
@@ -128,8 +108,8 @@ namespace TaxiTraffic
                 NativeArray<RideNeeder> rideNeeders =
                     chunk.GetNativeArray(ref m_RideNeederType);
 
-                // These are optional on the query. Like vanilla RideNeederSystem,
-                // an empty array means this archetype does not have the component.
+                // These are optional on query. Like vanilla RideNeederSystem,
+                // an empty array means archetype doesn't have the component.
                 NativeArray<HumanCurrentLane> lanes =
                     chunk.GetNativeArray(ref m_HumanCurrentLaneType);
 
@@ -156,7 +136,7 @@ namespace TaxiTraffic
                     Resident resident = residents[i];
                     ResidentFlags residentFlags = resident.m_Flags;
 
-                    // Never interfere once boarding/transport has become an active trip.
+                    // Never interfere once boarding/transport has become active trip.
                     if ((residentFlags &
                          (ResidentFlags.InVehicle |
                           ResidentFlags.WaitingTransport)) != 0)
@@ -170,7 +150,7 @@ namespace TaxiTraffic
                     Entity entity = entities[i];
                     Entity requestEntity = rideNeeders[i].m_RideRequest;
 
-                    // Once vanilla has already assigned a taxi, let that trip finish.
+                    // Once vanilla already assigned a taxi, let trip finish.
                     // New taxi demand is stopped before dispatch instead.
                     if (requestEntity != Entity.Null &&
                         m_DispatchedLookup.HasComponent(requestEntity))
@@ -232,7 +212,7 @@ namespace TaxiTraffic
                         }
                     }
 
-                    // Immediate playback after this Burst job keeps the same safety
+                    // Immediate playback after this Burst job keeps same safety
                     // boundary as the old managed pass.
                     m_CommandBuffer.RemoveComponent<RideNeeder>(
                         unfilteredChunkIndex,

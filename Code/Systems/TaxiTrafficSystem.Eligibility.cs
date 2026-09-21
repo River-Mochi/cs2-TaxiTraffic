@@ -193,14 +193,9 @@ namespace TaxiTraffic
                         m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter()
                 };
 
-            // The query already excludes Taxi Traffic-owned residents, so this
-            // Burst pass only handles new/unowned cims in ResidentAI's current
-            // bucket. Vanilla-owned IgnoreTaxi flags are observed but never claimed.
-            //
-            // Schedule, not ScheduleParallel: one worker runs every chunk in order,
-            // which keeps the shared counter writes below race free. The bucket is
-            // small, and the win here is getting the work off the simulation thread
-            // rather than splitting it further.
+            // Query already excludes our own cims, so this only sees new/unowned
+            // ones. Vanilla IgnoreTaxi is observed but never claimed.
+            // Schedule, not ScheduleParallel - one worker keeps the counters safe.
             return job.ScheduleByRef(
                 m_MaxAvoidanceEligibilityBucketQuery,
                 inputDeps);
@@ -287,10 +282,8 @@ namespace TaxiTraffic
                         m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter()
                 };
 
-            // This is the expensive pass: every resident in the bucket costs three
-            // random-access ComponentLookup hits. Scheduling it hands that work to
-            // a worker thread and leaves the simulation thread free, which is the
-            // whole point. Nothing here needs the result this frame.
+            // The expensive one: 3 random ComponentLookup hits per cim in the bucket.
+            // Nothing needs the result this frame, so get it off the sim thread.
             return job.ScheduleByRef(query, inputDeps);
         }
 
