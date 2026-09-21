@@ -338,7 +338,7 @@ namespace TaxiTraffic
         }
 
         // Copies last frame's job counters into the Status/DEBUG statics.
-        // Only valid at the top of OnUpdate. See docs/Internals.md.
+        // Only valid at the top of OnUpdate.
         private void PublishPreviousFrameCounters()
         {
             int stoppedRideNeeders = m_EnforcementCounters[1];

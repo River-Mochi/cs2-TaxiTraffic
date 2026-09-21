@@ -149,7 +149,6 @@ namespace TaxiTraffic
             // Must stay AFTER ResidentAISystem - running before it caused repeatable
             // native CTDs. Anchoring to TaxiDispatchSystem also keeps us ahead of the
             // two systems that consume our work (TaxiDispatch 561, RideNeeder 593).
-            // Full reasoning + vanilla positions in docs/Internals.md.
             updateSystem.UpdateBefore<TaxiTrafficSystem, TaxiDispatchSystem>(
                 SystemUpdatePhase.GameSimulation);
         }
