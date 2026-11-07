@@ -52,7 +52,7 @@ namespace TaxiTraffic
                         SystemAPI.GetComponentLookup<TaxiRequest>(
                             isReadOnly: true),
                     m_AvoidanceData = avoidanceData,
-                    m_Counters = m_EnforcementThreadCounters,
+                    m_Counters = m_WorkerCounters,
                     m_CommandBuffer =
                         m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter()
                 };
@@ -233,7 +233,7 @@ namespace TaxiTraffic
 
                 // Separate cache-line-sized region for every Unity job thread.
                 int counterBase =
-                    m_ThreadIndex * kEligibilityThreadCounterStride;
+                    m_ThreadIndex * kWorkerCounterStride + 4;
 
                 if (lateApplied != 0)
                     m_Counters[counterBase] += lateApplied;
