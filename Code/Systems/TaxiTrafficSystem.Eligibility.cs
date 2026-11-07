@@ -64,13 +64,62 @@ namespace TaxiTraffic
 
                     if (household != Entity.Null)
                     {
-                        // Commuters and tourists use their own controls instead of
-                        // the local-resident percentage.
-                        if (m_CommuterHouseholdLookup.HasComponent(household))
-                            return m_BlockCommuters;
+                        // Most households are local. Resolve their stable
+                        // percentage first, then avoid unnecessary component
+                        // lookups when group settings give the same result.
+                        bool localAvoids =
+                            m_ResidentsAvoidTaxis >=
+                                TaxiSettings.kTaxiAvoidPercentMax ||
+                            (m_ResidentsAvoidTaxis >
+                                 TaxiSettings.kTaxiAvoidPercentMin &&
+                             GetHouseholdTaxiEligibilityRoll(household) <
+                                 (uint)m_ResidentsAvoidTaxis);
 
-                        if (m_TouristHouseholdLookup.HasComponent(household))
-                            return m_BlockTourists;
+                        if (localAvoids == m_BlockCommuters &&
+                            localAvoids == m_BlockTourists)
+                        {
+                            return localAvoids;
+                        }
+
+                        // Preserve vanilla's group precedence: a household
+                        // with both tags is treated as a commuter.
+                        if (m_BlockCommuters && !m_BlockTourists)
+                        {
+                            if (!localAvoids)
+                                return m_CommuterHouseholdLookup
+                                    .HasComponent(household);
+
+                            if (!m_TouristHouseholdLookup.HasComponent(household))
+                                return true;
+
+                            return m_CommuterHouseholdLookup
+                                .HasComponent(household);
+                        }
+
+                        if (!m_BlockCommuters && m_BlockTourists)
+                        {
+                            if (localAvoids)
+                            {
+                                return !m_CommuterHouseholdLookup
+                                    .HasComponent(household);
+                            }
+
+                            if (!m_TouristHouseholdLookup.HasComponent(household))
+                                return false;
+
+                            return !m_CommuterHouseholdLookup
+                                .HasComponent(household);
+                        }
+
+                        // Both group toggles match each other, but differ
+                        // from this household's local percentage decision.
+                        if (m_CommuterHouseholdLookup.HasComponent(household) ||
+                            m_TouristHouseholdLookup.HasComponent(household))
+                        {
+                            return m_BlockCommuters;
+                        }
+
+                        return localAvoids;
                     }
                 }
 
@@ -79,14 +128,6 @@ namespace TaxiTraffic
 
                 if (m_ResidentsAvoidTaxis >= TaxiSettings.kTaxiAvoidPercentMax)
                     return true;
-
-                if (household != Entity.Null)
-                {
-                    uint householdRoll =
-                        GetHouseholdTaxiEligibilityRoll(household);
-
-                    return householdRoll < (uint)m_ResidentsAvoidTaxis;
-                }
 
                 // Rare fallback when there is no usable household link.
                 if (citizenEntity == Entity.Null ||
