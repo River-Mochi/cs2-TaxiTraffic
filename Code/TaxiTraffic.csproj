@@ -22,6 +22,11 @@
 
 </PropertyGroup>
 	
+<!-- Extra diagnostics are absent from normal Debug/Release builds. -->
+<PropertyGroup Condition="'$(TaxiPerfTest)' == 'true'">
+    <DefineConstants>$(DefineConstants);TAXI_PERF_TEST</DefineConstants>
+</PropertyGroup>
+
 <!--Imports must be after PropertyGroup block-->
 <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
 <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
