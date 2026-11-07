@@ -363,11 +363,17 @@ namespace TaxiTraffic
                     if ((flags & ResidentFlags.InVehicle) != 0)
                         continue;
 
-                    bool shouldAvoid =
-                        m_AvoidanceData.ShouldAvoid(resident);
-
                     bool ignoreTaxiNow =
                         (flags & ResidentFlags.IgnoreTaxi) != 0;
+
+                    // If vanilla already set IgnoreTaxi and this mod has no
+                    // ownership marker, either decision would leave the cim
+                    // unchanged. Skip the household ComponentLookup chain.
+                    if (!ownsIgnoreTaxi && ignoreTaxiNow)
+                        continue;
+
+                    bool shouldAvoid =
+                        m_AvoidanceData.ShouldAvoid(resident);
 
                     if (shouldAvoid)
                     {
