@@ -26,7 +26,7 @@ namespace TaxiTraffic
         private const uint kResidentUpdateFrameCount = 16u;
 
         // 16 ints = one cache line per worker, avoiding false sharing.
-        private const int kEligibilityThreadCounterStride = 16;
+        private const int kWorkerCounterStride = 16;
 
         private const float kDebugSummaryIntervalSeconds = 120.0f;
         private const uint kTaxiEligibilityHashSalt = 0x54415849u; // 'TAXI'
@@ -47,7 +47,7 @@ namespace TaxiTraffic
         private EntityQuery m_RideNeederQuery;
 
         private NativeArray<int> m_EligibilityCounters;
-        private NativeArray<int> m_EligibilityThreadCounters;
+        private NativeArray<int> m_WorkerCounters;
         private NativeArray<int> m_ReapplyCounter;
         private NativeArray<int> m_EnforcementCounters;
 
@@ -129,10 +129,10 @@ namespace TaxiTraffic
                     Allocator.Persistent,
                     NativeArrayOptions.ClearMemory);
 
-            m_EligibilityThreadCounters =
+            m_WorkerCounters =
                 new NativeArray<int>(
                     Unity.Jobs.LowLevel.Unsafe.JobsUtility.ThreadIndexCount *
-                    kEligibilityThreadCounterStride,
+                    kWorkerCounterStride,
                     Allocator.Persistent,
                     NativeArrayOptions.ClearMemory);
 
@@ -162,8 +162,8 @@ namespace TaxiTraffic
             if (m_EligibilityCounters.IsCreated)
                 m_EligibilityCounters.Dispose();
 
-            if (m_EligibilityThreadCounters.IsCreated)
-                m_EligibilityThreadCounters.Dispose();
+            if (m_WorkerCounters.IsCreated)
+                m_WorkerCounters.Dispose();
 
             if (m_ReapplyCounter.IsCreated)
                 m_ReapplyCounter.Dispose();
@@ -363,27 +363,27 @@ namespace TaxiTraffic
         // Only valid at the top of OnUpdate.
         private void PublishPreviousFrameCounters()
         {
-            // The parallel eligibility job writes only to its own worker's
-            // cache line. Merge after the previous frame's dependency completes.
+            // Both parallel jobs write distinct slots within each worker's
+            // cache line. Merge after the previous dependency completes.
             for (int i = 0;
-                 i < m_EligibilityThreadCounters.Length;
-                 i += kEligibilityThreadCounterStride)
+                 i < m_WorkerCounters.Length;
+                 i += kWorkerCounterStride)
             {
-                m_EligibilityCounters[0] += m_EligibilityThreadCounters[i];
-                m_EligibilityCounters[1] += m_EligibilityThreadCounters[i + 1];
-                m_EligibilityCounters[2] += m_EligibilityThreadCounters[i + 2];
+                m_EligibilityCounters[0] += m_WorkerCounters[i];
+                m_EligibilityCounters[1] += m_WorkerCounters[i + 1];
+                m_EligibilityCounters[2] += m_WorkerCounters[i + 2];
 #if TAXI_PERF_TEST
-                m_EligibilityCounters[3] += m_EligibilityThreadCounters[i + 3];
+                m_EligibilityCounters[3] += m_WorkerCounters[i + 3];
 #endif
                 // Eligibility and enforcement are chained, so the same
                 // per-worker cache line can hold both jobs' counters.
-                m_EnforcementCounters[0] += m_EligibilityThreadCounters[i + 4];
-                m_EnforcementCounters[1] += m_EligibilityThreadCounters[i + 5];
-                m_EnforcementCounters[2] += m_EligibilityThreadCounters[i + 6];
-                m_EnforcementCounters[3] += m_EligibilityThreadCounters[i + 7];
-                m_EnforcementCounters[4] += m_EligibilityThreadCounters[i + 8];
+                m_EnforcementCounters[0] += m_WorkerCounters[i + 4];
+                m_EnforcementCounters[1] += m_WorkerCounters[i + 5];
+                m_EnforcementCounters[2] += m_WorkerCounters[i + 6];
+                m_EnforcementCounters[3] += m_WorkerCounters[i + 7];
+                m_EnforcementCounters[4] += m_WorkerCounters[i + 8];
 #if TAXI_PERF_TEST
-                m_EnforcementCounters[5] += m_EligibilityThreadCounters[i + 9];
+                m_EnforcementCounters[5] += m_WorkerCounters[i + 9];
 #endif
             }
 
@@ -423,22 +423,22 @@ namespace TaxiTraffic
                 m_EligibilityCounters[i] = 0;
 
             for (int i = 0;
-                 i < m_EligibilityThreadCounters.Length;
-                 i += kEligibilityThreadCounterStride)
+                 i < m_WorkerCounters.Length;
+                 i += kWorkerCounterStride)
             {
-                m_EligibilityThreadCounters[i] = 0;
-                m_EligibilityThreadCounters[i + 1] = 0;
-                m_EligibilityThreadCounters[i + 2] = 0;
+                m_WorkerCounters[i] = 0;
+                m_WorkerCounters[i + 1] = 0;
+                m_WorkerCounters[i + 2] = 0;
 #if TAXI_PERF_TEST
-                m_EligibilityThreadCounters[i + 3] = 0;
+                m_WorkerCounters[i + 3] = 0;
 #endif
-                m_EligibilityThreadCounters[i + 4] = 0;
-                m_EligibilityThreadCounters[i + 5] = 0;
-                m_EligibilityThreadCounters[i + 6] = 0;
-                m_EligibilityThreadCounters[i + 7] = 0;
-                m_EligibilityThreadCounters[i + 8] = 0;
+                m_WorkerCounters[i + 4] = 0;
+                m_WorkerCounters[i + 5] = 0;
+                m_WorkerCounters[i + 6] = 0;
+                m_WorkerCounters[i + 7] = 0;
+                m_WorkerCounters[i + 8] = 0;
 #if TAXI_PERF_TEST
-                m_EligibilityThreadCounters[i + 9] = 0;
+                m_WorkerCounters[i + 9] = 0;
 #endif
             }
 
