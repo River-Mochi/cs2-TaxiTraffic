@@ -50,6 +50,7 @@ namespace TaxiTraffic
         private NativeArray<int> m_EligibilityThreadCounters;
         private NativeArray<int> m_ReapplyCounter;
         private NativeArray<int> m_EnforcementCounters;
+        private NativeArray<int> m_EnforcementThreadCounters;
 
         private bool m_ResidentCleanupPending;
         private bool m_FullEligibilityRefreshRequested;
@@ -148,6 +149,13 @@ namespace TaxiTraffic
                     Allocator.Persistent,
                     NativeArrayOptions.ClearMemory);
 
+            m_EnforcementThreadCounters =
+                new NativeArray<int>(
+                    Unity.Jobs.LowLevel.Unsafe.JobsUtility.ThreadIndexCount *
+                    kEligibilityThreadCounterStride,
+                    Allocator.Persistent,
+                    NativeArrayOptions.ClearMemory);
+
             InitStatusSystemsOnCreate();
 
             // Only run after a real city is loaded.
@@ -170,6 +178,9 @@ namespace TaxiTraffic
 
             if (m_EnforcementCounters.IsCreated)
                 m_EnforcementCounters.Dispose();
+
+            if (m_EnforcementThreadCounters.IsCreated)
+                m_EnforcementThreadCounters.Dispose();
 
             if (ReferenceEquals(s_Instance, this))
                 s_Instance = null;
@@ -377,6 +388,22 @@ namespace TaxiTraffic
 #endif
             }
 
+            // RideNeeder chunks can also run across workers. Aggregate the
+            // private per-worker counters only after their jobs have completed.
+            for (int i = 0;
+                 i < m_EnforcementThreadCounters.Length;
+                 i += kEligibilityThreadCounterStride)
+            {
+                m_EnforcementCounters[0] += m_EnforcementThreadCounters[i];
+                m_EnforcementCounters[1] += m_EnforcementThreadCounters[i + 1];
+                m_EnforcementCounters[2] += m_EnforcementThreadCounters[i + 2];
+                m_EnforcementCounters[3] += m_EnforcementThreadCounters[i + 3];
+                m_EnforcementCounters[4] += m_EnforcementThreadCounters[i + 4];
+#if TAXI_PERF_TEST
+                m_EnforcementCounters[5] += m_EnforcementThreadCounters[i + 5];
+#endif
+            }
+
 #if TAXI_PERF_TEST
             RecordTaxiPerfCounters(
                 m_EligibilityCounters[3],
@@ -429,6 +456,21 @@ namespace TaxiTraffic
 
             for (int i = 0; i < m_EnforcementCounters.Length; i++)
                 m_EnforcementCounters[i] = 0;
+
+            // Clear only the six used slots in each cache-line region.
+            for (int i = 0;
+                 i < m_EnforcementThreadCounters.Length;
+                 i += kEligibilityThreadCounterStride)
+            {
+                m_EnforcementThreadCounters[i] = 0;
+                m_EnforcementThreadCounters[i + 1] = 0;
+                m_EnforcementThreadCounters[i + 2] = 0;
+                m_EnforcementThreadCounters[i + 3] = 0;
+                m_EnforcementThreadCounters[i + 4] = 0;
+#if TAXI_PERF_TEST
+                m_EnforcementThreadCounters[i + 5] = 0;
+#endif
+            }
         }
 
         private static void RecordLastUpdateCounters(
