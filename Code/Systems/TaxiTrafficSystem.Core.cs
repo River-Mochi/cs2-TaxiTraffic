@@ -25,6 +25,9 @@ namespace TaxiTraffic
         // once per 16 simulation frames without one large periodic scan.
         private const uint kResidentUpdateFrameCount = 16u;
 
+        // 16 ints = one cache line per worker, avoiding false sharing.
+        private const int kEligibilityThreadCounterStride = 16;
+
         private const float kDebugSummaryIntervalSeconds = 120.0f;
         private const uint kTaxiEligibilityHashSalt = 0x54415849u; // 'TAXI'
 
@@ -44,6 +47,7 @@ namespace TaxiTraffic
         private EntityQuery m_RideNeederQuery;
 
         private NativeArray<int> m_EligibilityCounters;
+        private NativeArray<int> m_EligibilityThreadCounters;
         private NativeArray<int> m_ReapplyCounter;
         private NativeArray<int> m_EnforcementCounters;
 
@@ -121,19 +125,26 @@ namespace TaxiTraffic
 
             m_EligibilityCounters =
                 new NativeArray<int>(
-                    3,
+                    4,
+                    Allocator.Persistent,
+                    NativeArrayOptions.ClearMemory);
+
+            m_EligibilityThreadCounters =
+                new NativeArray<int>(
+                    Unity.Jobs.LowLevel.Unsafe.JobsUtility.ThreadIndexCount *
+                    kEligibilityThreadCounterStride,
                     Allocator.Persistent,
                     NativeArrayOptions.ClearMemory);
 
             m_ReapplyCounter =
                 new NativeArray<int>(
-                    1,
+                    2,
                     Allocator.Persistent,
                     NativeArrayOptions.ClearMemory);
 
             m_EnforcementCounters =
                 new NativeArray<int>(
-                    5,
+                    6,
                     Allocator.Persistent,
                     NativeArrayOptions.ClearMemory);
 
@@ -150,6 +161,9 @@ namespace TaxiTraffic
 
             if (m_EligibilityCounters.IsCreated)
                 m_EligibilityCounters.Dispose();
+
+            if (m_EligibilityThreadCounters.IsCreated)
+                m_EligibilityThreadCounters.Dispose();
 
             if (m_ReapplyCounter.IsCreated)
                 m_ReapplyCounter.Dispose();
@@ -332,6 +346,10 @@ namespace TaxiTraffic
             if (setting.EnableDebugLogging)
                 TickDebugLogging(setting, kDebugSummaryIntervalSeconds);
 
+#if TAXI_PERF_TEST
+            TickTaxiPerfLogging(setting, residentControlActive);
+#endif
+
             // True vanilla/no-op state: once our marker is gone, stop running.
             if (!residentControlActive && !m_ResidentCleanupPending)
                 Enabled = false;
@@ -341,6 +359,32 @@ namespace TaxiTraffic
         // Only valid at the top of OnUpdate.
         private void PublishPreviousFrameCounters()
         {
+            // The parallel eligibility job writes only to its own worker's
+            // cache line. Merge after the previous frame's dependency completes.
+            for (int i = 0;
+                 i < m_EligibilityThreadCounters.Length;
+                 i += kEligibilityThreadCounterStride)
+            {
+                m_EligibilityCounters[0] += m_EligibilityThreadCounters[i];
+                m_EligibilityCounters[1] += m_EligibilityThreadCounters[i + 1];
+                m_EligibilityCounters[2] += m_EligibilityThreadCounters[i + 2];
+#if TAXI_PERF_TEST
+                m_EligibilityCounters[3] += m_EligibilityThreadCounters[i + 3];
+#endif
+            }
+
+#if TAXI_PERF_TEST
+            RecordTaxiPerfCounters(
+                m_EligibilityCounters[3],
+                m_EligibilityCounters[0],
+                m_EligibilityCounters[1],
+                m_EligibilityCounters[2] + m_ReapplyCounter[0],
+                m_ReapplyCounter[1],
+                m_EnforcementCounters[5],
+                m_EnforcementCounters[1],
+                m_EnforcementCounters[2]);
+#endif
+
             int stoppedRideNeeders = m_EnforcementCounters[1];
             int existingTaxiRequestsStopped = m_EnforcementCounters[2];
             int repathedTaxiWaiters = m_EnforcementCounters[3];
@@ -364,7 +408,20 @@ namespace TaxiTraffic
             for (int i = 0; i < m_EligibilityCounters.Length; i++)
                 m_EligibilityCounters[i] = 0;
 
-            m_ReapplyCounter[0] = 0;
+            for (int i = 0;
+                 i < m_EligibilityThreadCounters.Length;
+                 i += kEligibilityThreadCounterStride)
+            {
+                m_EligibilityThreadCounters[i] = 0;
+                m_EligibilityThreadCounters[i + 1] = 0;
+                m_EligibilityThreadCounters[i + 2] = 0;
+#if TAXI_PERF_TEST
+                m_EligibilityThreadCounters[i + 3] = 0;
+#endif
+            }
+
+            for (int i = 0; i < m_ReapplyCounter.Length; i++)
+                m_ReapplyCounter[i] = 0;
 
             for (int i = 0; i < m_EnforcementCounters.Length; i++)
                 m_EnforcementCounters[i] = 0;
