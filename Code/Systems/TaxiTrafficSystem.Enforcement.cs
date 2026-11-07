@@ -124,6 +124,9 @@ namespace TaxiTraffic
                 int existingRequests = 0;
                 int repathed = 0;
                 int dispatchedSkipped = 0;
+#if TAXI_PERF_TEST
+                int scanned = 0;
+#endif
 
                 ChunkEntityEnumerator enumerator =
                     new(
@@ -133,6 +136,9 @@ namespace TaxiTraffic
 
                 while (enumerator.NextEntityIndex(out int i))
                 {
+#if TAXI_PERF_TEST
+                    scanned++;
+#endif
                     Resident resident = residents[i];
                     ResidentFlags residentFlags = resident.m_Flags;
 
@@ -234,6 +240,9 @@ namespace TaxiTraffic
 
                 if (dispatchedSkipped != 0)
                     m_Counters[4] += dispatchedSkipped;
+#if TAXI_PERF_TEST
+                m_Counters[5] += scanned;
+#endif
             }
         }
     }
