@@ -119,9 +119,9 @@ namespace TaxiTraffic
                 },
 #endif
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "レポートを書き出す" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "ステータスレポートをログに出力" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "詳しい診断を実行し、完全なステータスレポートをModログへ出力します。"
+                    "ステータスタブの一番下にあるボタンと同じ機能です。詳しいステータスレポートを Taxi Traffic のログに出力します。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "ログを開く" },
@@ -215,7 +215,7 @@ namespace TaxiTraffic
                     "<更新> = このステータスを確認した時刻。"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "ステータスをログに出力" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "ステータスレポートをログに出力" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Taxi Trafficのログへ詳しいステータスレポートを書き出します。**"
                 },

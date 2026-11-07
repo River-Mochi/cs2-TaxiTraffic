@@ -119,9 +119,9 @@ namespace TaxiTraffic
                 },
 #endif
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "寫入報告" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "將狀態報告寫入日誌" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "執行更詳細的診斷掃描，並把完整狀態報告寫入本模組日誌。"
+                    "與「狀態」分頁底部的按鈕功能相同。將詳細狀態報告寫入 Taxi Traffic 日誌。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "開啟日誌" },
@@ -215,7 +215,7 @@ namespace TaxiTraffic
                     "<已更新> = 這次狀態資訊的檢查時間。"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "將狀態寫入日誌" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "將狀態報告寫入日誌" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**把更詳細的狀態報告寫入 Taxi Traffic 日誌。**"
                 },

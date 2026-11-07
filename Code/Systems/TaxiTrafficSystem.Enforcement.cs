@@ -52,14 +52,15 @@ namespace TaxiTraffic
                         SystemAPI.GetComponentLookup<TaxiRequest>(
                             isReadOnly: true),
                     m_AvoidanceData = avoidanceData,
-                    m_Counters = m_EnforcementCounters,
+                    m_Counters = m_WorkerCounters,
                     m_CommandBuffer =
                         m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter()
                 };
 
-            // Component writes land with this handle; only the RideNeeder removal
-            // waits for the barrier. future me: see docs on one gap that opens.
-            return job.ScheduleByRef(m_RideNeederQuery, inputDeps);
+            // Each chunk owns its Resident and optional path/lane writes.
+            // Counters are per worker; component removals still wait for the
+            // same EndFrameBarrier so dispatch ordering does not change.
+            return job.ScheduleParallelByRef(m_RideNeederQuery, inputDeps);
         }
 
         [BurstCompile]
@@ -89,7 +90,15 @@ namespace TaxiTraffic
             [ReadOnly]
             public TaxiAvoidanceData m_AvoidanceData;
 
+            [Unity.Collections.NativeDisableParallelForRestriction]
             public NativeArray<int> m_Counters;
+
+            // Unity injects this per-worker value when scheduling the job.
+            // The C# compiler cannot see that native assignment.
+#pragma warning disable CS0649
+            [Unity.Collections.LowLevel.Unsafe.NativeSetThreadIndex]
+            public int m_ThreadIndex;
+#pragma warning restore CS0649
 
             public EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
@@ -124,6 +133,9 @@ namespace TaxiTraffic
                 int existingRequests = 0;
                 int repathed = 0;
                 int dispatchedSkipped = 0;
+#if TAXI_PERF_TEST
+                int scanned = 0;
+#endif
 
                 ChunkEntityEnumerator enumerator =
                     new(
@@ -133,6 +145,9 @@ namespace TaxiTraffic
 
                 while (enumerator.NextEntityIndex(out int i))
                 {
+#if TAXI_PERF_TEST
+                    scanned++;
+#endif
                     Resident resident = residents[i];
                     ResidentFlags residentFlags = resident.m_Flags;
 
@@ -220,20 +235,27 @@ namespace TaxiTraffic
                     stopped++;
                 }
 
+                // Separate cache-line-sized region for every Unity job thread.
+                int counterBase =
+                    m_ThreadIndex * kWorkerCounterStride + 4;
+
                 if (lateApplied != 0)
-                    m_Counters[0] += lateApplied;
+                    m_Counters[counterBase] += lateApplied;
 
                 if (stopped != 0)
-                    m_Counters[1] += stopped;
+                    m_Counters[counterBase + 1] += stopped;
 
                 if (existingRequests != 0)
-                    m_Counters[2] += existingRequests;
+                    m_Counters[counterBase + 2] += existingRequests;
 
                 if (repathed != 0)
-                    m_Counters[3] += repathed;
+                    m_Counters[counterBase + 3] += repathed;
 
                 if (dispatchedSkipped != 0)
-                    m_Counters[4] += dispatchedSkipped;
+                    m_Counters[counterBase + 4] += dispatchedSkipped;
+#if TAXI_PERF_TEST
+                m_Counters[counterBase + 5] += scanned;
+#endif
             }
         }
     }

@@ -119,9 +119,9 @@ namespace TaxiTraffic
                 },
 #endif
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Zapisz raport" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Zapisz raport stanu do logu" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "Uruchamia dokładniejszą diagnostykę i zapisuje pełny raport Stanu do logu moda."
+                    "Działa tak samo jak przycisk na dole karty Stan. Zapisuje szczegółowy raport stanu do logu Taxi Traffic."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "Otwórz log" },
@@ -215,7 +215,7 @@ namespace TaxiTraffic
                     "<Zaktualizowano> = czas tego sprawdzenia."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Zapisz Stan do logu" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Zapisz raport stanu do logu" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Zapisuje dokładniejszy raport Stanu do logu Taxi Traffic.**"
                 },

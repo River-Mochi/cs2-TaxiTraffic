@@ -119,9 +119,9 @@ namespace TaxiTraffic
                 },
 #endif
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Gravar relatório" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Gravar relatório de status no log" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "Faz uma análise mais detalhada e grava o relatório completo de Status no log do mod."
+                    "Faz o mesmo que o botão no fim da aba Status. Grava um relatório de status detalhado no log do Taxi Traffic."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "Abrir log" },
@@ -215,7 +215,7 @@ namespace TaxiTraffic
                     "<Atualizado> = quando estas informações de Status foram verificadas."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Gravar Status no log" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Gravar relatório de status no log" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Grava um relatório de Status mais detalhado no log do Taxi Traffic.**"
                 },

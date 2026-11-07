@@ -119,9 +119,9 @@ namespace TaxiTraffic
                 },
 #endif
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Bericht schreiben" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Statusbericht ins Log schreiben" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "Führt den Diagnose-Scan aus und schreibt den vollständigen Statusbericht ins Mod-Log."
+                    "Dieselbe Funktion wie die Schaltfläche unten im Tab „Status“. Schreibt einen ausführlichen Statusbericht ins Taxi-Traffic-Log."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "Log öffnen" },
@@ -215,7 +215,7 @@ namespace TaxiTraffic
                     "<Aktualisiert> = Zeitpunkt dieser Statusprüfung."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Status ins Log schreiben" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Statusbericht ins Log schreiben" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Schreibt einen ausführlicheren Statusbericht ins Taxi-Traffic-Log.**"
                 },

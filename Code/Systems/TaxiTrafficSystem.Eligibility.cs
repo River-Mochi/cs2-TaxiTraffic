@@ -54,23 +54,71 @@ namespace TaxiTraffic
                 }
 
                 Entity citizenEntity = resident.m_Citizen;
-                Entity household = Entity.Null;
 
                 if (citizenEntity != Entity.Null &&
                     m_HouseholdMemberLookup.HasComponent(citizenEntity))
                 {
-                    household =
+                    Entity household =
                         m_HouseholdMemberLookup[citizenEntity].m_Household;
 
                     if (household != Entity.Null)
                     {
-                        // Commuters and tourists use their own controls instead of
-                        // the local-resident percentage.
-                        if (m_CommuterHouseholdLookup.HasComponent(household))
-                            return m_BlockCommuters;
+                        // Most households are local. Resolve their stable
+                        // percentage first, then avoid unnecessary component
+                        // lookups when group settings give the same result.
+                        bool localAvoids =
+                            m_ResidentsAvoidTaxis >=
+                                TaxiSettings.kTaxiAvoidPercentMax ||
+                            (m_ResidentsAvoidTaxis >
+                                 TaxiSettings.kTaxiAvoidPercentMin &&
+                             GetHouseholdTaxiEligibilityRoll(household) <
+                                 (uint)m_ResidentsAvoidTaxis);
 
-                        if (m_TouristHouseholdLookup.HasComponent(household))
-                            return m_BlockTourists;
+                        if (localAvoids == m_BlockCommuters &&
+                            localAvoids == m_BlockTourists)
+                        {
+                            return localAvoids;
+                        }
+
+                        // Preserve vanilla's group precedence: a household
+                        // with both tags is treated as a commuter.
+                        if (m_BlockCommuters && !m_BlockTourists)
+                        {
+                            if (!localAvoids)
+                                return m_CommuterHouseholdLookup
+                                    .HasComponent(household);
+
+                            if (!m_TouristHouseholdLookup.HasComponent(household))
+                                return true;
+
+                            return m_CommuterHouseholdLookup
+                                .HasComponent(household);
+                        }
+
+                        if (!m_BlockCommuters && m_BlockTourists)
+                        {
+                            if (localAvoids)
+                            {
+                                return !m_CommuterHouseholdLookup
+                                    .HasComponent(household);
+                            }
+
+                            if (!m_TouristHouseholdLookup.HasComponent(household))
+                                return false;
+
+                            return !m_CommuterHouseholdLookup
+                                .HasComponent(household);
+                        }
+
+                        // Both group toggles match each other, but differ
+                        // from this household's local percentage decision.
+                        if (m_CommuterHouseholdLookup.HasComponent(household) ||
+                            m_TouristHouseholdLookup.HasComponent(household))
+                        {
+                            return m_BlockCommuters;
+                        }
+
+                        return localAvoids;
                     }
                 }
 
@@ -79,14 +127,6 @@ namespace TaxiTraffic
 
                 if (m_ResidentsAvoidTaxis >= TaxiSettings.kTaxiAvoidPercentMax)
                     return true;
-
-                if (household != Entity.Null)
-                {
-                    uint householdRoll =
-                        GetHouseholdTaxiEligibilityRoll(household);
-
-                    return householdRoll < (uint)m_ResidentsAvoidTaxis;
-                }
 
                 // Rare fallback when there is no usable household link.
                 if (citizenEntity == Entity.Null ||
@@ -195,7 +235,8 @@ namespace TaxiTraffic
 
             // Query already excludes our own cims, so this only sees new/unowned
             // ones. Vanilla IgnoreTaxi is observed but never claimed.
-            // Schedule, not ScheduleParallel - one worker keeps the counters safe.
+            // This specialized job stays on one worker; the general resident
+            // eligibility job uses per-worker counters and runs in parallel.
             return job.ScheduleByRef(
                 m_MaxAvoidanceEligibilityBucketQuery,
                 inputDeps);
@@ -226,6 +267,9 @@ namespace TaxiTraffic
                     chunk.GetNativeArray(ref m_ResidentType);
 
                 int applied = 0;
+#if TAXI_PERF_TEST
+                int scanned = 0;
+#endif
 
                 ChunkEntityEnumerator enumerator =
                     new(
@@ -235,6 +279,9 @@ namespace TaxiTraffic
 
                 while (enumerator.NextEntityIndex(out int i))
                 {
+#if TAXI_PERF_TEST
+                    scanned++;
+#endif
                     Resident resident = residents[i];
                     ResidentFlags flags = resident.m_Flags;
 
@@ -259,6 +306,9 @@ namespace TaxiTraffic
 
                 if (applied != 0)
                     m_AppliedCount[0] += applied;
+#if TAXI_PERF_TEST
+                m_AppliedCount[3] += scanned;
+#endif
             }
         }
 
@@ -277,14 +327,14 @@ namespace TaxiTraffic
                         SystemAPI.GetComponentTypeHandle<IgnoreTaxiMark>(
                             isReadOnly: true),
                     m_AvoidanceData = avoidanceData,
-                    m_Counters = m_EligibilityCounters,
+                    m_Counters = m_WorkerCounters,
                     m_CommandBuffer =
                         m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter()
                 };
 
-            // The expensive one: 3 random ComponentLookup hits per cim in the bucket.
-            // Nothing needs the result this frame, so get it off the sim thread.
-            return job.ScheduleByRef(query, inputDeps);
+            // Independent chunks can now run on multiple workers. Each worker
+            // owns separate counters and the ECB already uses ParallelWriter.
+            return job.ScheduleParallelByRef(query, inputDeps);
         }
 
         [BurstCompile]
@@ -301,7 +351,17 @@ namespace TaxiTraffic
             [ReadOnly]
             public TaxiAvoidanceData m_AvoidanceData;
 
+            // Separate cache-line-sized region for each worker. No atomic
+            // increments or shared writes between parallel chunks.
+            [Unity.Collections.NativeDisableParallelForRestriction]
             public NativeArray<int> m_Counters;
+
+            // Unity injects this per-worker value when scheduling the job.
+            // The C# compiler cannot see that native assignment.
+#pragma warning disable CS0649
+            [Unity.Collections.LowLevel.Unsafe.NativeSetThreadIndex]
+            public int m_ThreadIndex;
+#pragma warning restore CS0649
 
             public EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
@@ -325,6 +385,9 @@ namespace TaxiTraffic
                 int applied = 0;
                 int removed = 0;
                 int reapplied = 0;
+#if TAXI_PERF_TEST
+                int scanned = 0;
+#endif
 
                 ChunkEntityEnumerator enumerator = new(
                         useEnabledMask,
@@ -333,6 +396,9 @@ namespace TaxiTraffic
 
                 while (enumerator.NextEntityIndex(out int i))
                 {
+#if TAXI_PERF_TEST
+                    scanned++;
+#endif
                     Resident resident = residents[i];
                     ResidentFlags flags = resident.m_Flags;
 
@@ -341,11 +407,17 @@ namespace TaxiTraffic
                     if ((flags & ResidentFlags.InVehicle) != 0)
                         continue;
 
-                    bool shouldAvoid =
-                        m_AvoidanceData.ShouldAvoid(resident);
-
                     bool ignoreTaxiNow =
                         (flags & ResidentFlags.IgnoreTaxi) != 0;
+
+                    // If vanilla already set IgnoreTaxi and this mod has no
+                    // ownership marker, either decision would leave the cim
+                    // unchanged. Skip the household ComponentLookup chain.
+                    if (!ownsIgnoreTaxi && ignoreTaxiNow)
+                        continue;
+
+                    bool shouldAvoid =
+                        m_AvoidanceData.ShouldAvoid(resident);
 
                     if (shouldAvoid)
                     {
@@ -392,14 +464,20 @@ namespace TaxiTraffic
                     removed++;
                 }
 
+                int counterBase =
+                    m_ThreadIndex * kWorkerCounterStride;
+
                 if (applied != 0)
-                    m_Counters[0] += applied;
+                    m_Counters[counterBase] += applied;
 
                 if (removed != 0)
-                    m_Counters[1] += removed;
+                    m_Counters[counterBase + 1] += removed;
 
                 if (reapplied != 0)
-                    m_Counters[2] += reapplied;
+                    m_Counters[counterBase + 2] += reapplied;
+#if TAXI_PERF_TEST
+                m_Counters[counterBase + 3] += scanned;
+#endif
             }
         }
 
@@ -443,6 +521,9 @@ namespace TaxiTraffic
                     chunk.GetNativeArray(ref m_ResidentType);
 
                 int reapplied = 0;
+#if TAXI_PERF_TEST
+                int scanned = 0;
+#endif
                 ChunkEntityEnumerator enumerator =
                     new(
                         useEnabledMask,
@@ -451,6 +532,9 @@ namespace TaxiTraffic
 
                 while (enumerator.NextEntityIndex(out int i))
                 {
+#if TAXI_PERF_TEST
+                    scanned++;
+#endif
                     Resident resident = residents[i];
                     ResidentFlags flags = resident.m_Flags;
 
@@ -468,6 +552,9 @@ namespace TaxiTraffic
 
                 if (reapplied != 0)
                     m_ReappliedCount[0] += reapplied;
+#if TAXI_PERF_TEST
+                m_ReappliedCount[1] += scanned;
+#endif
             }
         }
 

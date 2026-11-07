@@ -119,9 +119,9 @@ namespace TaxiTraffic
                 },
 #endif
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "写入报告" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "将状态报告写入日志" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "运行更详细的诊断扫描，并把完整状态报告写入本模组日志。"
+                    "与“状态”选项卡底部的按钮功能相同。将详细状态报告写入 Taxi Traffic 日志。"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "打开日志" },
@@ -215,7 +215,7 @@ namespace TaxiTraffic
                     "<已更新> = 这次状态信息的检查时间。"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "将状态写入日志" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "将状态报告写入日志" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**把更详细的状态报告写入 Taxi Traffic 日志。**"
                 },

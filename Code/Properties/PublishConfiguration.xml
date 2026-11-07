@@ -65,7 +65,7 @@ tags: taxi service disable taxi use, reduce taxis.
 <!--Link to the forum post where the mod can be discussed-->
 <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/taxi-traffic.1939962/" />
 <!--Version of the mod-->
-<ModVersion Value="0.6.0" />
+<ModVersion Value="0.6.1" />
 <!--Recommended version of the base game to use the mod-->
 <GameVersion Value="1.6.*" />
 <!--Dependency for the mod, can be set multiple times-->
@@ -75,10 +75,8 @@ tags: taxi service disable taxi use, reduce taxis.
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog Value="" />
 <ChangeLog>
-- Updated for 1.6.2f1. No change to how avoid taxis works.
-- Improved performance, especially for large cities.
-- Improved stability around the game's cim updates.
-- Added Vietnamese, updated all locales.
+- Faster taxi checks in large cities, especially during busy hours.
+- Reduced repeated work; keep active taxi trips safe.
 </ChangeLog>
 <!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 <ExternalLink Type="discord" Url="https://discord.gg/gwXgvtyhjc" />

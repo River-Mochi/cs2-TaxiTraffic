@@ -119,9 +119,9 @@ namespace TaxiTraffic
                 },
 #endif
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Ghi báo cáo" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Ghi báo cáo trạng thái vào nhật ký" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "Chạy quét chẩn đoán sâu và ghi toàn bộ báo cáo Trạng thái vào nhật ký mod."
+                    "Chức năng giống nút ở cuối tab Trạng thái. Ghi báo cáo trạng thái chi tiết vào nhật ký Taxi Traffic."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "Mở nhật ký" },
@@ -215,7 +215,7 @@ namespace TaxiTraffic
                     "<Đã cập nhật> = thời điểm thông tin Trạng thái này được kiểm tra."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Ghi Trạng thái vào nhật ký" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Ghi báo cáo trạng thái vào nhật ký" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Ghi báo cáo Trạng thái chi tiết hơn vào nhật ký Taxi Traffic.**"
                 },

@@ -119,9 +119,9 @@ namespace TaxiTraffic
                 },
 #endif
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "เขียนรายงาน" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "เขียนรายงานสถานะลงบันทึก" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "สแกนวิเคราะห์แบบละเอียดและเขียนรายงานสถานะเต็มลงบันทึกของม็อด"
+                    "ทำงานเหมือนปุ่มด้านล่างสุดของแท็บสถานะ เขียนรายงานสถานะแบบละเอียดลงบันทึก Taxi Traffic"
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "เปิดบันทึก" },
@@ -215,7 +215,7 @@ namespace TaxiTraffic
                     "<อัปเดต> = เวลาที่ตรวจข้อมูลสถานะนี้"
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "เขียนสถานะลงบันทึก" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "เขียนรายงานสถานะลงบันทึก" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**เขียนรายงานสถานะแบบละเอียดลงบันทึก Taxi Traffic**"
                 },

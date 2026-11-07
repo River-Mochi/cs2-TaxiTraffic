@@ -119,9 +119,9 @@ namespace TaxiTraffic
                 },
 #endif
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Rapor Yaz" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Durum raporunu günlüğe yaz" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "Ayrıntılı tanı taraması yapar ve tam Durum raporunu mod günlüğüne yazar."
+                    "Durum sekmesinin altındaki düğmeyle aynı işlevi görür. Ayrıntılı durum raporunu Taxi Traffic günlüğüne yazar."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "Günlüğü Aç" },
@@ -215,7 +215,7 @@ namespace TaxiTraffic
                     "<Güncellendi> = bu Durum bilgisinin kontrol zamanı."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Durumu Günlüğe Yaz" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Durum raporunu günlüğe yaz" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Daha ayrıntılı Durum raporunu Taxi Traffic günlüğüne yazar.**"
                 },
