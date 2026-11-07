@@ -151,6 +151,12 @@ namespace TaxiTraffic
             // two systems that consume our work (TaxiDispatch 561, RideNeeder 593).
             updateSystem.UpdateBefore<TaxiTrafficSystem, TaxiDispatchSystem>(
                 SystemUpdatePhase.GameSimulation);
+
+#if TAXI_PERF_TEST
+            // Separate logger stays active even when all taxi controls are OFF.
+            updateSystem.UpdateAt<TaxiSpeedBenchmarkSystem>(
+                SystemUpdatePhase.GameSimulation);
+#endif
         }
 
         public void OnDispose()
