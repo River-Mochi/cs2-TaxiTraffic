@@ -54,12 +54,11 @@ namespace TaxiTraffic
                 }
 
                 Entity citizenEntity = resident.m_Citizen;
-                Entity household = Entity.Null;
 
                 if (citizenEntity != Entity.Null &&
                     m_HouseholdMemberLookup.HasComponent(citizenEntity))
                 {
-                    household =
+                    Entity household =
                         m_HouseholdMemberLookup[citizenEntity].m_Household;
 
                     if (household != Entity.Null)
@@ -357,8 +356,12 @@ namespace TaxiTraffic
             [Unity.Collections.NativeDisableParallelForRestriction]
             public NativeArray<int> m_Counters;
 
+            // Unity injects this per-worker value when scheduling the job.
+            // The C# compiler cannot see that native assignment.
+#pragma warning disable CS0649
             [Unity.Collections.LowLevel.Unsafe.NativeSetThreadIndex]
             public int m_ThreadIndex;
+#pragma warning restore CS0649
 
             public EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
