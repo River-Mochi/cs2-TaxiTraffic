@@ -119,9 +119,9 @@ namespace TaxiTraffic
                 },
 #endif
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Écrire le rapport" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "Écrire le rapport d'état dans le journal" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "Lance le diagnostic détaillé et écrit le rapport d'état complet dans le journal du mod."
+                    "Même fonction que le bouton en bas de l'onglet État. Écrit un rapport d'état détaillé dans le journal de Taxi Traffic."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "Ouvrir le journal" },
@@ -215,7 +215,7 @@ namespace TaxiTraffic
                     "<Mis à jour> = heure de cette vérification."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Écrire l'état dans le journal" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "Écrire le rapport d'état dans le journal" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Écrit un rapport d'état plus détaillé dans le journal de Taxi Traffic.**"
                 },
