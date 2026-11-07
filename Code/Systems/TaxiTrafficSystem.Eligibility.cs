@@ -313,7 +313,7 @@ namespace TaxiTraffic
 
             // Separate cache-line-sized region for each worker. No atomic
             // increments or shared writes between parallel chunks.
-            [Unity.Collections.LowLevel.Unsafe.NativeDisableParallelForRestriction]
+            [Unity.Collections.NativeDisableParallelForRestriction]
             public NativeArray<int> m_Counters;
 
             [Unity.Collections.LowLevel.Unsafe.NativeSetThreadIndex]
