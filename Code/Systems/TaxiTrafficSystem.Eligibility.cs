@@ -195,7 +195,8 @@ namespace TaxiTraffic
 
             // Query already excludes our own cims, so this only sees new/unowned
             // ones. Vanilla IgnoreTaxi is observed but never claimed.
-            // Schedule, not ScheduleParallel - one worker keeps the counters safe.
+            // This specialized job stays on one worker; the general resident
+            // eligibility job uses per-worker counters and runs in parallel.
             return job.ScheduleByRef(
                 m_MaxAvoidanceEligibilityBucketQuery,
                 inputDeps);
@@ -226,6 +227,9 @@ namespace TaxiTraffic
                     chunk.GetNativeArray(ref m_ResidentType);
 
                 int applied = 0;
+#if TAXI_PERF_TEST
+                int scanned = 0;
+#endif
 
                 ChunkEntityEnumerator enumerator =
                     new(
@@ -235,6 +239,9 @@ namespace TaxiTraffic
 
                 while (enumerator.NextEntityIndex(out int i))
                 {
+#if TAXI_PERF_TEST
+                    scanned++;
+#endif
                     Resident resident = residents[i];
                     ResidentFlags flags = resident.m_Flags;
 
@@ -259,6 +266,9 @@ namespace TaxiTraffic
 
                 if (applied != 0)
                     m_AppliedCount[0] += applied;
+#if TAXI_PERF_TEST
+                m_AppliedCount[3] += scanned;
+#endif
             }
         }
 
@@ -277,14 +287,14 @@ namespace TaxiTraffic
                         SystemAPI.GetComponentTypeHandle<IgnoreTaxiMark>(
                             isReadOnly: true),
                     m_AvoidanceData = avoidanceData,
-                    m_Counters = m_EligibilityCounters,
+                    m_Counters = m_EligibilityThreadCounters,
                     m_CommandBuffer =
                         m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter()
                 };
 
-            // The expensive one: 3 random ComponentLookup hits per cim in the bucket.
-            // Nothing needs the result this frame, so get it off the sim thread.
-            return job.ScheduleByRef(query, inputDeps);
+            // Independent chunks can now run on multiple workers. Each worker
+            // owns separate counters and the ECB already uses ParallelWriter.
+            return job.ScheduleParallelByRef(query, inputDeps);
         }
 
         [BurstCompile]
@@ -301,7 +311,13 @@ namespace TaxiTraffic
             [ReadOnly]
             public TaxiAvoidanceData m_AvoidanceData;
 
+            // Separate cache-line-sized region for each worker. No atomic
+            // increments or shared writes between parallel chunks.
+            [Unity.Collections.LowLevel.Unsafe.NativeDisableParallelForRestriction]
             public NativeArray<int> m_Counters;
+
+            [Unity.Collections.LowLevel.Unsafe.NativeSetThreadIndex]
+            public int m_ThreadIndex;
 
             public EntityCommandBuffer.ParallelWriter m_CommandBuffer;
 
@@ -325,6 +341,9 @@ namespace TaxiTraffic
                 int applied = 0;
                 int removed = 0;
                 int reapplied = 0;
+#if TAXI_PERF_TEST
+                int scanned = 0;
+#endif
 
                 ChunkEntityEnumerator enumerator = new(
                         useEnabledMask,
@@ -333,6 +352,9 @@ namespace TaxiTraffic
 
                 while (enumerator.NextEntityIndex(out int i))
                 {
+#if TAXI_PERF_TEST
+                    scanned++;
+#endif
                     Resident resident = residents[i];
                     ResidentFlags flags = resident.m_Flags;
 
@@ -392,14 +414,20 @@ namespace TaxiTraffic
                     removed++;
                 }
 
+                int counterBase =
+                    m_ThreadIndex * kEligibilityThreadCounterStride;
+
                 if (applied != 0)
-                    m_Counters[0] += applied;
+                    m_Counters[counterBase] += applied;
 
                 if (removed != 0)
-                    m_Counters[1] += removed;
+                    m_Counters[counterBase + 1] += removed;
 
                 if (reapplied != 0)
-                    m_Counters[2] += reapplied;
+                    m_Counters[counterBase + 2] += reapplied;
+#if TAXI_PERF_TEST
+                m_Counters[counterBase + 3] += scanned;
+#endif
             }
         }
 
@@ -443,6 +471,9 @@ namespace TaxiTraffic
                     chunk.GetNativeArray(ref m_ResidentType);
 
                 int reapplied = 0;
+#if TAXI_PERF_TEST
+                int scanned = 0;
+#endif
                 ChunkEntityEnumerator enumerator =
                     new(
                         useEnabledMask,
@@ -451,6 +482,9 @@ namespace TaxiTraffic
 
                 while (enumerator.NextEntityIndex(out int i))
                 {
+#if TAXI_PERF_TEST
+                    scanned++;
+#endif
                     Resident resident = residents[i];
                     ResidentFlags flags = resident.m_Flags;
 
@@ -468,6 +502,9 @@ namespace TaxiTraffic
 
                 if (reapplied != 0)
                     m_ReappliedCount[0] += reapplied;
+#if TAXI_PERF_TEST
+                m_ReappliedCount[1] += scanned;
+#endif
             }
         }
 
