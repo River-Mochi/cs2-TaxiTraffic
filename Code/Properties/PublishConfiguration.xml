@@ -65,7 +65,7 @@ tags: taxi service disable taxi use, reduce taxis.
 <!--Link to the forum post where the mod can be discussed-->
 <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/taxi-traffic.1939962/" />
 <!--Version of the mod-->
-<ModVersion Value="0.6.0" />
+<ModVersion Value="0.6.1" />
 <!--Recommended version of the base game to use the mod-->
 <GameVersion Value="1.6.*" />
 <!--Dependency for the mod, can be set multiple times-->
