@@ -75,10 +75,7 @@ tags: taxi service disable taxi use, reduce taxis.
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog Value="" />
 <ChangeLog>
-- Updated for 1.6.2f1. No change to how avoid taxis works.
-- Improved performance, especially for large cities.
-- Improved stability around the game's cim updates.
-- Added Vietnamese, updated all locales.
+- improve performance.
 </ChangeLog>
 <!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 <ExternalLink Type="discord" Url="https://discord.gg/gwXgvtyhjc" />
