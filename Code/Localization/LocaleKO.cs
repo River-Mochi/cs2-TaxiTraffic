@@ -119,9 +119,9 @@ namespace TaxiTraffic
                 },
 #endif
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "보고서 기록" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)), "상태 보고서를 로그에 기록" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportAbout)),
-                    "상세 진단을 실행하고 전체 상태 보고서를 모드 로그에 기록합니다."
+                    "상태 탭 맨 아래 버튼과 같은 기능입니다. 자세한 상태 보고서를 Taxi Traffic 로그에 기록합니다."
                 },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.OpenLogFile)), "로그 열기" },
@@ -215,7 +215,7 @@ namespace TaxiTraffic
                     "<업데이트> = 이 상태를 확인한 시간."
                 },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "상태를 로그에 기록" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)), "상태 보고서를 로그에 기록" },
                 { m_Setting.GetOptionDescLocaleID(nameof(TaxiSettings.WriteStatusReportToLog)),
                     "**Taxi Traffic 로그에 더 자세한 상태 보고서를 기록합니다.**"
                 },
