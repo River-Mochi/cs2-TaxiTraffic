@@ -76,8 +76,7 @@ tags: taxi service disable taxi use, reduce taxis.
 <ChangeLog Value="" />
 <ChangeLog>
 - Faster taxi checks in large cities, especially during busy hours.
-- Reduced repeated work while keeping active taxi trips safe.
-- Matching Status Report buttons and clearer tooltips in all languages.
+- Reduced repeated work; keep active taxi trips safe.
 </ChangeLog>
 <!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 <ExternalLink Type="discord" Url="https://discord.gg/gwXgvtyhjc" />
