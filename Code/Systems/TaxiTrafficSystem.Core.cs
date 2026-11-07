@@ -197,6 +197,10 @@ namespace TaxiTraffic
             ResetDebugOnCityLoaded();
             ResetStatusOnCityLoaded();
 
+#if TAXI_PERF_TEST
+            ResetTaxiPerfOnCityLoaded();
+#endif
+
             Enabled = true;
 
 #if DEBUG
