@@ -30,7 +30,9 @@ namespace TaxiTraffic
         public const string ModTag = "[TAXI]";
         public const string ShortName = "Taxi Traffic";
 
-#if DEBUG
+#if TAXI_PERF_TEST
+        private const string kBuildType = "RELEASE PERF TEST";
+#elif DEBUG
         private const string kBuildType = "DEBUG";
 #else
         private const string kBuildType = "RELEASE";
