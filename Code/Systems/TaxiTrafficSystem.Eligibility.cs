@@ -328,7 +328,7 @@ namespace TaxiTraffic
                         SystemAPI.GetComponentTypeHandle<IgnoreTaxiMark>(
                             isReadOnly: true),
                     m_AvoidanceData = avoidanceData,
-                    m_Counters = m_EligibilityThreadCounters,
+                    m_Counters = m_WorkerCounters,
                     m_CommandBuffer =
                         m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter()
                 };
@@ -462,7 +462,7 @@ namespace TaxiTraffic
                 }
 
                 int counterBase =
-                    m_ThreadIndex * kEligibilityThreadCounterStride;
+                    m_ThreadIndex * kWorkerCounterStride;
 
                 if (applied != 0)
                     m_Counters[counterBase] += applied;
